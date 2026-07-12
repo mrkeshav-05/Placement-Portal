@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum JobType {
+  INTERNSHIP
+  FTE
+  INTERNSHIP_PPO
+  INTERNSHIP_FTE
+}
+
+enum JobStatus {
+  ACTIVE
+  ENDED
+  DRAFT
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  INTERVIEW
+  SELECTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum FeedbackType {
+  QUERY
+  FEEDBACK
+  COMPLAINT
+}
+
+enum NocStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AnnouncementCategory {
+  COMPANY_EVENT
+  GENERAL
+}
+
+model User {
+  id                   String         @id @default(cuid())
+  name                 String?
+  email                String?        @unique
+  emailVerified        DateTime?
+  image                String?
+  role                 Role           @default(STUDENT)
+  personalEmail        String?
+  rollNumber           String?        @unique
+  branch               String?
+  batch                Int?
+  degree               String?
+  category             String?
+  gender               String?
+  dateOfBirth          DateTime?
+  bloodGroup           String?
+  contactNumber        String?
+  altContactNumber     String?
+  currentAddress       String?
+  permanentAddress     String?
+  aadhaarEncrypted     String?
+  panCardEncrypted     String?
+  class10Percent       Float?
+  class12Percent       Float?
+  semGPAs              Float[]
+  cgpa                 Float?
+  cgpaBeforeDrop       Float?
+  graduationGPA        Float?
+  backlogs             Int            @default(0)
+  bans                 Int            @default(0)
+  qrCodeData           String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  applications         Application[]
+  resumes              Resume[]
+  feedbacks            Feedback[]
+  nocRequests          NocRequest[]
+  notifications        Notification[]
+  createdJobs          JobProfile[]   @relation("JobCreator")
+  createdAnnouncements Announcement[] @relation("AnnouncementCreator")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Company {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  logoUrl       String?
+  website       String?
+  description   String?
+  createdAt     DateTime       @default(now())
+  jobs          JobProfile[]
+  announcements Announcement[]
+}
+
+model JobProfile {
+  id                   String        @id @default(cuid())
+  companyId            String
+  title                String
+  type                 JobType
+  locations            String[]
+  ctcStipend           Float?
+  ctcStipendInfo       String?
+  minCGPA              Float         @default(0)
+  maxBacklogs          Int           @default(0)
+  maxBans              Int           @default(0)
+  allowedBranches      String[]
+  allowedDegrees       String[]
+  allowedGenders       String[]
+  jobCategory          String?
+  batch                Int
+  registrationDeadline DateTime
+  status               JobStatus     @default(DRAFT)
+  description          String?
+  openingOverview      String?
+  attachments          String[]
+  createdAt            DateTime      @default(now())
+  createdById          String
+  company              Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy            User          @relation("JobCreator", fields: [createdById], references: [id])
+  applications         Application[]
+  coordinators         Coordinator[]
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  userId       String
+  jobProfileId String
+  status       ApplicationStatus @default(APPLIED)
+  appliedAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobProfile   JobProfile        @relation(fields: [jobProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobProfileId])
+}
+
+model Announcement {
+  id          String               @id @default(cuid())
+  title       String
+  companyId   String?
+  content     String
+  tags        String[]
+  category    AnnouncementCategory
+  createdAt   DateTime             @default(now())
+  createdById String
+  company     Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  createdBy   User                 @relation("AnnouncementCreator", fields: [createdById], references: [id])
+}
+
+model Feedback {
+  id            String       @id @default(cuid())
+  userId        String
+  feedbackType  FeedbackType
+  content       String
+  resolved      Boolean      @default(false)
+  adminResponse String?
+  createdAt     DateTime     @default(now())
+  resolvedAt    DateTime?
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NocRequest {
+  id          String    @id @default(cuid())
+  userId      String
+  company     String
+  address     String
+  city        String
+  state       String
+  pincode     String
+  startDate   DateTime
+  endDate     DateTime
+  status      NocStatus @default(PENDING)
+  message     String?
+  documentUrl String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Resume {
+  id         String   @id @default(cuid())
+  userId     String
+  label      String
+  fileUrl    String
+  fileName   String
+  uploadedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Coordinator {
+  id           String     @id @default(cuid())
+  jobProfileId String
+  name         String
+  phone        String
+  jobProfile   JobProfile @relation(fields: [jobProfileId], references: [id], onDelete: Cascade)
+}
+
+model TeamMember {
+  id           String  @id @default(cuid())
+  name         String
+  role         String
+  email        String?
+  phone        String?
+  photoUrl     String?
+  displayOrder Int     @default(0)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

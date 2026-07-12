@@ -1,0 +1,5 @@
+export type StudentEligibility={cgpa:number;batch:number;branch:string;backlogs:number;bans:number;documentsComplete:boolean};
+export type JobEligibility={minCgpa:number;batch:number;branches:readonly string[];maxBacklogs:number;maxBans?:number};
+export type EligibilityCheck={key:string;label:string;pass:boolean};
+export function evaluateEligibility(student:StudentEligibility,job:JobEligibility):EligibilityCheck[]{return[{key:"cgpa",label:`CGPA ${student.cgpa} ≥ ${job.minCgpa}`,pass:student.cgpa>=job.minCgpa},{key:"batch",label:`Batch ${student.batch}`,pass:student.batch===job.batch},{key:"branch",label:`Branch ${student.branch}`,pass:job.branches.includes(student.branch)},{key:"backlogs",label:`Backlogs ${student.backlogs} ≤ ${job.maxBacklogs}`,pass:student.backlogs<=job.maxBacklogs},{key:"bans",label:`Placement bans ${student.bans} ≤ ${job.maxBans??0}`,pass:student.bans<=(job.maxBans??0)},{key:"documents",label:"Profile documents complete",pass:student.documentsComplete}]}
+export function isEligible(checks:EligibilityCheck[]){return checks.every(check=>check.pass)}

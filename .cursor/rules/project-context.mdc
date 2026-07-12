@@ -1,0 +1,6 @@
+---
+description: Canonical TNP Portal project context and engineering constraints
+alwaysApply: true
+---
+
+Read `AGENTS.md`, `docs/PROJECT_CONTEXT.md`, and `docs/FEATURE_STATUS.md` before editing. Treat those files and the current code as authoritative. Update `docs/DECISIONS.md` for architectural changes and `docs/FEATURE_STATUS.md` whenever persistence maturity changes.
