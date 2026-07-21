@@ -1,1 +1,1 @@
-import { AdminManager } from "@/components/admin/admin-manager";import { AdminShell } from "@/components/admin/admin-shell";export default function Page(){return <AdminShell><AdminManager kind="announcements"/></AdminShell>}
+import { AdminManager } from "@/components/admin/admin-manager";import { AuthenticatedAdminShell } from "@/components/admin/authenticated-admin-shell";export default function Page(){return <AuthenticatedAdminShell><AdminManager kind="announcements"/></AuthenticatedAdminShell>}

@@ -4,19 +4,19 @@ This file carries short-lived working context between teammates and agents. Cano
 
 ## Current state
 
-- Active objective: none recorded
+- Active objective: implement persistent announcement publishing and administrator application review
 - Active owner: unassigned
-- Branch: repository has not yet established the documented team branch workflow
-- Last verified: lint, type-check, unit tests, production build, local student/admin login, PostgreSQL migration, and health endpoint were verified during initial implementation
-- External blocker: Google OAuth client ID is not configured
+- Branch: main working tree contains the authenticated student persistence phase
+- Last verified: Google Workspace OAuth, external admin allowlist/database synchronization, PostgreSQL connectivity, persistent student directory/profile inspection, profile edit-mode fix, persistent job publishing, lint, type-check, 15 unit tests, production build, and authenticated browser smoke tests for the admin student directory/detail and job-profile page
+- External blocker: resume/document storage provider has not been selected
 
 ## Known next work
 
-1. Replace local dashboard data with Prisma queries.
-2. Persist student profiles with Zod validation and encrypted Aadhaar/PAN fields.
-3. Implement authorized resume storage and ownership checks.
-4. Persist applications and withdrawals as server-side transactions.
-5. Replace generic local admin management with entity-specific server actions.
+1. Add persistent announcement publishing.
+2. Add administrator application review and status updates.
+3. Add encrypted Aadhaar/PAN profile actions using the existing encryption helper.
+4. Select storage and implement PDF-only resume upload/ownership/default selection.
+5. Persist NOC workflows and the remaining admin modules.
 
 ## Handoff template
 

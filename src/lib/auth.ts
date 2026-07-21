@@ -4,9 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
 import type { Role } from "@prisma/client";
+import { canUseGoogleAccount, isAdminEmail } from "@/lib/auth-access";
 import { db } from "@/lib/db";
-
-const ADMIN_EMAIL = "placements@iiitl.ac.in";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET ?? (process.env.NODE_ENV === "production" ? undefined : "tnp-local-development-secret-change-before-production"),
@@ -14,7 +13,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login", error: "/login" },
   providers: [
-    Google({ authorization: { params: { prompt: "select_account", hd: "iiitl.ac.in" } } }),
+    Google({ authorization: { params: { prompt: "select_account" } } }),
     Credentials({
       name: "Development credentials",
       credentials: { email: { label: "Email", type: "email" }, password: { label: "Password", type: "password" } },
@@ -33,15 +32,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
-    signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
       if (account?.provider === "credentials") return process.env.NODE_ENV !== "production";
-      const email = profile?.email?.toLowerCase();
-      return Boolean(email && (email.endsWith("@iiitl.ac.in") || email === ADMIN_EMAIL));
+      const email = (profile?.email ?? user.email)?.toLowerCase();
+      if (!canUseGoogleAccount(email)) return false;
+      if (isAdminEmail(email)) {
+        await db.user.updateMany({ where: { email }, data: { role: "ADMIN" } });
+      }
+      return true;
     },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.email?.toLowerCase() === ADMIN_EMAIL || user.role === "ADMIN" ? "ADMIN" : "STUDENT";
+        token.role = isAdminEmail(user.email) || user.role === "ADMIN" ? "ADMIN" : "STUDENT";
       }
       return token;
     },
@@ -53,7 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async createUser({ user }) {
-      if (user.email?.toLowerCase() === ADMIN_EMAIL) {
+      if (isAdminEmail(user.email)) {
         await db.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
       }
     }

@@ -1,3 +1,3 @@
-import { PortalShell } from "@/components/layout/portal-shell";
+import { AuthenticatedPortalShell } from "@/components/layout/authenticated-portal-shell";
 import { TeamView } from "@/components/team/team-view";
-export default function Page(){return <PortalShell><TeamView/></PortalShell>}
+export default function Page(){return <AuthenticatedPortalShell><TeamView/></AuthenticatedPortalShell>}

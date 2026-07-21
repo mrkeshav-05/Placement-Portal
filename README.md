@@ -145,6 +145,37 @@ http://localhost:3000/api/auth/callback/google
 
 Then set `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` in `.env`. Add the equivalent HTTPS callback before production deployment.
 
+Student access is restricted on the server to `@iiitl.ac.in`. Additional Google accounts can be granted administrator access with a comma-separated allowlist:
+
+```env
+ADMIN_EMAILS="first.admin@example.com,second.admin@example.com"
+```
+
+Only place trusted administrator accounts in this list. An account must sign in again after the list changes so its JWT receives the updated role.
+
+Run `npm run db:sync-admins` after changing the list to synchronize roles for administrator accounts that already exist in the database.
+
+## Adding a company
+
+1. Sign in with an administrator account and open `/admin/companies`.
+2. Select **Add company**.
+3. Enter the official company name. Website, logo URL, and description are optional but recommended.
+4. Select **Create company**. The record is written to PostgreSQL and becomes available for job-profile creation.
+5. Use **Edit** to correct the recruiter profile. Deletion is blocked while job profiles reference the company.
+
+The company record is the parent recruiter entity. A separate job profile must be created for every internship or full-time role before students can see it under Company Events.
+
+## Publishing a job profile
+
+1. Sign in with a real Google administrator account and open `/admin/job-profiles`.
+2. Select **Add job profile** and choose an existing company.
+3. Enter the role, location, batch, deadline, compensation, and eligibility values. Branches and degrees are comma-separated.
+4. Save as **Draft** while checking the details. Drafts are hidden from students.
+5. Change the status to **Active** with a future deadline to show the opportunity under Company Events and allow eligible students to apply.
+6. Change the status to **Ended** when applications should close. A job with applications cannot be deleted, preserving student records.
+
+Student profiles appear under `/admin/students` after their first institute Google sign-in. Students maintain their own saved details from `/profile`; administrators receive a read-only view and sensitive identity numbers are never displayed.
+
 ## Commands
 
 | Command | Purpose |
@@ -153,10 +184,10 @@ Then set `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` in `.env`. Add the equivalent
 | `npm run build` | Create a production build |
 | `npm run lint` | Run ESLint |
 | `npm run type-check` | Run strict TypeScript checks |
-| `npm test` | Run eligibility and encryption tests |
+| `npm test` | Run authentication, validation, eligibility, profile, and encryption tests |
 | `npm run db:generate` | Generate Prisma Client |
 | `npm run db:migrate` | Create/apply a development migration |
-| `npm run db:seed` | Seed initial admin, company, and job data |
+| `npm run db:seed` | Seed the initial placement administrator account only |
 
 Run the full verification suite before opening a pull request:
 
@@ -184,9 +215,9 @@ docs/                       Architecture, feature status, decisions, and handoff
 
 ## Current status
 
-The database schema, authentication boundary, route protection, migration, seed data, encryption and eligibility utilities, Docker setup, CI, and complete responsive UI are implemented.
+The database schema, authentication boundary, route protection, migration, seed data, encryption and eligibility utilities, Docker setup, CI, student-owned core records, admin companies, admin students, and job publishing are implemented.
 
-Some visible create/update actions still use local demonstration state while their Prisma-backed server actions are developed. The exact boundary for every module is maintained in [Feature Status](./docs/FEATURE_STATUS.md).
+The remaining incomplete modules show explicit empty or implementation states instead of demonstration records. The exact boundary for every module is maintained in [Feature Status](./docs/FEATURE_STATUS.md).
 
 ## Contributing with humans or coding agents
 

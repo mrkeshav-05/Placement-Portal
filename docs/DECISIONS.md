@@ -25,3 +25,7 @@ Encrypt Aadhaar and PAN using AES-256-GCM with a 32-byte environment key. Store 
 ## 2026-07-13 — Repository as shared agent memory
 
 Treat `AGENTS.md` and `docs/PROJECT_CONTEXT.md` as the canonical onboarding context for humans and AI agents. Tool-specific instruction files must point back to these canonical files rather than duplicating project facts.
+
+## 2026-07-17 — External administrator allowlist
+
+Keep student Google access restricted to `@iiitl.ac.in`, while permitting explicitly trusted external Google accounts to receive `ADMIN` through the comma-separated `ADMIN_EMAILS` environment variable. Authorization remains enforced in the Auth.js callback and JWT role assignment.

@@ -1,6 +1,6 @@
 # Canonical Project Context
 
-Last updated: 2026-07-13
+Last updated: 2026-07-17
 
 ## Product
 
@@ -23,7 +23,7 @@ The IIIT Lucknow Training & Placement Portal serves two roles:
 ## Authentication and roles
 
 - Real students authenticate with Google accounts ending in `@iiitl.ac.in`.
-- `placements@iiitl.ac.in` becomes an admin automatically.
+- `placements@iiitl.ac.in` and accounts explicitly listed in `ADMIN_EMAILS` become admins automatically.
 - `/admin/*` requires the `ADMIN` role through `src/proxy.ts`.
 - Development credentials exist for local work and are disabled whenever `NODE_ENV=production`.
 - Local student: `student@iiitl.ac.in` / `student123`.
@@ -89,4 +89,4 @@ docs/                       Shared project memory and decisions
 
 ## Current implementation boundary
 
-The schema, migration, Docker database, authentication boundary, UI flows, encryption helpers, eligibility helpers, admin surfaces, CI, and seed are present. Several visible interactions still use local component/mock state instead of Prisma persistence. Consult `docs/FEATURE_STATUS.md` before extending a feature and convert mock state to server-backed behavior rather than layering additional mock state over it.
+Google-authenticated students are resolved to their Auth.js/Prisma `User`. The student shell, dashboard, company events, eligibility, applications, core profile fields, and feedback read user-owned database records and show explicit empty/incomplete states instead of demonstration student data. The admin shell identity, overview metrics, company management, student directory/profile inspection, and job-profile publishing are Prisma-backed; legacy seeded recruiter/job data has been removed. Profile identity document entry, resume file storage, NOC workflows, team/contact management, announcements, and the remaining admin workflows are incomplete and show explicit implementation states rather than fake records. Consult `docs/FEATURE_STATUS.md` before extending a feature.

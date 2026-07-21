@@ -1,14 +1,38 @@
 "use client";
 
 import Link from "next/link";
+import type { ApplicationStatus } from "@prisma/client";
 import { CalendarDays, CheckCircle2, Clock3, FileText, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { withdrawApplication } from "@/app/applications/actions";
 
-const initialApplications = [
-  { id:"1", role:"Software Engineer Intern", company:"Atlassian", applied:"12 Jul 2026", status:"SHORTLISTED", next:"Online assessment · 16 Jul", color:"#1868db", initials:"AT" },
-  { id:"2", role:"Summer Internship 2027", company:"Google", applied:"10 Jul 2026", status:"APPLIED", next:"Application under review", color:"#4285f4", initials:"G" },
-  { id:"3", role:"Member of Technical Staff", company:"Adobe", applied:"07 Jul 2026", status:"INTERVIEW", next:"Technical interview · 15 Jul", color:"#e11d48", initials:"A" }
-];
-const steps=["APPLIED","SHORTLISTED","INTERVIEW","SELECTED"];
+export type StudentApplicationItem = {
+  id: string;
+  role: string;
+  company: string;
+  applied: string;
+  status: ApplicationStatus;
+  next: string;
+  color: string;
+  initials: string;
+};
 
-export function ApplicationsView(){const[query,setQuery]=useState("");const[filter,setFilter]=useState("ALL");const[data,setData]=useState(initialApplications);const visible=useMemo(()=>data.filter(a=>(filter==="ALL"||a.status===filter)&&`${a.role} ${a.company}`.toLowerCase().includes(query.toLowerCase())),[data,filter,query]);function withdraw(id:string){setData(items=>items.map(item=>item.id===id?{...item,status:"WITHDRAWN",next:"Application withdrawn"}:item))}return <div className="module-page"><section className="page-heading"><div><span className="eyebrow">Your journey</span><h1>My applications</h1><p>Track every application from submission to final decision.</p></div><Link className="primary-link" href="/company-events">Browse opportunities</Link></section><section className="application-stats"><article><strong>{data.length}</strong><span>Total applications</span></article><article><strong>{data.filter(a=>a.status==="SHORTLISTED").length}</strong><span>Shortlisted</span></article><article><strong>{data.filter(a=>a.status==="INTERVIEW").length}</strong><span>Interviews</span></article><article><strong>0</strong><span>Offers</span></article></section><section className="compact-filters"><label><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search applications"/></label><select value={filter} onChange={e=>setFilter(e.target.value)}><option value="ALL">All statuses</option>{["APPLIED","SHORTLISTED","INTERVIEW","SELECTED","WITHDRAWN"].map(s=><option key={s}>{s}</option>)}</select></section><section className="application-list">{visible.map(item=>{const active=steps.indexOf(item.status);return <article key={item.id}><div className="application-title"><i style={{background:item.color}}>{item.initials}</i><div><span>{item.company}</span><h2>{item.role}</h2><small><CalendarDays/> Applied {item.applied}</small></div><b className={`application-status ${item.status.toLowerCase()}`}>{item.status}</b></div>{item.status!=="WITHDRAWN"&&<div className="status-track">{steps.map((step,index)=><div className={index<=active?"done":""} key={step}><span>{index<active?<CheckCircle2/>:index===active?<Clock3/>:<i/>}</span><small>{step}</small></div>)}</div>}<div className="application-footer"><span><FileText/>{item.next}</span>{!["INTERVIEW","SELECTED","WITHDRAWN"].includes(item.status)&&<button onClick={()=>withdraw(item.id)}>Withdraw</button>}</div></article>})}{!visible.length&&<div className="empty"><Search/><h3>No applications found</h3><p>Try another status or search term.</p></div>}</section></div>}
+const steps: ApplicationStatus[] = ["APPLIED", "SHORTLISTED", "INTERVIEW", "SELECTED"];
+
+export function ApplicationsView({ applications }: { applications: StudentApplicationItem[] }) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("ALL");
+  const visible = useMemo(
+    () =>
+      applications.filter(
+        (application) =>
+          (filter === "ALL" || application.status === filter) &&
+          `${application.role} ${application.company}`
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+      ),
+    [applications, filter, query],
+  );
+
+  return <div className="module-page"><section className="page-heading"><div><span className="eyebrow">Your journey</span><h1>My applications</h1><p>Track every application from submission to final decision.</p></div><Link className="primary-link" href="/company-events">Browse opportunities</Link></section><section className="application-stats"><article><strong>{applications.length}</strong><span>Total applications</span></article><article><strong>{applications.filter(application => application.status === "SHORTLISTED").length}</strong><span>Shortlisted</span></article><article><strong>{applications.filter(application => application.status === "INTERVIEW").length}</strong><span>Interviews</span></article><article><strong>{applications.filter(application => application.status === "SELECTED").length}</strong><span>Offers</span></article></section><section className="compact-filters"><label><Search/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search applications"/></label><select value={filter} onChange={event => setFilter(event.target.value)}><option value="ALL">All statuses</option>{["APPLIED", "SHORTLISTED", "INTERVIEW", "SELECTED", "REJECTED", "WITHDRAWN"].map(status => <option key={status}>{status}</option>)}</select></section><section className="application-list">{visible.map(item => { const active = steps.indexOf(item.status); return <article key={item.id}><div className="application-title"><i style={{ background: item.color }}>{item.initials}</i><div><span>{item.company}</span><h2>{item.role}</h2><small><CalendarDays/> Applied {item.applied}</small></div><b className={`application-status ${item.status.toLowerCase()}`}>{item.status}</b></div>{active >= 0 && <div className="status-track">{steps.map((step, index) => <div className={index <= active ? "done" : ""} key={step}><span>{index < active ? <CheckCircle2/> : index === active ? <Clock3/> : <i/>}</span><small>{step}</small></div>)}</div>}<div className="application-footer"><span><FileText/>{item.next}</span>{["APPLIED", "SHORTLISTED"].includes(item.status) && <form action={withdrawApplication}><input type="hidden" name="applicationId" value={item.id}/><button type="submit">Withdraw</button></form>}</div></article>; })}{!visible.length && <div className="empty"><Search/><h3>{applications.length ? "No applications found" : "No applications yet"}</h3><p>{applications.length ? "Try another status or search term." : "Applications you submit will appear here."}</p></div>}</section></div>;
+}

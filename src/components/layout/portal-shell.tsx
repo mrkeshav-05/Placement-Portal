@@ -12,7 +12,7 @@ const navigation = [
   ["Forms & documents", "/forms", FileText], ["Contact us", "/contact", Phone], ["Our team", "/team", Users]
 ] as const;
 
-export function PortalShell({ children }: { children: React.ReactNode }) {
+export function PortalShell({ children, student }: { children: React.ReactNode; student: { name: string; initials: string; subtitle: string } }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   return <div className="portal-shell">
@@ -24,6 +24,6 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       <nav aria-label="Main navigation">{navigation.map(([label, href, Icon]) => <Link key={href} href={href} onClick={() => setOpen(false)} className={pathname === href ? "active" : ""}><Icon size={19} /><span>{label}</span></Link>)}</nav>
       <div className="sidebar-help"><Bell size={18} /><div><strong>Need assistance?</strong><span>Contact the placement team</span></div></div>
     </aside>
-    <main><header className="topbar"><div><span className="eyebrow">Student portal</span><strong>Training & Placement Cell</strong></div><div className="student"><div className="avatar">AS</div><div><strong>Aarav Sharma</strong><span>BT23CSE042</span></div></div></header>{children}</main>
+    <main><header className="topbar"><div><span className="eyebrow">Student portal</span><strong>Training & Placement Cell</strong></div><div className="student"><div className="avatar">{student.initials}</div><div><strong>{student.name}</strong><span>{student.subtitle}</span></div></div></header>{children}</main>
   </div>;
 }
