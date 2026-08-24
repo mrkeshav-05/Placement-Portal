@@ -26,5 +26,11 @@
     "db:remove-demo": "npm run remove-demo --workspace @tnp/database",
     "db:sync-admins": "npm run sync-admins --workspace @tnp/database",
     "db:studio": "npm run studio --workspace @tnp/database"
+  },
+  "devDependencies": {
+    "prisma": "^7.9.1"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.9.1"
   }
 }
