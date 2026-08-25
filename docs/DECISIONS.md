@@ -76,3 +76,41 @@ Two consequences worth keeping:
 - Brand marks render the logo on a white tile. The logo's blue and green have too little contrast against the dark sidebar to sit directly on it, and recolouring the logo is not an option.
 
 Add new colour work as tokens. Literal brand hex values in component styles are what made this migration a 108-replacement change rather than a one-line one.
+
+## 2026-08-25 — Semantic light/dark theme system & left-aligned application funnel
+
+- **Theme Architecture**: Added dark mode support across student and admin surfaces via semantic CSS custom properties in `globals.css` and `admin.css`. A React `ThemeProvider` (`theme-provider.tsx`) synchronized with `localStorage` and the OS `prefers-color-scheme` media query via `useSyncExternalStore` manages `'light' | 'dark' | 'system'` modes with zero hydration flash.
+- **Application Funnel**: Redesigned the admin dashboard application funnel from a centered staggered layout to a left-aligned horizontal stage breakdown with proportional volume bars, stage indicators, and guarded conversion percentage calculations.
+
+## 2026-08-25 — Hierarchical RBAC & Granular User Management
+
+- Extended the database role hierarchy from binary `[STUDENT, ADMIN]` to `[STUDENT, COORDINATOR, OFFICER, ADMIN, SUPER_ADMIN]`.
+- Implemented a 16-permission RBAC catalog across all portal domains with category groupings, role defaults, and custom per-user permission overrides (`customPermissions String[]` on `User`).
+- Added full user management capabilities on `/admin/users` (user provisioning, role elevation & de-elevation, custom permission matrix configuration, account activation/suspension, and safe user deletion).
+- Built security guardrails against self-demotion, self-deactivation, self-deletion, and removal of the last active super-administrator, while preserving `ADMIN_EMAILS` as the emergency bootstrap superadmin source.
+
+## 2026-08-25 — Persistent Announcement Lifecycle Management
+
+- Implemented persistent announcement management (`add`, `edit`, `delete`, `preview`, `filter`, and `tag`) across FastAPI (`/api/v1/announcements`) and Next.js admin & student surfaces.
+- Secured administrative operations with `announcements:manage` permission checks (`SUPER_ADMIN`, `ADMIN`, `OFFICER`, `COORDINATOR` by default).
+- Added multi-category classification (`COMPANY_EVENT` vs `GENERAL`), associated company tagging, and preset/custom pill tags (Shortlists, Interviews, Drive, PPT, Policies, Urgent).
+- Enhanced student dashboard feed with search by title/content/tags/company, category filtering, tag indicators, and a detail inspection modal for multi-line instructions and test links.
+
+## 2026-08-25 — NOC Requests & Support Feedback Lifecycle Workflows
+
+- **NOC Requests Architecture**: Implemented full student lifecycle (`POST /api/v1/noc`, `PATCH /api/v1/noc/{id}/cancel`, inspection modal, signed certificate in-portal preview and download) and administrative management (`GET /api/v1/noc/admin`, `/approve`, `/reject`, `/document`, `/metrics`) guarded by `noc:manage` permission.
+- **Signed Certificate Handling**: Signed NOC certificates are uploaded through authenticated multipart endpoints to disk storage (`noc_docs/`) and served with authorization checks allowing student owners and placement administrators to view and download their documents.
+- **Feedback & Queries Lifecycle**: Implemented student submission (`POST /api/v1/feedback`) with multi-type categorization (`QUERY`, `FEEDBACK`, `COMPLAINT`) and structured JSON storage; student history with type/resolution filters; and administrative workspace (`GET /api/v1/feedback/admin`, `POST /api/v1/feedback/admin/{id}/respond`, `DELETE`) guarded by `feedbacks:manage` permission.
+- **Student Notifications**: Admin NOC approval/rejection and feedback responses trigger automated in-app `Notification` records and background email dispatch.
+
+## 2026-08-25 — Placement Team Lifecycle & Default Permissions Architecture
+
+- **Dynamic Public Directory**: Replaced hardcoded presentation on `/team` and `/contact` with dynamic database loading of `TeamMember` records ordered by `displayOrder`, with photo and tonal initials avatar fallbacks.
+- **Administrative Team Workspace**: Implemented full management on `/admin/team` (create, update, delete, reorder) guarded by `team:manage` permission, with linked `User` account indicators and direct links to User Management.
+- **Default Permissions Management**: Added `SystemSetting` table (`key`, `value`, `updatedAt`) in Prisma and SQLAlchemy to persist the admin-configurable default permissions set for the single placement team (`placement_team_default_permissions`).
+- **Automated Permission Synchronization**: Adding a team member with an email automatically assigns the placement team's default permissions to their `User.customPermissions` (and on new user creation in `auth.ts`). Removing a member automatically revokes the default permissions while preserving any prior custom permissions. Admins retain full control to further adjust individual permissions manually in User Management.
+
+
+
+
+
