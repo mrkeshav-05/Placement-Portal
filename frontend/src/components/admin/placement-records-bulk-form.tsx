@@ -8,6 +8,7 @@ import {
   type OfferBulkActionResult,
 } from "@/app/admin/placement-records/actions";
 import type { CompanyOption, JobOption } from "@/components/admin/placement-records-manager";
+import { CompanySelect } from "@/components/common/company-select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,9 +31,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   isCtcType,
+  OFFER_SOURCE_LABELS,
   OFFER_STATUS_LABELS,
   OFFER_TYPE_LABELS,
   parseRollNumbers,
+  type OfferSource,
   type OfferStatus,
   type OfferType,
 } from "@/lib/offer-schema";
@@ -61,6 +64,7 @@ export function PlacementRecordsBulkForm({
   const [batch, setBatch] = useState(new Date().getFullYear() + 1);
   const [companyId, setCompanyId] = useState("");
   const [jobProfileId, setJobProfileId] = useState("");
+  const [source, setSource] = useState<OfferSource>("ON_CAMPUS");
   const [type, setType] = useState<OfferType>("FTE");
   const [status, setStatus] = useState<OfferStatus>("OFFERED");
   const [amount, setAmount] = useState("");
@@ -84,6 +88,13 @@ export function PlacementRecordsBulkForm({
     setCompanyId(nextId);
     // The drive belonged to the previous company.
     setJobProfileId("");
+  }
+
+  function selectSource(next: OfferSource) {
+    setSource(next);
+    // A drive is a portal-run, on-campus process by definition — an
+    // off-campus or hackathon record has no drive to link.
+    if (next !== "ON_CAMPUS") setJobProfileId("");
   }
 
   function selectDrive(value: string) {
@@ -110,6 +121,7 @@ export function PlacementRecordsBulkForm({
     const formData = new FormData();
     formData.set("companyId", companyId);
     formData.set("jobProfileId", jobProfileId);
+    formData.set("source", source);
     formData.set("type", type);
     formData.set("status", status);
     formData.set("jobTitle", jobTitle);
@@ -184,7 +196,7 @@ export function PlacementRecordsBulkForm({
             These apply to every record created in this session.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-3">
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="grid gap-2">
             <Label htmlFor="bulk-season">
               Placement Season <span className="text-destructive">*</span>
@@ -207,14 +219,21 @@ export function PlacementRecordsBulkForm({
             <Label htmlFor="bulk-company">
               Company <span className="text-destructive">*</span>
             </Label>
-            <Select value={companyId} onValueChange={selectCompany}>
-              <SelectTrigger id="bulk-company" className="w-full">
-                <SelectValue placeholder="Select a company" />
+            <CompanySelect id="bulk-company" options={companies} value={companyId} onChange={selectCompany} />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="bulk-source">
+              Recruitment Source <span className="text-destructive">*</span>
+            </Label>
+            <Select value={source} onValueChange={(next) => selectSource(next as OfferSource)}>
+              <SelectTrigger id="bulk-source" className="w-full">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
+                {Object.entries(OFFER_SOURCE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -223,7 +242,11 @@ export function PlacementRecordsBulkForm({
 
           <div className="grid gap-2">
             <Label htmlFor="bulk-drive">Company Event</Label>
-            <Select value={jobProfileId || NO_DRIVE} onValueChange={selectDrive}>
+            <Select
+              value={jobProfileId || NO_DRIVE}
+              onValueChange={selectDrive}
+              disabled={source !== "ON_CAMPUS"}
+            >
               <SelectTrigger id="bulk-drive" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -237,11 +260,13 @@ export function PlacementRecordsBulkForm({
               </SelectContent>
             </Select>
             <p className="text-muted-foreground text-xs">
-              {companyId
-                ? drives.length
-                  ? "Links each record to the drive it came from."
-                  : `No ${batch} drives for this company.`
-                : "Select a company to list its drives."}
+              {source !== "ON_CAMPUS"
+                ? "Only an on-campus record can link to a portal drive."
+                : companyId
+                  ? drives.length
+                    ? "Links each record to the drive it came from."
+                    : `No ${batch} drives for this company.`
+                  : "Select a company to list its drives."}
             </p>
           </div>
         </CardContent>

@@ -33,6 +33,7 @@ class OfferCompanySummary(BaseModel):
 class OfferBase(BaseModel):
     type: str
     status: str = "OFFERED"
+    source: str = "ON_CAMPUS"
     jobTitle: Optional[str] = Field(None, max_length=200)
     batch: int = Field(..., ge=2000, le=2100)
     ctc: Optional[float] = Field(None, ge=0)
@@ -99,6 +100,7 @@ class OfferBulkResult(BaseModel):
 class OfferUpdate(BaseModel):
     type: Optional[str] = None
     status: Optional[str] = None
+    source: Optional[str] = None
     jobTitle: Optional[str] = Field(None, max_length=200)
     batch: Optional[int] = Field(None, ge=2000, le=2100)
     ctc: Optional[float] = Field(None, ge=0)

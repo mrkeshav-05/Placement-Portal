@@ -101,6 +101,12 @@ class OfferStatus(str, enum.Enum):
     REVOKED = "REVOKED"
 
 
+class OfferSource(str, enum.Enum):
+    ON_CAMPUS = "ON_CAMPUS"
+    OFF_CAMPUS = "OFF_CAMPUS"
+    HACKATHON = "HACKATHON"
+
+
 class InterviewExperienceStatus(str, enum.Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
@@ -278,6 +284,9 @@ class Offer(Base):
     type: Mapped[OfferType] = mapped_column(Enum(OfferType, name="OfferType"))
     status: Mapped[OfferStatus] = mapped_column(
         Enum(OfferStatus, name="OfferStatus"), default=OfferStatus.OFFERED
+    )
+    source: Mapped[OfferSource] = mapped_column(
+        Enum(OfferSource, name="OfferSource"), default=OfferSource.ON_CAMPUS
     )
     # Role as recorded, which may differ from the linked drive's title. Reads
     # fall back to jobProfile.title when this is null.

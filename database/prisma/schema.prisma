@@ -79,6 +79,17 @@ enum OfferStatus {
   REVOKED
 }
 
+enum OfferSource {
+  /// Recruited through a portal drive (or an on-campus process run outside
+  /// the portal).
+  ON_CAMPUS
+  /// The student found and secured this offer independently.
+  OFF_CAMPUS
+  /// Won through a hackathon rather than a conventional interview process.
+  /// Still counted as on-campus for reporting purposes.
+  HACKATHON
+}
+
 enum InterviewExperienceStatus {
   PENDING
   APPROVED
@@ -311,6 +322,7 @@ model Offer {
   applicationId String?     @unique
   type          OfferType
   status        OfferStatus @default(OFFERED)
+  source        OfferSource @default(ON_CAMPUS)
   /// Role as the office records it. A drive's own title is the default, but an
   /// offer can be for a role the drive was not named after, and an offer with
   /// no drive behind it has no other place to keep one. Reads fall back to

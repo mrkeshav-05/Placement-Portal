@@ -338,15 +338,7 @@ function FilterMenu<T>({
   }
 
   return (
-    <div
-      className="dt-menu"
-      ref={ref}
-      // Opens on hover, like a menu, so the viewer does not have to click just
-      // to see what a filter offers; it still closes on the outside click or
-      // Escape that `useDismiss` wires up above.
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div className="dt-menu" ref={ref}>
       <button
         type="button"
         className={selected.length ? "dt-filter-button active" : "dt-filter-button"}

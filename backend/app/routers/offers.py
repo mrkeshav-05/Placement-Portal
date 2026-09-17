@@ -37,6 +37,7 @@ from app.models.db import (
     Company,
     JobProfile,
     Offer,
+    OfferSource,
     OfferStatus,
     OfferType,
     Role,
@@ -90,6 +91,16 @@ def _parse_status(value: str) -> OfferStatus:
         )
 
 
+def _parse_source(value: str) -> OfferSource:
+    try:
+        return OfferSource(value.strip().upper())
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid offer source '{value}'. Allowed: {[s.value for s in OfferSource]}",
+        )
+
+
 def _to_response(offer: Offer) -> OfferResponse:
     student = None
     if offer.user:
@@ -114,6 +125,7 @@ def _to_response(offer: Offer) -> OfferResponse:
         jobTitle=offer.jobTitle or (offer.job_profile.title if offer.job_profile else None),
         type=offer.type.value if hasattr(offer.type, "value") else str(offer.type),
         status=offer.status.value if hasattr(offer.status, "value") else str(offer.status),
+        source=offer.source.value if hasattr(offer.source, "value") else str(offer.source),
         batch=offer.batch,
         ctc=offer.ctc,
         stipend=offer.stipend,
@@ -157,6 +169,7 @@ async def list_offers(
     batch: Optional[int] = Query(None, description="Placement season (graduating batch year)"),
     type_filter: Optional[str] = Query(None, alias="type"),
     status_filter: Optional[str] = Query(None, alias="status"),
+    source_filter: Optional[str] = Query(None, alias="source"),
     company_id: Optional[str] = Query(None, alias="companyId"),
     search: Optional[str] = Query(None, description="Student name, roll number, email, or company"),
     limit: int = Query(200, ge=1, le=500),
@@ -172,6 +185,8 @@ async def list_offers(
         stmt = stmt.where(Offer.type == _parse_type(type_filter))
     if status_filter and status_filter != "ALL":
         stmt = stmt.where(Offer.status == _parse_status(status_filter))
+    if source_filter and source_filter != "ALL":
+        stmt = stmt.where(Offer.source == _parse_source(source_filter))
     if company_id and company_id != "ALL":
         stmt = stmt.where(Offer.companyId == company_id)
 
@@ -270,6 +285,7 @@ async def create_offer(
 ):
     offer_type = _parse_type(data.type)
     offer_status = _parse_status(data.status)
+    offer_source = _parse_source(data.source)
     await _require_amount_for_type(offer_type, data.ctc, data.stipend)
 
     student = await db.scalar(select(User).where(User.id == data.userId))
@@ -318,6 +334,7 @@ async def create_offer(
         applicationId=data.applicationId,
         type=offer_type,
         status=offer_status,
+        source=offer_source,
         jobTitle=(data.jobTitle or "").strip() or None,
         batch=data.batch,
         ctc=data.ctc,
@@ -356,6 +373,7 @@ async def create_offers_in_bulk(
     """
     offer_type = _parse_type(data.type)
     offer_status = _parse_status(data.status)
+    offer_source = _parse_source(data.source)
     await _require_amount_for_type(offer_type, data.ctc, data.stipend)
 
     company = await db.scalar(select(Company).where(Company.id == data.companyId))
@@ -446,6 +464,7 @@ async def create_offers_in_bulk(
                 jobProfileId=data.jobProfileId,
                 type=offer_type,
                 status=offer_status,
+                source=offer_source,
                 jobTitle=(data.jobTitle or "").strip() or None,
                 batch=data.batch,
                 ctc=data.ctc,
@@ -527,6 +546,9 @@ async def update_offer(
         elif new_status == OfferStatus.OFFERED:
             offer.decidedAt = None
         offer.status = new_status
+
+    if data.source is not None:
+        offer.source = _parse_source(data.source)
 
     await _require_amount_for_type(offer.type, offer.ctc, offer.stipend)
     offer.updatedAt = datetime.now(timezone.utc)

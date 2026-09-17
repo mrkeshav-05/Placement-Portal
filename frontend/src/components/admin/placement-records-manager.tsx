@@ -13,12 +13,15 @@ import {
   formatRupees,
   formatStipend,
   isCtcType,
+  OFFER_SOURCE_LABELS,
   OFFER_STATUS_LABELS,
   OFFER_TYPE_LABELS,
+  type OfferSource,
   type OfferStatus,
   type OfferType,
 } from "@/lib/offer-schema";
 import { AdminDialog } from "@/components/common/admin-dialog";
+import { CompanySelect } from "@/components/common/company-select";
 import {
   DataTable,
   type DataTableColumn,
@@ -66,6 +69,7 @@ export type OfferRecord = {
   jobTitle: string | null;
   type: OfferType;
   status: OfferStatus;
+  source: OfferSource;
   batch: number;
   ctc: number | null;
   stipend: number | null;
@@ -125,6 +129,8 @@ export function PlacementRecordsManager({
   const router = useRouter();
   const [editing, setEditing] = useState<OfferRecord | null | undefined>(undefined);
   const [formType, setFormType] = useState<OfferType>("FTE");
+  const [formSource, setFormSource] = useState<OfferSource>("ON_CAMPUS");
+  const [formCompanyId, setFormCompanyId] = useState("");
   // Radix rejects an empty option value, so "not from a drive" is held as a
   // sentinel here and posted back as the empty string the action expects.
   const [jobProfileId, setJobProfileId] = useState("");
@@ -139,8 +145,15 @@ export function PlacementRecordsManager({
   function openForm(offer: OfferRecord | null) {
     setResult({});
     setFormType(offer?.type ?? "FTE");
+    setFormSource(offer?.source ?? "ON_CAMPUS");
+    setFormCompanyId(offer?.companyId ?? "");
     setJobProfileId(offer?.jobProfileId ?? "");
     setEditing(offer);
+  }
+
+  function selectFormSource(next: OfferSource) {
+    setFormSource(next);
+    if (next !== "ON_CAMPUS") setJobProfileId("");
   }
 
   async function submit(formData: FormData) {
@@ -208,6 +221,13 @@ export function PlacementRecordsManager({
         width: "150px",
         sortValue: (offer) => offer.type,
         cell: (offer) => <span className="cell-tag">{OFFER_TYPE_LABELS[offer.type]}</span>,
+      },
+      {
+        id: "source",
+        header: "Source",
+        width: "160px",
+        sortValue: (offer) => offer.source,
+        cell: (offer) => <span className="cell-tag">{OFFER_SOURCE_LABELS[offer.source]}</span>,
       },
       {
         id: "jobTitle",
@@ -328,6 +348,12 @@ export function PlacementRecordsManager({
         value: (offer) => offer.type,
       },
       {
+        id: "source",
+        label: "Source",
+        options: Object.entries(OFFER_SOURCE_LABELS).map(([value, label]) => ({ value, label })),
+        value: (offer) => offer.source,
+      },
+      {
         id: "status",
         label: "Status",
         options: Object.entries(OFFER_STATUS_LABELS).map(([value, label]) => ({ value, label })),
@@ -361,6 +387,7 @@ export function PlacementRecordsManager({
       Branch: offer.student?.branch ?? "",
       Company: offer.company?.name ?? "",
       Type: OFFER_TYPE_LABELS[offer.type],
+      Source: OFFER_SOURCE_LABELS[offer.source],
       "Job Title": offer.jobTitle ?? "",
       Package: isCtcType(offer.type)
         ? formatRupees(offer.ctc)
@@ -458,6 +485,7 @@ export function PlacementRecordsManager({
             {/* The sentinel never leaves the browser: the action still reads an
                 empty string when the offer is not tied to a portal drive. */}
             <input type="hidden" name="jobProfileId" value={jobProfileId} />
+            <input type="hidden" name="companyId" value={formCompanyId} />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-2 sm:col-span-2">
                 <Label htmlFor="offer-student">Student</Label>
@@ -476,14 +504,27 @@ export function PlacementRecordsManager({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="offer-company">Company</Label>
-                <Select name="companyId" required defaultValue={editing?.companyId ?? undefined}>
-                  <SelectTrigger id="offer-company" className="w-full">
-                    <SelectValue placeholder="Select a company" />
+                <CompanySelect
+                  id="offer-company"
+                  options={companies}
+                  value={formCompanyId}
+                  onChange={setFormCompanyId}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-source">Recruitment source</Label>
+                <Select
+                  name="source"
+                  value={formSource}
+                  onValueChange={(value) => selectFormSource(value as OfferSource)}
+                >
+                  <SelectTrigger id="offer-source" className="w-full">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
+                    {Object.entries(OFFER_SOURCE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -494,6 +535,7 @@ export function PlacementRecordsManager({
                 <Select
                   value={jobProfileId || "__none"}
                   onValueChange={(value) => setJobProfileId(value === "__none" ? "" : value)}
+                  disabled={formSource !== "ON_CAMPUS"}
                 >
                   <SelectTrigger id="offer-drive" className="w-full">
                     <SelectValue />

@@ -2,9 +2,11 @@ import { z } from "zod";
 
 export const OFFER_TYPES = ["FTE", "PPO", "INTERNSHIP"] as const;
 export const OFFER_STATUSES = ["OFFERED", "ACCEPTED", "DECLINED", "REVOKED"] as const;
+export const OFFER_SOURCES = ["ON_CAMPUS", "OFF_CAMPUS", "HACKATHON"] as const;
 
 export type OfferType = (typeof OFFER_TYPES)[number];
 export type OfferStatus = (typeof OFFER_STATUSES)[number];
+export type OfferSource = (typeof OFFER_SOURCES)[number];
 
 export const OFFER_TYPE_LABELS: Record<OfferType, string> = {
   FTE: "Full-time placement",
@@ -17,6 +19,14 @@ export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
   ACCEPTED: "Accepted",
   DECLINED: "Declined",
   REVOKED: "Revoked",
+};
+
+export const OFFER_SOURCE_LABELS: Record<OfferSource, string> = {
+  ON_CAMPUS: "On-Campus",
+  OFF_CAMPUS: "Off-Campus",
+  // Still an on-campus process for reporting purposes, but distinct enough
+  // from a conventional drive that it earns its own value.
+  HACKATHON: "Hackathon (On-Campus)",
 };
 
 /** FTE and PPO offers carry an annual CTC; internships carry a monthly stipend. */
@@ -75,6 +85,7 @@ export const offerFormSchema = z
     applicationId: optionalText,
     type: z.enum(OFFER_TYPES),
     status: z.enum(OFFER_STATUSES).default("OFFERED"),
+    source: z.enum(OFFER_SOURCES).default("ON_CAMPUS"),
     jobTitle: optionalText,
     batch: seasonYear,
     ctc: optionalAmount,
@@ -126,6 +137,7 @@ export const offerBulkFormSchema = z
     jobProfileId: optionalText,
     type: z.enum(OFFER_TYPES),
     status: z.enum(OFFER_STATUSES).default("OFFERED"),
+    source: z.enum(OFFER_SOURCES).default("ON_CAMPUS"),
     jobTitle: z.string().trim().min(1, "Enter the job title.").max(200),
     batch: seasonYear,
     ctc: optionalAmount,
