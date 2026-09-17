@@ -364,6 +364,12 @@ export function NocRequestsManager({
   const filters = useMemo<DataTableFilter<AdminNocItem>[]>(
     () => [
       {
+        id: "course",
+        label: "Course",
+        options: degrees.map((degree) => ({ value: degree, label: degree })),
+        value: (item) => item.degree,
+      },
+      {
         id: "batch",
         label: "Batch",
         options: batches.map((batch) => ({ value: String(batch), label: String(batch) })),
@@ -374,12 +380,6 @@ export function NocRequestsManager({
         label: "Branch",
         options: branches.map((branch) => ({ value: branch, label: branch })),
         value: (item) => item.branch,
-      },
-      {
-        id: "course",
-        label: "Course",
-        options: degrees.map((degree) => ({ value: degree, label: degree })),
-        value: (item) => item.degree,
       },
       // Same admin-only rule as the Status column: a Placement Volunteer can
       // filter by who the request is about, but not by the decision made.

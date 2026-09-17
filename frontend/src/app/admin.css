@@ -994,7 +994,19 @@
    buttons in the reference are saying. */
 .dt-filter-button { border: 1px dashed var(--border); }
 .dt-filter-button svg { width: 13px; color: var(--muted); }
-.dt-filter-button.active { border-style: solid; border-color: var(--blue); }
+/* A filter with a value chosen reads as "on", so it takes the same filled
+   treatment as a primary action rather than just a highlighted border. */
+.dt-filter-button.active {
+  border-style: solid;
+  border-color: #0B2545;
+  background: #0B2545;
+  color: #fff;
+}
+.dt-filter-button.active svg { color: #fff; }
+.dt-filter-button.active b {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
 .dt-filter-button b, .dt-view-button b {
   font-size: 11px;
   font-weight: 800;
@@ -1007,6 +1019,9 @@
 .dt-view-button svg { width: 17px; color: var(--muted); }
 .dt-reset { border: 1px solid transparent; color: var(--muted); }
 .dt-filter-button:hover, .dt-view-button:hover { border-color: var(--blue); background: var(--surface-alt); }
+/* Same specificity as the plain hover rule above, so source order alone would
+   decide the winner — stated explicitly instead of relying on that. */
+.dt-filter-button.active:hover { border-color: #0B2545; background: #163a63; }
 .dt-reset:hover { color: var(--ink); background: var(--surface-alt); }
 
 .dt-popover {
