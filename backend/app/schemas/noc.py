@@ -12,6 +12,7 @@ class NocStudentSummary(BaseModel):
     rollNumber: Optional[str] = None
     branch: Optional[str] = None
     batch: Optional[int] = None
+    degree: Optional[str] = None
     cgpa: Optional[float] = None
     contactNumber: Optional[str] = None
 

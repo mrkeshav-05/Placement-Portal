@@ -3,7 +3,7 @@ import { NocRequestsManager, type AdminNocItem } from "@/components/admin/noc-re
 import { requirePermission } from "@/lib/admin-session";
 import { backendFetch } from "@/lib/api-client";
 import { db } from "@/lib/db";
-import { PERM_NOC_VIEW } from "@/lib/permissions";
+import { hasPermission, PERM_NOC_APPROVE, PERM_NOC_VIEW } from "@/lib/permissions";
 
 interface BackendNocAdminDto {
   id: string;
@@ -28,6 +28,7 @@ interface BackendNocAdminDto {
     rollNumber?: string | null;
     branch?: string | null;
     batch?: number | null;
+    degree?: string | null;
     cgpa?: number | null;
     contactNumber?: string | null;
   } | null;
@@ -50,6 +51,7 @@ export default async function Page() {
       rollNumber: noc.student?.rollNumber ?? null,
       branch: noc.student?.branch ?? null,
       batch: noc.student?.batch ?? null,
+      degree: noc.student?.degree ?? null,
       cgpa: noc.student?.cgpa ?? null,
       contactNumber: noc.student?.contactNumber ?? null,
       company: noc.company,
@@ -78,6 +80,7 @@ export default async function Page() {
             rollNumber: true,
             branch: true,
             batch: true,
+            degree: true,
             cgpa: true,
             contactNumber: true,
           },
@@ -93,6 +96,7 @@ export default async function Page() {
       rollNumber: noc.user?.rollNumber ?? null,
       branch: noc.user?.branch ?? null,
       batch: noc.user?.batch ?? null,
+      degree: noc.user?.degree ?? null,
       cgpa: noc.user?.cgpa ?? null,
       contactNumber: noc.user?.contactNumber ?? null,
       company: noc.company,
@@ -111,9 +115,14 @@ export default async function Page() {
     }));
   }
 
+  // A Placement Volunteer can view every request but not decide on one (see
+  // PLACEMENT_VOLUNTEER_DEFAULTS in permissions.ts); the decision status is
+  // therefore an admin-only column, not something a volunteer needs to see.
+  const canDecide = hasPermission(user, PERM_NOC_APPROVE);
+
   return (
     <AuthenticatedAdminShell>
-      <NocRequestsManager nocRequests={items} canPersist={Boolean(user?.id)} />
+      <NocRequestsManager nocRequests={items} canPersist={Boolean(user?.id)} canDecide={canDecide} />
     </AuthenticatedAdminShell>
   );
 }

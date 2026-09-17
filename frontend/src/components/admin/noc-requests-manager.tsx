@@ -61,6 +61,7 @@ export type AdminNocItem = {
   rollNumber: string | null;
   branch: string | null;
   batch: number | null;
+  degree: string | null;
   cgpa: number | null;
   contactNumber: string | null;
   company: string;
@@ -82,9 +83,13 @@ export type AdminNocItem = {
 
 export function NocRequestsManager({
   nocRequests,
+  canDecide = true,
 }: {
   nocRequests: AdminNocItem[];
   canPersist?: boolean;
+  /** False for a Placement Volunteer: they can see every request but not the
+   *  decision status, and cannot approve, reject, or upload a certificate. */
+  canDecide?: boolean;
 }) {
   const router = useRouter();
   const [detailItem, setDetailItem] = useState<AdminNocItem | null>(null);
@@ -130,61 +135,74 @@ export function NocRequestsManager({
         sortValue: (item) => item.company,
         cell: (item) => (
           <span className="dt-primary">
-            <strong>{item.company}</strong>
+            <strong style={{ color: "#0B2545" }}>{item.company}</strong>
             <small>{[item.city, item.state].filter(Boolean).join(", ")}</small>
           </span>
         ),
       },
       {
-        id: "period",
-        header: "Training Period",
-        width: "150px",
+        id: "startDate",
+        header: "Start Date",
+        width: "130px",
         sortValue: (item) => new Date(item.startDate),
         cell: (item) => (
           <span className="dt-primary">
-            <strong>
-              {new Date(item.startDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
-            </strong>
-            <small>
-              to {new Date(item.endDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
-            </small>
+            {new Date(item.startDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
           </span>
         ),
       },
       {
-        id: "status",
-        header: "Status",
-        width: "120px",
-        sortValue: (item) => item.status,
+        id: "endDate",
+        header: "End Date",
+        width: "130px",
+        sortValue: (item) => new Date(item.endDate),
         cell: (item) => (
-          <>
-            {item.status === "PENDING" && (
-              <span className="cell-status pending" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                <Clock3 size={11} /> Pending
-              </span>
-            )}
-            {item.status === "APPROVED" && (
-              <span className="cell-status" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                <CheckCircle2 size={11} /> Approved
-              </span>
-            )}
-            {item.status === "REJECTED" && (
-              <span
-                className="cell-status"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  background: "var(--badge-red-bg)",
-                  color: "var(--badge-red-text)",
-                }}
-              >
-                <XCircle size={11} /> Rejected
-              </span>
-            )}
-          </>
+          <span className="dt-primary">
+            {new Date(item.endDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+          </span>
         ),
       },
+      // Whether a request was approved, rejected, or is pending is a decision
+      // the Placement Volunteer role never gets to make (see canDecide above),
+      // so the column that reveals it doesn't render for them either.
+      ...(canDecide
+        ? [
+            {
+              id: "status",
+              header: "Status",
+              width: "120px",
+              sortValue: (item: AdminNocItem) => item.status,
+              cell: (item: AdminNocItem) => (
+                <>
+                  {item.status === "PENDING" && (
+                    <span className="cell-status pending" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <Clock3 size={11} /> Pending
+                    </span>
+                  )}
+                  {item.status === "APPROVED" && (
+                    <span className="cell-status" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <CheckCircle2 size={11} /> Approved
+                    </span>
+                  )}
+                  {item.status === "REJECTED" && (
+                    <span
+                      className="cell-status"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        background: "var(--badge-red-bg)",
+                        color: "var(--badge-red-text)",
+                      }}
+                    >
+                      <XCircle size={11} /> Rejected
+                    </span>
+                  )}
+                </>
+              ),
+            } satisfies DataTableColumn<AdminNocItem>,
+          ]
+        : []),
       {
         id: "certificate",
         header: "Certificate",
@@ -244,7 +262,7 @@ export function NocRequestsManager({
               <Eye size={13} /> Details
             </button>
 
-            {item.status === "PENDING" && (
+            {canDecide && item.status === "PENDING" && (
               <>
                 <button
                   type="button"
@@ -296,7 +314,7 @@ export function NocRequestsManager({
               </>
             )}
 
-            {item.status === "APPROVED" && (
+            {canDecide && item.status === "APPROVED" && (
               <button
                 type="button"
                 onClick={() => {
@@ -325,23 +343,62 @@ export function NocRequestsManager({
         ),
       },
     ],
-    [],
+    [canDecide],
+  );
+
+  const batches = useMemo(
+    () => Array.from(new Set(nocRequests.map((item) => item.batch).filter((b): b is number => b != null))).sort(
+      (a, b) => b - a,
+    ),
+    [nocRequests],
+  );
+  const branches = useMemo(
+    () => Array.from(new Set(nocRequests.map((item) => item.branch).filter((b): b is string => Boolean(b)))).sort(),
+    [nocRequests],
+  );
+  const degrees = useMemo(
+    () => Array.from(new Set(nocRequests.map((item) => item.degree).filter((d): d is string => Boolean(d)))).sort(),
+    [nocRequests],
   );
 
   const filters = useMemo<DataTableFilter<AdminNocItem>[]>(
     () => [
       {
-        id: "status",
-        label: "Status",
-        options: [
-          { value: "PENDING", label: "Pending Review" },
-          { value: "APPROVED", label: "Approved" },
-          { value: "REJECTED", label: "Rejected" },
-        ],
-        value: (item) => item.status,
+        id: "batch",
+        label: "Batch",
+        options: batches.map((batch) => ({ value: String(batch), label: String(batch) })),
+        value: (item) => (item.batch != null ? String(item.batch) : null),
       },
+      {
+        id: "branch",
+        label: "Branch",
+        options: branches.map((branch) => ({ value: branch, label: branch })),
+        value: (item) => item.branch,
+      },
+      {
+        id: "course",
+        label: "Course",
+        options: degrees.map((degree) => ({ value: degree, label: degree })),
+        value: (item) => item.degree,
+      },
+      // Same admin-only rule as the Status column: a Placement Volunteer can
+      // filter by who the request is about, but not by the decision made.
+      ...(canDecide
+        ? [
+            {
+              id: "status",
+              label: "Status",
+              options: [
+                { value: "PENDING", label: "Pending Review" },
+                { value: "APPROVED", label: "Approved" },
+                { value: "REJECTED", label: "Rejected" },
+              ],
+              value: (item: AdminNocItem) => item.status,
+            } satisfies DataTableFilter<AdminNocItem>,
+          ]
+        : []),
     ],
-    [],
+    [batches, branches, degrees, canDecide],
   );
 
   function handleApprove(formData: FormData) {
@@ -481,7 +538,7 @@ export function NocRequestsManager({
         searchPlaceholder="Search by student name, roll number, email, company, city..."
         filters={filters}
         columnStorageKey="noc-requests"
-        minWidth={1080}
+        minWidth={1160}
         emptyIcon={<FileText />}
         emptyTitle="No NOC requests found"
         emptyDescription={
@@ -553,9 +610,11 @@ export function NocRequestsManager({
                 </strong>
               </DetailBox>
 
-              <DetailBox label="Current Status">
-                <strong className="mt-1 block">{detailItem.status}</strong>
-              </DetailBox>
+              {canDecide && (
+                <DetailBox label="Current Status">
+                  <strong className="mt-1 block">{detailItem.status}</strong>
+                </DetailBox>
+              )}
             </div>
 
             {/* Student Remarks */}

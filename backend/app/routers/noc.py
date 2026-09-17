@@ -42,6 +42,7 @@ def _to_admin_noc_response(noc: NocRequest) -> AdminNocResponse:
             rollNumber=noc.user.rollNumber,
             branch=noc.user.branch,
             batch=noc.user.batch,
+            degree=noc.user.degree,
             cgpa=noc.user.cgpa,
             contactNumber=noc.user.contactNumber,
         )
