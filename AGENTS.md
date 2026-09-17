@@ -42,14 +42,18 @@ Never silently change an established architectural decision. Record intentional 
 
 ## Project commands
 
-Full stack in containers:
+The `Makefile` at the repository root is the entry point; `make help` lists
+everything. It wraps Compose, so no target needs Node, Python, or psql on the
+host except the few marked "(host)".
 
 ```bash
-docker compose up --build
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build   # hot reload
+make up                            # build, start, and wait for the stack
+make admin EMAIL=you@iiitl.ac.in   # the only way to create an administrator
+make seed                          # migrations, admins, roster, demonstration data
+make dev                           # the same stack with hot reload
 ```
 
-Host-side, from the repository root:
+Host-side, from the repository root, when a service needs a debugger attached:
 
 ```bash
 npm install
@@ -59,15 +63,15 @@ npm run db:seed
 npm run dev
 ```
 
-Verification (root, then `backend/`):
+Verification:
 
 ```bash
-npm run lint
-npm run type-check
-npm test
-npm run build
-cd backend && pytest
+make check         # npm run lint, type-check, test, and build
+make test-backend  # pytest inside the backend container
 ```
+
+Add a new operational command to the Makefile rather than only to `package.json`,
+and keep its `##` help text accurate: `make help` is generated from it.
 
 ## Change boundaries
 

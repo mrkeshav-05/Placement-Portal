@@ -82,49 +82,48 @@ structure, and the backend's SQLAlchemy models mirror it without migrating it.
 
 ## Quick start
 
-### Requirements
-
-- Docker Desktop with the Linux engine running
-- Node.js 20 or newer and npm (only for running the frontend outside Docker)
-- Python 3.12 (only for running the backend outside Docker)
-
-### 1. Configure the environment
-
-Copy `.env.example` to `.env` and generate private values. One `.env` at the
-repository root serves every service.
-
-```powershell
-Copy-Item .env.example .env
-node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"  # AUTH_SECRET
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"        # ENCRYPTION_KEY
-```
-
-Set at least one address in `ADMIN_EMAILS`, then give that account a password
-with `npm run db:set-password -- <email>` once the database is seeded; there is
-no other way to reach the first administrator. Compose refuses to start if
-`AUTH_SECRET` or `ENCRYPTION_KEY` is missing. Never commit `.env` or real
-student data.
-
-### 2. Run everything with Docker
+Docker Desktop is the only requirement. Everything else — Node, Python, the
+Prisma CLI, `psql` — runs inside containers.
 
 ```bash
-docker compose up --build
+make up                              # build, start, and wait for the stack
+make admin EMAIL=you@iiitl.ac.in     # grant yourself administrator access
+make seed                            # fill the database with the complete dataset
+make password EMAIL=you@iiitl.ac.in  # set your password, then sign in
 ```
 
-That starts four containers: `db` (PostgreSQL 16), `migrate` (applies Prisma
-migrations and seeds administrators, then exits), `backend` (FastAPI on
-port 8000), and `frontend` (Next.js on port 3000).
+`make up` writes a `.env` from `.env.example` on first run, generating
+`AUTH_SECRET` and `ENCRYPTION_KEY` for you. Compose refuses to start without
+those two, and there is no built-in administrator: `ADMIN_EMAILS` is the only
+source of one, which is why `make admin` comes before `make seed`. Never commit
+`.env` or real student data.
 
 Open [http://localhost:3000](http://localhost:3000). The API docs are at
 [http://localhost:8000/docs](http://localhost:8000/docs).
 
-For hot reload while developing, add the dev override:
+Four containers make up the stack: `db` (PostgreSQL 16), `migrate` (applies
+Prisma migrations and seeds administrators, then exits), `backend` (FastAPI on
+port 8000), and `frontend` (Next.js on port 3000). A fifth, `tools`, is never
+started by `up`; it is the one-shot container behind every `make db-*` command.
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-```
+### Everyday commands
 
-### 3. Or run the services directly
+`make` on its own prints the full list. The ones worth knowing:
+
+| Command | What it does |
+| --- | --- |
+| `make up` | Build, start, and wait for the whole stack |
+| `make dev` | The same stack with hot reload on both apps |
+| `make seed` | Migrations, administrators, the student roster, and demonstration data |
+| `make down` / `make logs` / `make ps` | Stop, follow logs, list what is running |
+| `make db-psql` / `make db-studio` | A psql shell, or Prisma Studio on port 5555 |
+| `make db-reset` | Drop the volume and rebuild the database from scratch |
+| `make db-dump` / `make db-restore FILE=…` | Back up and restore |
+| `make check` | Lint, type-check, unit tests, and the production build |
+
+### Running the services outside Docker
+
+Useful when you want a debugger attached to one service.
 
 ```bash
 docker compose up -d db      # database only
@@ -142,15 +141,18 @@ uvicorn main:app --reload    # backend on :8000
 ## Demonstration data
 
 A sample dataset ships as `database/seed-data.zip` so the portal can be reviewed
-with realistic content instead of empty tables. Load it with one command:
+with realistic content instead of empty tables. `make seed` loads it along with
+the student roster; to load only this part:
 
 ```bash
-npm run db:seed:demo
+make db-seed-demo
 ```
 
 That adds 6 companies, 12 students, 8 events across active, ended, and
-draft states, 29 applications, 9 announcements, 7 NOC requests, feedback, and
-placement team members. Run `npm run db:remove-demo` to take it all out again.
+draft states, 29 applications, 11 announcements, 15 offers, 7 NOC requests,
+feedback, and placement team members. The roster in `students_data.json` is a
+separate step, `make db-seed-students`, and accounts for the other 445 students.
+Run `make db-remove-demo` to take the demonstration rows out again.
 
 ### Populating your own account
 
@@ -162,23 +164,23 @@ students who do not exist as logins.
 Pass your own address to attach a slice of the activity to your account:
 
 ```bash
-npm run db:seed:demo -- you@iiitl.ac.in
+make db-seed-demo EMAIL=you@iiitl.ac.in
 ```
 
 You get 5 applications spanning applied, shortlisted, interview, and rejected, 2
 NOC requests, and 2 feedback entries. Academic fields are filled in **only where
 your profile has none**, so nothing you entered yourself is overwritten. The
 address must already have signed in once; the script says so rather than creating
-the account. Use a bare address, not `--student` — `npm run` claims unknown
-`--flags` for itself and never forwards them.
+the account.
 
-`npm run db:remove-demo` deletes this activity too but keeps your account. The
+`make db-remove-demo` deletes this activity too but keeps your account. The
 profile fields it filled are left in place, since there is no way to tell them
 apart from values you later edited; clear them from the profile page if you want.
 
 One more prerequisite: the seed needs an administrator to exist, because job
 profiles and announcements record an author and `ADMIN_EMAILS` is the only
-legitimate source of one. Run `npm run db:seed` first on a brand-new database.
+legitimate source of one. Run `make admin EMAIL=you@iiitl.ac.in` first on a
+brand-new database.
 
 Every row is written with a deterministic `demo-` prefixed id, which is what
 makes the seed safe to re-run and lets the removal script delete exactly what it
@@ -189,8 +191,11 @@ long the archive sits in the repository.
 To change the data, edit the JSON in `database/seed-data/` and repack it:
 
 ```bash
-npm run db:pack:demo
+make db-pack-demo
 ```
+
+This is one of the few commands that runs on the host rather than in a
+container, because it writes a tracked file back into the repository.
 
 ## Authentication and access control
 
@@ -208,7 +213,7 @@ OAuth client to configure.
 - **The first administrator** gets a password from the server shell:
 
   ```bash
-  npm run db:set-password -- head.tpo@iiitl.ac.in
+  make password EMAIL=head.tpo@iiitl.ac.in
   ```
 
   The password is typed at a prompt, not passed as an argument, so it stays out
@@ -235,8 +240,8 @@ as the services pick up the new value — no waiting for a session to expire. Th
 FastAPI service re-checks the allowlist too, so a token minted while an address
 was still listed stops granting admin access once it is removed.
 
-Run `npm run db:sync-admins` to reconcile roles already stored in the database:
-it promotes every listed address and demotes any stored administrator that is no
+Run `make db-sync-admins` to reconcile roles already stored in the database: it
+promotes every listed address and demotes any stored administrator that is no
 longer listed.
 
 Create a Google OAuth web client and register this callback:
@@ -273,7 +278,33 @@ Student profiles appear under `/admin/students` after their first institute Goog
 
 ## Commands
 
-Run these from the repository root; they delegate to the right workspace.
+`make help` lists every command, each of which runs in Docker:
+
+| Command | Purpose |
+|---|---|
+| `make up` / `make dev` | Run the stack, with or without hot reload |
+| `make down` / `make stop` / `make restart` | Control a running stack |
+| `make ps` / `make health` / `make logs` | See what is running and why it is not |
+| `make urls` | Print the published URLs, read from Compose |
+| `make seed` | Migrations, administrators, the roster, and demonstration data |
+| `make db-migrate` | Apply pending migrations |
+| `make db-migrate-new NAME=add_field` | Create a migration from schema changes |
+| `make db-seed-students` | Import the roster from `students_data.json` |
+| `make db-seed-demo [EMAIL=…]` | Load the demonstration dataset, optionally onto your account |
+| `make db-remove-demo` | Delete everything the demonstration seed created |
+| `make db-pack-demo` | Rebuild `seed-data.zip` after editing `database/seed-data/` (host) |
+| `make db-reset` | Drop the volume and rebuild the database from scratch |
+| `make db-psql` / `make db-studio` | A psql shell, or Prisma Studio on port 5555 |
+| `make db-dump` / `make db-restore FILE=…` | Back up and restore |
+| `make admin EMAIL=…` / `make password EMAIL=…` | Grant administrator access, set a password |
+| `make db-sync-admins` | Promote listed admins and demote unlisted ones |
+| `make check` | Lint, type-check, test, and build |
+| `make test-backend` | Run pytest in the backend container |
+| `make sh-frontend` / `make sh-backend` / `make sh-db` | Shell into a container |
+| `make clean` / `make nuke` | Remove volumes, and optionally the images too |
+
+The npm scripts underneath are still there for working outside Docker. Run them
+from the repository root; they delegate to the right workspace.
 
 | Command | Purpose |
 |---|---|
@@ -303,8 +334,8 @@ Backend commands run from `backend/`:
 Run the full verification suite before opening a pull request:
 
 ```bash
-npm run lint && npm run type-check && npm test && npm run build
-cd backend && pytest
+make check         # lint, type-check, unit tests, production build
+make test-backend  # pytest, in the backend container
 ```
 
 ## Repository structure

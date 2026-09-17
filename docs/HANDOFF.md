@@ -7,6 +7,7 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-18, Makefile/containerisation pass): `make up` from a stopped stack to all three services healthy, `make seed` loading 445 roster students plus the demonstration dataset, `make test-backend` (148 pytest tests in the container), `make db-dump`, the `db-remove-demo`/`db-seed-demo` round trip, `make db-studio` answering on port 5555, and the `.env` bootstrap and `make admin` allowlist edit exercised in a scratch directory so the real `.env` was untouched.
 - Last verified (2026-09-18, admin data grid pass): `npm run lint` (the same pre-existing warning), `npm run type-check`, `npm run build`, 122 frontend unit tests, and all 12 admin tables measured in a signed-in browser in both themes. No backend file changed, so pytest was not re-run.
 - Last verified (2026-09-18, shadcn admin pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, and 122 frontend unit tests. No backend file changed, so pytest was not re-run.
 - Last verified (2026-09-18, Add Company pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 122 frontend unit tests, and 148 backend pytest tests in the running `backend` container.
@@ -14,6 +15,32 @@ This file carries short-lived working context between teammates and agents. Cano
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## Running the project, 2026-09-18
+
+`make` is the front door now. `make up` and `make seed` are the two commands a
+new contributor needs; `make help` prints the rest, generated from the `##`
+comment on each target, so it cannot drift.
+
+What to know before touching it:
+
+- **`make db-*` runs in the `tools` service**, which shares the `migrate` image
+  and sits behind a Compose profile. A profile is the only thing keeping it out
+  of `up`; remove it and every `docker compose up` would run a seed container.
+- **The image bakes in `database/` and `students_data.json`.** A new migration
+  or an edited roster needs a rebuild (`make build`), the same trap the
+  `migrate` container has always had.
+- **`make password` must not pass `-T`.** The script prompts on stdin, so it
+  needs the TTY that `docker compose run` allocates by default.
+- **`make env` never invents an administrator.** `ADMIN_EMAILS` stays empty
+  until someone runs `make admin EMAIL=…`; `make up` prints a reminder when it
+  is still blank.
+- **`make db-pack-demo` and `make check` run on the host** by design, noted in
+  their help text. Both write or read the working tree.
+
+Left alone deliberately: the npm scripts, which still work for anyone running a
+service outside Docker, and `docker-compose.dev.yml`, which `make dev` uses
+unchanged. `backups/` is gitignored, since `make db-dump` writes there.
 
 ## The admin data grid, 2026-09-18
 

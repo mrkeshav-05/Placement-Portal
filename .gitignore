@@ -26,3 +26,6 @@ coverage/
 
 # Local service data
 docker/data/
+
+# Database dumps written by `make db-dump`
+backups/

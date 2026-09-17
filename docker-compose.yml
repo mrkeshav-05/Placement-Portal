@@ -9,6 +9,25 @@ name: tnp-portal
 x-database-url: &database-url
   postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-tnp_portal}
 
+# The migration runner and the on-demand database toolbox are the same image
+# with the same environment; only when they run differs. Sharing the `image`
+# tag means the stack builds it once.
+x-db-tools: &db-tools
+  build:
+    # Repository root: the npm workspace lockfile lives there.
+    context: .
+    dockerfile: database/Dockerfile
+  image: tnp-portal/db-tools:local
+  restart: "no"
+  environment:
+    DATABASE_URL: *database-url
+    ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+    STUDENT_EMAIL_DOMAIN: ${STUDENT_EMAIL_DOMAIN:-iiitl.ac.in}
+    DEMO_STUDENT_EMAILS: ${DEMO_STUDENT_EMAILS:-}
+  depends_on:
+    db:
+      condition: service_healthy
+
 services:
   db:
     image: postgres:16-alpine
@@ -32,17 +51,15 @@ services:
 
   # One-shot: applies Prisma migrations and seeds administrators, then exits.
   migrate:
-    build:
-      # Repository root: the npm workspace lockfile lives there.
-      context: .
-      dockerfile: database/Dockerfile
-    restart: "no"
-    environment:
-      DATABASE_URL: *database-url
-      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
-    depends_on:
-      db:
-        condition: service_healthy
+    <<: *db-tools
+
+  # Never started by `up`; run explicitly, e.g.
+  #   docker compose run --rm tools npm run db:seed:demo
+  # `make` wraps every one of these. The profile is what keeps it out of `up`.
+  tools:
+    <<: *db-tools
+    profiles: ["tools"]
+    command: ["npm", "run", "db:deploy"]
 
   backend:
     build:

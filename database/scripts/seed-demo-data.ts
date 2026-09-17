@@ -237,7 +237,7 @@ async function resolveAdministratorId() {
   if (anyAdmin) return anyAdmin.id;
 
   throw new Error(
-    "No administrator exists yet, so demonstration jobs would have no author. Set ADMIN_EMAILS in .env and run \"npm run db:seed\" first.",
+    "No administrator exists yet, so demonstration jobs would have no author. Add one with \"make admin EMAIL=you@iiitl.ac.in\" first.",
   );
 }
 
@@ -675,11 +675,11 @@ async function main() {
     console.log(
       "The generated students cannot sign in, so your own student pages stay empty.\n" +
         "Give your account its own applications, NOC requests, and feedback with:\n" +
-        "  npm run db:seed:demo -- you@iiitl.ac.in",
+        "  make db-seed-demo EMAIL=you@iiitl.ac.in",
     );
   }
 
-  console.log('Remove it again with "npm run db:remove-demo".');
+  console.log('Remove it again with "make db-remove-demo".');
 }
 
 main()

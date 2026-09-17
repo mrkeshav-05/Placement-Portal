@@ -426,3 +426,42 @@ Two smaller decisions came out of the same pass:
   minimum each one already named, which is also what makes pinning possible.
 
 Plus Jakarta Sans is gone; Inter is the only typeface, headings included.
+
+## 2026-09-18 — One Makefile is the operational entry point, and Docker is the only prerequisite
+
+Running the portal used to take a documented sequence: copy `.env.example`,
+generate two secrets by hand, `docker compose up --build`, then a handful of
+`npm run db:*` commands that needed Node 20, an installed workspace, and a
+`DATABASE_URL` pointing at localhost rather than at the `db` service. The
+database tooling was the only part of the stack that was not containerised, so
+the commands that populate a database could not be run by someone who had only
+Docker.
+
+A root `Makefile` is now the entry point. `make up` builds, starts, and blocks
+until every container reports healthy; `make seed` applies migrations and loads
+administrators, the 445-row student roster, and the demonstration dataset in a
+single container run. Everything else is a subcommand of those two, and
+`make help` is generated from the `##` comment on each target, so the list
+cannot drift from the file.
+
+Three things made that possible:
+
+- **A `tools` service**, sharing the `migrate` image and its environment through
+  a YAML anchor, gated behind a Compose profile so `up` never starts it. Every
+  `make db-*` target is `docker compose run --rm tools <script>`, which puts the
+  script on the stack's network with the in-cluster `DATABASE_URL` already set.
+  `students_data.json` is copied into that image, since the roster import reads
+  it from the repository root.
+- **`.env` is a Make file target**, not a documented step. Any target that needs
+  configuration depends on `.env`, so a first-time contributor gets one written
+  from `.env.example` with a fresh `AUTH_SECRET` and `ENCRYPTION_KEY` instead of
+  a missing-variable error from Compose.
+- **`make admin EMAIL=…` edits `ADMIN_EMAILS` and reseeds.** Administrator
+  access still has exactly one source, and the address still comes from the
+  person running the command; the Makefile only removes the hand-editing step.
+  Nothing in it defaults to an address.
+
+Two targets deliberately stay on the host. `make db-pack-demo` writes
+`seed-data.zip` back into the working tree, and `make check` runs the npm
+scripts a contributor already has installed; containerising either would trade
+a real benefit for a bind mount and a slower loop.

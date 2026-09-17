@@ -145,6 +145,9 @@ docs/                            Shared project memory and decisions
 
 ## Environment
 
+- The root `Makefile` is the operational entry point: `make up` runs the stack, `make seed` fills the database, and `make help` lists every subcommand from the `##` comment on each target. Targets wrap Compose, so Docker is the only prerequisite.
+- A `tools` service, behind the `tools` Compose profile so `up` never starts it, shares the `migrate` image and runs every database script (`make db-*`) as a one-shot container on the stack's network.
+- `.env` is a Make file target: anything that needs configuration depends on it, and it is written from `.env.example` with generated secrets on first run.
 - One `.env` at the repository root serves every service. Compose reads it automatically.
 - Compose builds the in-cluster `DATABASE_URL` from `POSTGRES_*`; the `DATABASE_URL` in `.env` points at `localhost` and is only for host-side tooling such as the Prisma CLI.
 - `frontend/next.config.ts` loads the root `.env` because Next only looks inside its own directory.
