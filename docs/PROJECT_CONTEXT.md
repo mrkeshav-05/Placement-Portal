@@ -24,6 +24,7 @@ The repository is split into three services, each with its own container.
 - Auth.js v5 beta with one credentials provider and JWT sessions; no OAuth provider
 - Zod for validation in the frontend, Pydantic in the backend
 - Lucide for icons
+- shadcn/ui (new-york, `frontend/src/components/ui`) for the admin forms and every admin dialog, pointed at the repository's semantic tokens by the `@theme inline` bridge in `globals.css`. The student portal and the admin data tables are not migrated and still use the hand-written CSS
 - `cmdk` for the searchable recruiter picker and `react-day-picker` for the event deadline calendar; both are behaviour only, styled from the repository's own tokens, and neither stylesheet is imported
 - Node's test runner with `tsx` for frontend units; pytest for the backend
 - Docker Compose for the full stack, with a hot-reload override
@@ -119,7 +120,9 @@ welcome/profile banners) — not the sidebars, which are dark only in dark mode.
   to the primary accent in both themes.
 - Rounded cards, restrained shadows, high information density, and mobile-first responsive layouts
 - Student pages use `PortalShell`; admin pages use `AdminShell`.
-- Every admin list is the shared `DataTable` (`frontend/src/components/common/data-table.tsx`) configured with columns; its pipeline lives in `frontend/src/lib/data-table.ts`. Do not hand-write another admin table, and give a column its raw `sortValue` rather than letting it sort the formatted cell.
+- Every admin list is the shared `DataTable` (`frontend/src/components/common/data-table.tsx`) configured with columns; its pipeline lives in `frontend/src/lib/data-table.ts`. Do not hand-write another admin table, and give a column its raw `sortValue` rather than letting it sort the formatted cell. `DataTable` is deliberately not on shadcn's `Table`.
+- `DataTable` owns the whole block: pass `title` and it renders the section heading with the live row count, `actions` for the list's right-aligned buttons, and one bordered card around the search, the grid, and the pagination. A page supplies only its `<h1>` and its filters. The grid is 15px text on 61px rows under a 50px light header, and it scrolls sideways rather than shrinking — set a column `width` as its px minimum, and `sticky: true` on a leading run of columns to pin them while the rest scrolls.
+- Every admin dialog is `AdminDialog` (`frontend/src/components/common/admin-dialog.tsx`), which wraps shadcn's Radix dialog. Do not hand-roll a `.modal-backdrop` again; the remaining ones are the unmigrated student-portal dialogs. Inside an admin form, reach for the primitives in `frontend/src/components/ui` before writing CSS.
 - Use CSS transitions only unless the architecture decision is deliberately changed.
 
 ## Repository map

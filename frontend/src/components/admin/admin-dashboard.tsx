@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatRupees, formatStipend } from "@/lib/offer-schema";
 
 export type AmountStats = {
@@ -159,7 +160,11 @@ export function AdminDashboard({
             <h1>Placement dashboard</h1>
           </div>
         </section>
-        <div className="admin-error">{backendError ?? "The dashboard is unavailable."}</div>
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>
+            {backendError ?? "The dashboard is unavailable."}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
@@ -205,9 +210,11 @@ export function AdminDashboard({
       </section>
 
       {overview.season === null ? (
-        <div className="admin-info">
-          No placement season exists yet. Add a job profile or a placement record to open one.
-        </div>
+        <Alert variant="info" className="mt-4">
+          <AlertDescription>
+            No placement season exists yet. Add a job profile or a placement record to open one.
+          </AlertDescription>
+        </Alert>
       ) : null}
 
       <section className="admin-metrics">

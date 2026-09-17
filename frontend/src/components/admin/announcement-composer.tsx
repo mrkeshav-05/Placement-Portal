@@ -27,6 +27,7 @@ import {
   MAX_ATTACHMENT_MB,
   type AnnouncementStatus,
 } from "@/lib/announcement-schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type StagedAttachment = {
   fileName: string;
@@ -219,8 +220,8 @@ export function AnnouncementComposer({
 
   return (
     <section className="composer">
-      {result.success ? <div className="admin-success">{result.success}</div> : null}
-      {result.error ? <div className="admin-error">{result.error}</div> : null}
+      {result.success ? <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert> : null}
+      {result.error ? <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert> : null}
 
       <div className="composer-fields">
         {isCompanyEvent ? (

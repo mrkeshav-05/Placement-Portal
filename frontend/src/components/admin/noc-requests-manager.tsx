@@ -12,7 +12,6 @@ import {
   MapPin,
   Upload,
   User,
-  X,
   XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -23,11 +22,36 @@ import {
   uploadNocDocumentAction,
   type NocActionResult,
 } from "@/app/admin/noc-requests/actions";
+import { AdminDialog } from "@/components/common/admin-dialog";
 import {
   DataTable,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+/** One labelled panel in the inspection dialog. */
+function DetailBox({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-muted rounded-[10px] border px-3.5 py-3">
+      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-bold uppercase">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
 
 export type AdminNocItem = {
   id: string;
@@ -85,7 +109,7 @@ export function NocRequestsManager({
       {
         id: "student",
         header: "Student",
-        width: "minmax(220px, 1.8fr)",
+        width: "220px",
         hideable: false,
         sortValue: (item) => item.studentName || item.rollNumber || item.studentEmail,
         cell: (item) => (
@@ -102,7 +126,7 @@ export function NocRequestsManager({
       {
         id: "company",
         header: "Company & Location",
-        width: "minmax(180px, 1.6fr)",
+        width: "180px",
         sortValue: (item) => item.company,
         cell: (item) => (
           <span className="dt-primary">
@@ -114,7 +138,7 @@ export function NocRequestsManager({
       {
         id: "period",
         header: "Training Period",
-        width: "minmax(150px, 1.3fr)",
+        width: "150px",
         sortValue: (item) => new Date(item.startDate),
         cell: (item) => (
           <span className="dt-primary">
@@ -130,7 +154,7 @@ export function NocRequestsManager({
       {
         id: "status",
         header: "Status",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (item) => item.status,
         cell: (item) => (
           <>
@@ -164,7 +188,7 @@ export function NocRequestsManager({
       {
         id: "certificate",
         header: "Certificate",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (item) => Boolean(item.documentUrl),
         cell: (item) =>
           item.documentUrl ? (
@@ -443,10 +467,11 @@ export function NocRequestsManager({
       </section>
 
       {/* Result feedback */}
-      {result.success && <div className="admin-success">{result.success}</div>}
-      {result.error && <div className="admin-error">{result.error}</div>}
+      {result.success && <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert>}
+      {result.error && <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert>}
 
       <DataTable
+        title="NOC Requests"
         data={nocRequests}
         columns={columns}
         getRowId={(item) => item.id}
@@ -468,357 +493,286 @@ export function NocRequestsManager({
 
       {/* Details Modal */}
       {detailItem && (
-        <div className="modal-backdrop">
-          <div className="modal" style={{ maxWidth: "680px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Inspection</span>
-                <h2>NOC Request Details</h2>
-              </div>
-              <button type="button" onClick={() => setDetailItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
-
-            <div style={{ display: "grid", gap: "14px", margin: "16px 0", fontSize: "12px", color: "var(--ink)" }}>
-              {/* Student info box */}
-              <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px" }}>
-                <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+        <AdminDialog
+          onClose={() => setDetailItem(null)}
+          eyebrow="Inspection"
+          title="NOC Request Details"
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[680px]"
+        >
+          <div className="grid gap-3.5 text-xs">
+            {/* Student info box */}
+            <DetailBox
+              label={
+                <>
                   <User size={12} /> Student Information
-                </span>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "8px" }}>
-                  <div>
-                    <strong style={{ display: "block" }}>{detailItem.studentName || "Name not recorded"}</strong>
-                    <small style={{ color: "var(--muted)" }}>{detailItem.studentEmail}</small>
-                  </div>
-                  <div>
-                    <span>Roll: <strong>{detailItem.rollNumber || "N/A"}</strong></span>
-                    <span style={{ display: "block" }}>
-                      Branch/Batch: <strong>{[detailItem.branch, detailItem.batch].filter(Boolean).join(" - ") || "N/A"}</strong>
-                    </span>
-                    {detailItem.cgpa !== null && <span>CGPA: <strong>{detailItem.cgpa}</strong></span>}
-                  </div>
+                </>
+              }
+            >
+              <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
+                <div>
+                  <strong className="block">{detailItem.studentName || "Name not recorded"}</strong>
+                  <small className="text-muted-foreground">{detailItem.studentEmail}</small>
+                </div>
+                <div>
+                  <span>Roll: <strong>{detailItem.rollNumber || "N/A"}</strong></span>
+                  <span className="block">
+                    Branch/Batch: <strong>{[detailItem.branch, detailItem.batch].filter(Boolean).join(" - ") || "N/A"}</strong>
+                  </span>
+                  {detailItem.cgpa !== null && <span>CGPA: <strong>{detailItem.cgpa}</strong></span>}
                 </div>
               </div>
+            </DetailBox>
 
-              {/* Company & Location info */}
-              <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px" }}>
-                <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                  <MapPin size={12} /> Company & Facility Address
-                </span>
-                <strong style={{ display: "block", marginTop: "6px", fontSize: "13px" }}>{detailItem.company}</strong>
-                <p style={{ margin: "4px 0 0", color: "var(--ink)", lineHeight: "1.5" }}>
-                  {detailItem.address}<br />
-                  {[detailItem.city, detailItem.state, detailItem.pincode].filter(Boolean).join(", ")}
-                </p>
-              </div>
+            {/* Company & Location info */}
+            <DetailBox
+              label={
+                <>
+                  <MapPin size={12} /> Company &amp; Facility Address
+                </>
+              }
+            >
+              <strong className="mt-1.5 block text-[13px]">{detailItem.company}</strong>
+              <p className="mt-1 leading-relaxed">
+                {detailItem.address}<br />
+                {[detailItem.city, detailItem.state, detailItem.pincode].filter(Boolean).join(", ")}
+              </p>
+            </DetailBox>
 
-              {/* Dates & Status */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "12px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+            {/* Dates & Status */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <DetailBox
+                label={
+                  <>
                     <Calendar size={12} /> Training Timeline
-                  </span>
-                  <strong style={{ display: "block", marginTop: "4px" }}>
-                    {new Date(detailItem.startDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} –{" "}
-                    {new Date(detailItem.endDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
-                  </strong>
-                </div>
+                  </>
+                }
+              >
+                <strong className="mt-1 block">
+                  {new Date(detailItem.startDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} –{" "}
+                  {new Date(detailItem.endDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+                </strong>
+              </DetailBox>
 
-                <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "12px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                    Current Status
-                  </span>
-                  <strong style={{ display: "block", marginTop: "4px" }}>
-                    {detailItem.status}
-                  </strong>
-                </div>
-              </div>
-
-              {/* Student Remarks */}
-              {detailItem.message && (
-                <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "12px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                    Student Remarks / Statement of Purpose
-                  </span>
-                  <p style={{ margin: "4px 0 0", fontStyle: "italic", lineHeight: "1.5" }}>
-                    &ldquo;{detailItem.message}&rdquo;
-                  </p>
-                </div>
-              )}
-
-              {/* Placement cell remarks recorded with the decision */}
-              {detailItem.adminRemarks && (
-                <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "12px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                    Placement Cell Remarks
-                  </span>
-                  <p style={{ margin: "4px 0 0", lineHeight: "1.5" }}>{detailItem.adminRemarks}</p>
-                </div>
-              )}
-
-              {/* Certificate preview button if attached */}
-              {detailItem.documentUrl && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--badge-green-bg)", border: "1px solid var(--green)", padding: "12px 14px", borderRadius: "12px" }}>
-                  <div>
-                    <strong style={{ color: "var(--badge-green-text)", display: "block" }}>Signed Certificate Available</strong>
-                    <small style={{ color: "var(--muted)" }}>Click to view or download document</small>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewDoc({ url: `/api/noc-documents/${detailItem.id}`, title: `NOC - ${detailItem.company}` });
-                    }}
-                    style={{
-                      background: "var(--green)",
-                      color: "#fff",
-                      border: 0,
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Eye size={13} /> View Certificate
-                  </button>
-                </div>
-              )}
+              <DetailBox label="Current Status">
+                <strong className="mt-1 block">{detailItem.status}</strong>
+              </DetailBox>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setDetailItem(null)}>
-                Close
-              </button>
-            </footer>
+            {/* Student Remarks */}
+            {detailItem.message && (
+              <DetailBox label="Student Remarks / Statement of Purpose">
+                <p className="mt-1 leading-relaxed italic">
+                  &ldquo;{detailItem.message}&rdquo;
+                </p>
+              </DetailBox>
+            )}
+
+            {/* Placement cell remarks recorded with the decision */}
+            {detailItem.adminRemarks && (
+              <DetailBox label="Placement Cell Remarks">
+                <p className="mt-1 leading-relaxed">{detailItem.adminRemarks}</p>
+              </DetailBox>
+            )}
+
+            {/* Certificate preview button if attached */}
+            {detailItem.documentUrl && (
+              <div className="flex items-center justify-between rounded-[10px] border border-[var(--green)] bg-[var(--badge-green-bg)] px-3.5 py-3">
+                <div>
+                  <strong className="block text-[var(--badge-green-text)]">Signed Certificate Available</strong>
+                  <small className="text-muted-foreground">Click to view or download document</small>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="bg-[var(--green)] hover:bg-[var(--green)]/90"
+                  onClick={() => {
+                    setPreviewDoc({ url: `/api/noc-documents/${detailItem.id}`, title: `NOC - ${detailItem.company}` });
+                  }}
+                >
+                  <Eye /> View Certificate
+                </Button>
+              </div>
+            )}
           </div>
-        </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDetailItem(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </AdminDialog>
       )}
 
       {/* Approve Modal */}
       {approvingItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "540px" }} onSubmit={(e) => { e.preventDefault(); handleApprove(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setApprovingItem(null)}
+          eyebrow={<span className="text-[var(--green)]">Decision</span>}
+          title="Approve NOC Request"
+          className="sm:max-w-[540px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => { e.preventDefault(); handleApprove(new FormData(e.currentTarget)); }}
+          >
             <input type="hidden" name="nocId" value={approvingItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--green)" }}>Decision</span>
-                <h2>Approve NOC Request</h2>
-              </div>
-              <button type="button" onClick={() => setApprovingItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
 
-            <p style={{ fontSize: "12px", color: "var(--muted)", margin: "10px 0" }}>
+            <p className="text-muted-foreground text-xs">
               Approving NOC for <strong>{approvingItem.studentName || approvingItem.rollNumber}</strong> at <strong>{approvingItem.company}</strong>.
             </p>
 
-            <div style={{ display: "grid", gap: "12px", margin: "14px 0" }}>
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--ink)", display: "grid", gap: "4px" }}>
-                Approval remarks / notes (optional)
-                <textarea
-                  name="adminRemarks"
-                  rows={3}
-                  placeholder="e.g. Approved subject to maintaining minimum academic attendance..."
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "10px",
-                    padding: "8px 12px",
-                    background: "var(--input-bg)",
-                    color: "var(--ink)",
-                    fontSize: "12px",
-                  }}
-                />
-              </label>
-
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--ink)", display: "grid", gap: "4px" }}>
-                Upload signed NOC Certificate PDF (optional)
-                <input
-                  type="file"
-                  name="certificateFile"
-                  accept="application/pdf"
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "10px",
-                    padding: "8px",
-                    background: "var(--input-bg)",
-                    color: "var(--ink)",
-                    fontSize: "11px",
-                  }}
-                />
-              </label>
+            <div className="grid gap-2">
+              <Label htmlFor="noc-approve-remarks">Approval remarks / notes (optional)</Label>
+              <Textarea
+                id="noc-approve-remarks"
+                name="adminRemarks"
+                rows={3}
+                placeholder="e.g. Approved subject to maintaining minimum academic attendance..."
+              />
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setApprovingItem(null)}>
+            <div className="grid gap-2">
+              <Label htmlFor="noc-approve-certificate">Upload signed NOC Certificate PDF (optional)</Label>
+              <Input
+                id="noc-approve-certificate"
+                type="file"
+                name="certificateFile"
+                accept="application/pdf"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setApprovingItem(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--green)", color: "#fff" }}>
-                <CheckCircle2 size={14} />
+              </Button>
+              {/* Green, to pair with the red on the reject dialog: the two
+                  decisions have to be distinguishable at a glance. */}
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-[var(--green)] hover:bg-[var(--green)]/90"
+              >
+                <CheckCircle2 />
                 {isPending ? "Approving..." : "Confirm Approval"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* Reject Modal */}
       {rejectingItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "520px" }} onSubmit={(e) => { e.preventDefault(); handleReject(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setRejectingItem(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Decision</span>}
+          title="Reject NOC Request"
+          className="sm:max-w-[520px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => { e.preventDefault(); handleReject(new FormData(e.currentTarget)); }}
+          >
             <input type="hidden" name="nocId" value={rejectingItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--badge-red-text)" }}>Decision</span>
-                <h2>Reject NOC Request</h2>
-              </div>
-              <button type="button" onClick={() => setRejectingItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
 
-            <p style={{ fontSize: "12px", color: "var(--muted)", margin: "10px 0" }}>
+            <p className="text-muted-foreground text-xs">
               State the reason for rejecting the NOC request for <strong>{rejectingItem.studentName || rejectingItem.rollNumber}</strong>. The student will receive this in their notification.
             </p>
 
-            <div style={{ margin: "14px 0" }}>
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--ink)", display: "grid", gap: "4px" }}>
-                Rejection reason (required)
-                <textarea
-                  name="adminRemarks"
-                  required
-                  minLength={2}
-                  rows={4}
-                  placeholder="e.g. Schedule conflicts with core curriculum; unaccredited off-campus entity; active placement ban..."
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "10px",
-                    padding: "8px 12px",
-                    background: "var(--input-bg)",
-                    color: "var(--ink)",
-                    fontSize: "12px",
-                  }}
-                />
-              </label>
+            <div className="grid gap-2">
+              <Label htmlFor="noc-reject-reason">Rejection reason (required)</Label>
+              <Textarea
+                id="noc-reject-reason"
+                name="adminRemarks"
+                required
+                minLength={2}
+                rows={4}
+                placeholder="e.g. Schedule conflicts with core curriculum; unaccredited off-campus entity; active placement ban..."
+              />
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setRejectingItem(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setRejectingItem(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--badge-red-text)", color: "#fff" }}>
-                <XCircle size={14} />
+              </Button>
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                <XCircle />
                 {isPending ? "Rejecting..." : "Confirm Rejection"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* Direct Upload Document Modal */}
       {uploadingItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "480px" }} onSubmit={(e) => { e.preventDefault(); handleUploadDoc(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setUploadingItem(null)}
+          eyebrow="Certificate"
+          title="Upload Signed NOC PDF"
+          className="sm:max-w-[480px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => { e.preventDefault(); handleUploadDoc(new FormData(e.currentTarget)); }}
+          >
             <input type="hidden" name="nocId" value={uploadingItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow">Certificate</span>
-                <h2>Upload Signed NOC PDF</h2>
-              </div>
-              <button type="button" onClick={() => setUploadingItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
 
-            <p style={{ fontSize: "12px", color: "var(--muted)", margin: "10px 0" }}>
+            <p className="text-muted-foreground text-xs">
               Upload signed certificate PDF for <strong>{uploadingItem.studentName || uploadingItem.rollNumber}</strong> ({uploadingItem.company}).
             </p>
 
-            <div style={{ margin: "14px 0" }}>
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--ink)", display: "grid", gap: "4px" }}>
-                Signed PDF file (max 10MB)
-                <input
-                  type="file"
-                  name="file"
-                  required
-                  accept="application/pdf"
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "10px",
-                    padding: "8px",
-                    background: "var(--input-bg)",
-                    color: "var(--ink)",
-                    fontSize: "11px",
-                  }}
-                />
-              </label>
+            <div className="grid gap-2">
+              <Label htmlFor="noc-signed-pdf">Signed PDF file (max 10MB)</Label>
+              <Input
+                id="noc-signed-pdf"
+                type="file"
+                name="file"
+                required
+                accept="application/pdf"
+              />
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setUploadingItem(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setUploadingItem(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--navy)", color: "#fff" }}>
-                <Upload size={14} />
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                <Upload />
                 {isPending ? "Uploading..." : "Upload Certificate"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* PDF Document Preview Modal */}
       {previewDoc && (
-        <div className="modal-backdrop">
-          <div className="modal doc-preview-modal">
-            <div className="preview-header">
-              <h2>{previewDoc.title}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <a
-                  href={previewDoc.url}
-                  download="noc-certificate.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="primary-link"
-                  style={{ padding: "6px 12px", fontSize: "11px", borderRadius: "8px" }}
-                >
-                  <Download size={13} /> Download
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setPreviewDoc(null)}
-                  style={{
-                    border: 0,
-                    background: "var(--surface-alt)",
-                    color: "var(--muted)",
-                    borderRadius: "8px",
-                    padding: "6px",
-                    cursor: "pointer",
-                  }}
-                  aria-label="Close preview"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <div className="preview-frame-container">
-              <iframe
-                src={previewDoc.url}
-                title={previewDoc.title}
-                style={{ width: "100%", height: "100%", border: "none" }}
-              />
-            </div>
-            <footer>
-              <button type="button" onClick={() => setPreviewDoc(null)}>
-                Close preview
-              </button>
-            </footer>
+        // The `.modal.doc-preview-modal` rules were scoped to the hand-rolled
+        // `.modal` wrapper, so the frame's height has to be stated here.
+        <AdminDialog
+          onClose={() => setPreviewDoc(null)}
+          title={previewDoc.title}
+          className="flex h-[88vh] flex-col sm:max-w-[min(1100px,96vw)]"
+        >
+          <div className="bg-muted min-h-0 flex-1 overflow-hidden rounded-[10px] border">
+            <iframe src={previewDoc.url} title={previewDoc.title} className="h-full w-full border-0" />
           </div>
-        </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setPreviewDoc(null)}>
+              Close preview
+            </Button>
+            <Button asChild>
+              <a
+                href={previewDoc.url}
+                download="noc-certificate.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download /> Download
+              </a>
+            </Button>
+          </DialogFooter>
+        </AdminDialog>
       )}
     </div>
   );

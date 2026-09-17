@@ -1,12 +1,18 @@
 "use client";
 
-import { Command } from "cmdk";
-import { Building2, ChevronDown, Plus, Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { Building2, ChevronDown, Plus } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 /**
- * Searchable company picker backed by `cmdk`.
+ * Searchable company picker backed by the shadcn command dialog.
  *
  * The chosen value is submitted through a hidden input, so the surrounding
  * form keeps posting a single plain field and server-side Zod validation stays
@@ -14,6 +20,10 @@ import { createPortal } from "react-dom";
  * in `options` can still be entered, which the interview-experience workflow
  * requires for off-campus and pooled-campus recruiters (see docs/DECISIONS.md,
  * 2026-09-15).
+ *
+ * The dialog is portalled by Radix, which matters because this picker is used
+ * inside other dialogs: the old hand-rolled backdrop sat inside a parent whose
+ * `backdrop-filter` became its containing block.
  */
 export function CompanyPicker({
   name,
@@ -32,15 +42,6 @@ export function CompanyPicker({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    if (!open) return;
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
-
   function commit(next: string) {
     setValue(next);
     setSearch("");
@@ -57,77 +58,47 @@ export function CompanyPicker({
     <>
       <input type="hidden" name={name} value={value} />
 
-      <button type="button" className="company-picker-trigger" onClick={() => setOpen(true)}>
-        <span className={value ? "company-picker-value" : "company-picker-placeholder"}>
-          <Building2 size={14} />
-          {value || placeholder}
-        </span>
-        <ChevronDown size={14} />
-      </button>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full justify-start font-normal"
+        onClick={() => setOpen(true)}
+      >
+        <Building2 className="text-muted-foreground" />
+        <span className={value ? "" : "text-muted-foreground"}>{value || placeholder}</span>
+        <ChevronDown className="ml-auto opacity-60" />
+      </Button>
 
-      {/* Portalled to the body: this picker is used inside other modals, whose
-          backdrop-filter would otherwise become the containing block for the
-          fixed-position backdrop below. */}
-      {open &&
-        createPortal(
-          <div
-            className="modal-backdrop"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) setOpen(false);
-            }}
-          >
-          <Command className="modal company-picker-modal" label="Select a company">
-            <header className="company-picker-header">
-              <h2>Select a company</h2>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close company picker">
-                <X size={16} />
-              </button>
-            </header>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Select a company"
+        description="Search the recruiters already on record, or enter a new name."
+      >
+        <CommandInput
+          value={search}
+          onValueChange={setSearch}
+          placeholder="Search companies…"
+        />
+        <CommandList>
+          {canUseTyped ? null : (
+            <CommandEmpty>No company matches “{typed}”.</CommandEmpty>
+          )}
 
-            <div className="company-picker-search">
-              <Search size={14} />
-              <Command.Input
-                value={search}
-                onValueChange={setSearch}
-                placeholder="Search companies..."
-                autoFocus
-              />
-            </div>
+          {canUseTyped ? (
+            <CommandItem forceMount value={typed} onSelect={() => commit(typed)}>
+              <Plus />
+              Use “{typed}”
+            </CommandItem>
+          ) : null}
 
-            <Command.List className="company-picker-list">
-              {!canUseTyped && (
-                <Command.Empty className="company-picker-empty">
-                  No company matches &ldquo;{typed}&rdquo;.
-                </Command.Empty>
-              )}
-
-              {canUseTyped && (
-                <Command.Item
-                  forceMount
-                  value={typed}
-                  onSelect={() => commit(typed)}
-                  className="company-picker-item company-picker-item-custom"
-                >
-                  <Plus size={14} />
-                  Use &ldquo;{typed}&rdquo;
-                </Command.Item>
-              )}
-
-              {options.map((option) => (
-                <Command.Item
-                  key={option}
-                  value={option}
-                  onSelect={() => commit(option)}
-                  className="company-picker-item"
-                >
-                  {option}
-                </Command.Item>
-              ))}
-            </Command.List>
-          </Command>
-          </div>,
-          document.body,
-        )}
+          {options.map((option) => (
+            <CommandItem key={option} value={option} onSelect={() => commit(option)}>
+              {option}
+            </CommandItem>
+          ))}
+        </CommandList>
+      </CommandDialog>
     </>
   );
 }

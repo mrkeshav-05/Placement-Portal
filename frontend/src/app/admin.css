@@ -41,7 +41,7 @@
 }
 
 .admin-brand strong, .admin-brand span { display: block; }
-.admin-brand strong { font: 800 14px var(--font-jakarta); letter-spacing: -0.01em; color: var(--ink); }
+.admin-brand strong { font: 800 14px var(--font-inter); letter-spacing: -0.01em; color: var(--ink); }
 .admin-brand span { font-size: 9px; color: var(--muted); margin-top: 1px; font-weight: 600; }
 
 .admin-shell nav { display: grid; gap: 3px; }
@@ -132,7 +132,7 @@
   z-index: 20;
   transition: background-color 0.25s ease, border-color 0.25s ease;
 }
-.admin-topbar > div:first-child strong { display: block; font: 800 14px var(--font-jakarta); letter-spacing: -0.01em; color: var(--ink); }
+.admin-topbar > div:first-child strong { display: block; font: 800 14px var(--font-inter); letter-spacing: -0.01em; color: var(--ink); }
 
 .admin-user {
   display: flex;
@@ -166,7 +166,7 @@
 }
 
 .admin-heading { display: flex; justify-content: space-between; align-items: flex-end; }
-.admin-heading h1 { font: 800 28px var(--font-jakarta); letter-spacing: -0.03em; margin: 4px 0 2px; color: var(--ink); }
+.admin-heading h1 { font: 800 28px var(--font-inter); letter-spacing: -0.03em; margin: 4px 0 2px; color: var(--ink); }
 .admin-heading p { color: var(--muted); font-size: 13px; margin: 0; }
 /* The anchor is the CSV export on /admin/applications: it downloads from a
    route handler, so it has to be a link, but it reads as the same action. */
@@ -423,7 +423,6 @@
 .composer-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
 .composer-actions button:hover:not(:disabled) { transform: translateY(-1px); }
 
-.picker-modal { width: min(520px, 100%); }
 .picker-body { display: grid; gap: 8px; padding: 6px 0 2px; }
 .picker-list { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; }
 .picker-list button {
@@ -454,70 +453,17 @@
 }
 .picker-footer small { font-size: 10px; color: var(--muted); line-height: 1.6; }
 
-/* Event form. One long column of labelled fields, so a drive is composed in
-   the order the placement cell reads it out: season, company, role, then
-   eligibility, then terms. */
-.event-form { display: grid; gap: 16px; margin-top: 18px; }
 .event-form-row.two { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
-.event-field { display: grid; gap: 7px; min-width: 0; }
-.event-picker { position: relative; }
-.field-label { font-size: 12px; font-weight: 700; color: var(--ink); }
 .field-label.required::after { content: " *"; color: var(--badge-red-text); }
-.field-hint { font-size: 10px; color: var(--muted); line-height: 1.6; }
-.event-field input, .event-field textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-alt);
-  color: var(--ink);
-  font: 600 12px var(--font-inter, inherit);
-  outline: none;
-  transition: border-color 0.18s ease;
-}
-.event-field textarea { resize: vertical; line-height: 1.7; font-weight: 500; }
-.event-field input::placeholder, .event-field textarea::placeholder { color: var(--muted); font-weight: 500; }
-.event-field input:focus, .event-field textarea:focus { border-color: var(--blue); background: var(--card-bg); }
 /* The picked year sits at the far end of the control, the label at the near
    end, matching the season pickers on the announcement composers. */
 .composer-field .field-value { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--ink); }
 .dropdown-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .dropdown-option svg { width: 13px; color: var(--green); }
 
-/* A single-purpose form presented as one titled card, for a screen that asks
-   for one record rather than listing many. The event form is long enough to
-   stand on the page unframed; a six-field form is not. */
-.form-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 22px;
-  box-shadow: var(--card-shadow);
-  margin-top: 18px;
-}
-.form-card-header { display: grid; gap: 4px; }
-.form-card-header h2 { font: 800 16px var(--font-jakarta); color: var(--ink); margin: 0; }
-.form-card-header p { font-size: 12px; color: var(--muted); margin: 0; }
-.form-card .event-form { margin-top: 16px; }
 /* A year needs the width of a year, not of the card. */
 .event-field.narrow { max-width: 240px; }
 
-/* The duplicate-check acknowledgement. A control, not a label: nothing is
-   created until the person confirms they looked. */
-.confirm-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: fit-content;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-}
 .confirm-row .box {
   width: 15px;
   height: 15px;
@@ -529,74 +475,19 @@
 .confirm-row .box.checked { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 2px var(--card-bg); }
 .confirm-row:hover .box { border-color: var(--blue); }
 
-.choice-row { display: flex; flex-wrap: wrap; gap: 10px; }
-.choice-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.choice-pill > i {
-  width: 15px;
-  height: 15px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  flex: none;
-  transition: all 0.18s ease;
-}
-.choice-pill:hover { border-color: var(--blue); }
 .choice-pill.selected { border-color: var(--blue); background: var(--surface-highlight); }
 .choice-pill.selected > i { border-color: var(--blue); border-width: 4px; }
 
-.switch-field { display: flex; align-items: center; gap: 12px; }
-.switch {
-  width: 38px;
-  height: 21px;
-  padding: 2px;
-  border: 0;
-  border-radius: 9999px;
-  background: var(--border);
-  cursor: pointer;
-  transition: background 0.18s ease;
-}
-.switch > i { display: block; width: 17px; height: 17px; border-radius: 50%; background: var(--card-bg); transition: transform 0.18s ease; }
 .switch.on { background: var(--navy); }
 .switch.on > i { transform: translateX(17px); }
 
-/* Deadline popover: a month grid beside the quarter-hour list, because a
-   deadline is a day and a time and the office sets both in one visit. */
-/* Anchored to the right edge: the field sits in the right-hand column, so a
-   left-anchored popover of this width would run off the page. */
-.deadline-popover { display: flex; gap: 14px; max-height: none; padding: 14px; width: max-content; left: auto; right: 0; }
-.time-column { display: grid; gap: 8px; align-content: start; border-left: 1px solid var(--border-subtle); padding-left: 14px; }
-.time-list { display: grid; gap: 6px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
-.time-list button {
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--card-bg);
-  color: var(--ink);
-  padding: 9px 16px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.time-list button:hover { border-color: var(--blue); }
 .time-list button.selected { border-color: var(--blue); background: var(--surface-highlight); }
 
 /* react-day-picker ships unstyled here on purpose: its own stylesheet carries
    literal colours, and every surface in this portal reads a token. */
 .rdp-root { --rdp-day-size: 34px; }
 .rdp-month_caption { display: flex; align-items: center; justify-content: center; padding: 2px 0 10px; }
-.rdp-caption_label { font: 700 13px var(--font-jakarta); color: var(--ink); border: 0; padding: 0; }
+.rdp-caption_label { font: 700 13px var(--font-inter); color: var(--ink); border: 0; padding: 0; }
 /* The nav is a sibling of the month, not of the caption, so it is overlaid on
    the caption row rather than placed in it. */
 .rdp-months { position: relative; }
@@ -647,32 +538,10 @@
 .rdp-outside .rdp-day_button { color: var(--muted); opacity: 0.6; }
 .rdp-disabled .rdp-day_button { color: var(--muted); opacity: 0.35; cursor: not-allowed; }
 
-/* Degree and branch dialogs: a checkbox list, grouped by degree for branches
-   because the same abbreviation means a different stream per degree. */
-.check-list { display: grid; gap: 8px; max-height: 400px; overflow-y: auto; }
-.check-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-.check-row:hover { border-color: var(--blue); }
 .check-row.all { background: var(--surface-alt); border-style: dashed; }
-.check-row svg { width: 15px; color: var(--muted); }
 .check-row .box { width: 15px; height: 15px; border: 1px solid var(--border); border-radius: 4px; flex: none; }
 .check-row .box.checked { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 2px var(--card-bg); }
 
-.branch-search { display: flex; align-items: center; gap: 8px; }
 .branch-search .dropdown-search {
   flex: 1;
   border: 1px solid var(--blue);
@@ -680,47 +549,11 @@
   padding: 10px 12px;
   margin-bottom: 0;
 }
-.clear-branches {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--badge-red-text);
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.branch-group { display: grid; gap: 8px; }
-.branch-group header { display: flex; align-items: center; justify-content: space-between; }
-.branch-group header strong { font-size: 12px; font-weight: 800; color: var(--ink); }
-.branch-group header button { border: 0; background: transparent; color: var(--blue); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0; }
-.branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-.event-form-actions { display: grid; gap: 8px; justify-items: end; margin-top: 6px; }
-.event-form-actions > div { display: flex; gap: 10px; }
-.event-form-actions button {
-  border: 0;
-  background: var(--navy);
-  color: #fff;
-  border-radius: 10px;
-  padding: 12px 20px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
 .event-form-actions button.ghost { background: var(--surface-alt); color: var(--ink); border: 1px solid var(--border); }
-.event-form-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
-.event-form-actions button:hover:not(:disabled) { transform: translateY(-1px); }
 
 @media (max-width: 720px) {
   .event-form-row.two, .branch-grid { grid-template-columns: 1fr; }
-  .deadline-popover { flex-direction: column; width: auto; }
-  .time-column { border-left: 0; border-top: 1px solid var(--border-subtle); padding: 12px 0 0; }
-  .time-list { max-height: 180px; }
 }
 
 /* Section tabs. Used where one screen holds distinct jobs rather than one
@@ -796,7 +629,7 @@
 .metric-icon.violet { background: var(--badge-purple-bg); color: var(--badge-purple-text); }
 .admin-metrics small, .admin-metrics strong, .admin-metrics b { display: block; }
 .admin-metrics small { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-.admin-metrics strong { font: 800 24px var(--font-jakarta); margin: 2px 0 1px; color: var(--ink); letter-spacing: -0.02em; }
+.admin-metrics strong { font: 800 24px var(--font-inter); margin: 2px 0 1px; color: var(--ink); letter-spacing: -0.02em; }
 .admin-metrics b { font-size: 9px; color: var(--green); }
 
 .analytics-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 16px; }
@@ -809,7 +642,7 @@
   transition: box-shadow 0.2s ease;
 }
 .analytics-grid header, .recent-admin header { display: flex; justify-content: space-between; align-items: flex-start; }
-.analytics-grid h2, .recent-admin h2 { font: 800 15px var(--font-jakarta); margin: 0; color: var(--ink); letter-spacing: -0.01em; }
+.analytics-grid h2, .recent-admin h2 { font: 800 15px var(--font-inter); margin: 0; color: var(--ink); letter-spacing: -0.01em; }
 .analytics-grid header p, .recent-admin header p { font-size: 10px; color: var(--muted); margin: 2px 0 0; }
 .analytics-grid header > svg { color: var(--muted); width: 18px; }
 
@@ -826,8 +659,9 @@
   gap: 8px;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  min-height: 46px;
+  padding: 0 14px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -840,7 +674,7 @@
   border: 0;
   background: transparent;
   color: var(--ink);
-  font: 800 13px var(--font-jakarta);
+  font: 800 13px var(--font-inter);
   cursor: pointer;
 }
 .season-picker select:disabled { cursor: not-allowed; color: var(--muted); }
@@ -900,12 +734,12 @@
   box-shadow: var(--card-shadow);
 }
 .package-card header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.package-card h2 { font: 800 13px var(--font-jakarta); margin: 0; color: var(--ink); }
+.package-card h2 { font: 800 13px var(--font-inter); margin: 0; color: var(--ink); }
 .package-card header svg { width: 16px; color: var(--blue); }
 .package-card dl { margin: 14px 0 10px; display: grid; gap: 8px; }
 .package-card dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .package-card dt { font-size: 10px; color: var(--muted); font-weight: 600; }
-.package-card dd { margin: 0; font: 800 13px var(--font-jakarta); color: var(--ink); }
+.package-card dd { margin: 0; font: 800 13px var(--font-inter); color: var(--ink); }
 .package-card dd.highlight { color: var(--green); }
 .package-card small { font-size: 9px; color: var(--muted); }
 
@@ -972,7 +806,7 @@
 }
 
 .funnel-count {
-  font: 800 15px var(--font-jakarta);
+  font: 800 15px var(--font-inter);
   color: var(--ink);
 }
 
@@ -1059,66 +893,108 @@
    every rule here is generic: nothing below knows which page it is on.
    --------------------------------------------------------------------------- */
 
-.data-table { display: grid; gap: 12px; margin-top: 18px; }
+.data-table { display: grid; gap: 14px; margin-top: 18px; }
 
-.dt-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* Section heading row: the name of the list, the count of what is actually on
+   screen, and the buttons that act on the whole list. Outside the card, so the
+   card reads as the data and this reads as the page. */
+.dt-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dt-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+/* The count is a fact about the list, not part of its name. */
+.dt-title span { margin-left: 8px; font-size: 22px; font-weight: 400; color: var(--muted); }
+.dt-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+/* One bordered container holds the search, the grid, and the pagination, so a
+   table is a single object on the page rather than three stacked ones. */
+.dt-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
 .dt-toolbar-end { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
 .dt-search {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 1 1 260px;
-  max-width: 340px;
+  gap: 10px;
+  flex: 0 1 440px;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0 12px;
-  height: 36px;
+  border-radius: 8px;
+  padding: 0 14px;
+  height: 44px;
   transition: all 0.18s ease;
 }
 .dt-search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.14); }
-.dt-search svg { width: 15px; color: var(--muted); flex: none; }
+.dt-search svg { width: 18px; color: var(--muted); flex: none; }
 .dt-search input {
   width: 100%;
   border: 0;
   outline: 0;
   background: transparent;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 16px;
 }
+.dt-search input::placeholder { color: var(--muted); }
 .dt-search input::-webkit-search-cancel-button { cursor: pointer; }
 
 .dt-menu { position: relative; }
 .dt-filter-button, .dt-view-button, .dt-reset {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 10px;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
   background: var(--card-bg);
   color: var(--ink);
-  font-size: 11.5px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
+/* The heading-row buttons are the page's primary actions, so they carry the
+   full 46px the reference gives them. */
+.dt-actions .dt-view-button,
+.dt-actions button,
+.dt-actions .primary { height: 46px; font-size: 16px; }
 /* A dashed edge reads as "nothing chosen yet", which is what the filter
    buttons in the reference are saying. */
 .dt-filter-button { border: 1px dashed var(--border); }
 .dt-filter-button svg { width: 13px; color: var(--muted); }
 .dt-filter-button.active { border-style: solid; border-color: var(--blue); }
 .dt-filter-button b, .dt-view-button b {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 9999px;
   background: var(--badge-blue-bg);
   color: var(--badge-blue-text);
 }
 .dt-view-button { border: 1px solid var(--border); }
-.dt-view-button svg { width: 14px; color: var(--muted); }
+.dt-view-button svg { width: 17px; color: var(--muted); }
 .dt-reset { border: 1px solid transparent; color: var(--muted); }
 .dt-filter-button:hover, .dt-view-button:hover { border-color: var(--blue); background: var(--surface-alt); }
 .dt-reset:hover { color: var(--ink); background: var(--surface-alt); }
@@ -1190,30 +1066,32 @@
 .dt-check input:disabled { cursor: not-allowed; }
 .dt-check input:disabled + span { color: var(--muted); }
 
+/* The card owns the border; this owns the scrolling, in both directions. A
+   wide grid scrolls sideways rather than squeezing 20 columns into the
+   viewport, which is the whole point of a data grid over a list. */
 .dt-scroll {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
   overflow: auto;
   max-height: 72vh;
-  box-shadow: var(--card-shadow);
   -webkit-overflow-scrolling: touch;
 }
-.dt-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
-.dt-caption { caption-side: top; text-align: left; padding: 12px 16px 0; font-size: 11px; color: var(--muted); }
+.dt-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+.dt-caption { caption-side: top; text-align: left; padding: 12px 16px 0; font-size: 13px; color: var(--muted); }
 
-/* The header stays put while a long list scrolls under it. */
+/* A light header with dark text and a thin separator, not a coloured band:
+   the values are the subject, and the header only has to be legible. It stays
+   put while a long list scrolls under it. */
 .dt-table thead th {
   position: sticky;
   top: 0;
-  z-index: 2;
-  background: var(--surface-alt);
-  color: var(--muted);
+  z-index: 3;
+  background: var(--card-bg);
+  color: var(--ink);
   text-align: left;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
   white-space: nowrap;
-  padding: 11px 16px;
+  height: 50px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border);
 }
 .dt-sort {
@@ -1228,27 +1106,48 @@
   cursor: pointer;
   border-radius: 6px;
 }
-.dt-sort svg { width: 13px; opacity: 0.55; transition: transform 0.15s ease; }
+.dt-sort svg { width: 15px; opacity: 0.45; transition: transform 0.15s ease; flex: none; }
 .dt-sort:hover { color: var(--ink); }
 .dt-sort.active { color: var(--ink); }
 .dt-sort.active svg { opacity: 1; color: var(--blue); }
 .dt-sort svg.flip { transform: rotate(180deg); }
 
+/* Dense but comfortable: ~61px tall, flat white, one hairline between rows.
+   No striping and no per-row card — the whole grid is the card. */
 .dt-table tbody td {
-  padding: 12px 16px;
+  height: 61px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--ink);
   vertical-align: middle;
+  background: var(--card-bg);
 }
+/* Administrative values stay on one line and scroll rather than re-flowing a
+   roll number or an email address into two. Cells that deliberately stack a
+   second line opt out through .dt-primary. */
+.dt-table tbody td { white-space: nowrap; }
+.dt-table tbody td:has(.dt-wrap), .dt-table tbody td .dt-wrap { white-space: normal; }
 .dt-table tbody tr:last-child td { border-bottom: 0; }
 .dt-table tbody tr:hover td { background: var(--surface-alt); }
 .dt-table tbody td .admin-empty { padding: 44px 24px; }
 .dt-table tbody tr:hover td .admin-empty { background: transparent; }
 
-.dt-skeleton-row td { padding: 14px 16px; }
+/* Pinned columns: kept legible over the scrolling ones by carrying their own
+   background and a hairline on the trailing edge. The header cell of a pinned
+   column is sticky in both directions at once, hence the higher layer. */
+.dt-sticky {
+  position: sticky;
+  z-index: 2;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border-subtle);
+}
+.dt-table thead th.dt-sticky { z-index: 4; }
+.dt-table tbody tr:hover td.dt-sticky { background: var(--surface-alt); }
+
+.dt-skeleton-row td { padding: 0 16px; }
 .dt-skeleton {
   display: block;
-  height: 11px;
+  height: 14px;
   border-radius: 6px;
   background: linear-gradient(90deg, var(--surface-alt) 25%, var(--surface-highlight) 50%, var(--surface-alt) 75%);
   background-size: 200% 100%;
@@ -1267,30 +1166,32 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 14px;
-  font-size: 11.5px;
+  gap: 16px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 14px;
   color: var(--muted);
 }
 .dt-rows-per-page { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .dt-rows-per-page select {
-  height: 32px;
+  height: 38px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card-bg);
   color: var(--ink);
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 0 8px;
+  padding: 0 10px;
   cursor: pointer;
 }
 .dt-page-label { display: flex; align-items: baseline; gap: 8px; font-weight: 700; color: var(--ink); }
 .dt-page-label small { font-weight: 600; color: var(--muted); }
-.dt-page-buttons { display: flex; gap: 4px; }
+.dt-page-buttons { display: flex; gap: 6px; }
 .dt-page-buttons button {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card-bg);
@@ -1348,9 +1249,10 @@
 
 /* Cells that carry a name with a secondary line under it. */
 .dt-primary { display: grid; gap: 2px; min-width: 0; }
-.dt-primary strong { font-weight: 700; color: var(--ink); }
-.dt-primary small { color: var(--muted); font-size: 10.5px; }
+.dt-primary strong { font-weight: 600; color: var(--ink); }
+.dt-primary small { color: var(--muted); font-size: 13px; }
 .dt-muted { color: var(--muted); }
+/* Tabular figures so a column of numbers lines up on its digits. */
 .dt-numeric { font-variant-numeric: tabular-nums; }
 
 .data-table :focus-visible,
@@ -1359,10 +1261,18 @@
   outline-offset: 2px;
 }
 
+/* A data grid stays a data grid on a small screen: it scrolls sideways with
+   its first columns pinned, rather than becoming a stack of cards. Only the
+   controls around it reflow, and the body text never shrinks below 14px. */
 @media (max-width: 720px) {
-  .dt-search { max-width: none; }
+  .dt-search { flex: 1 1 100%; }
   .dt-toolbar-end { margin-left: 0; }
   .dt-pagination { justify-content: space-between; }
+  .dt-title { font-size: 22px; }
+  .dt-title span { font-size: 18px; }
+  .dt-table { font-size: 14px; }
+  .dt-table thead th { font-size: 14px; }
+  .dt-actions { width: 100%; }
 }
 
 .cell-status { font-size: 9px; padding: 4px 8px; border-radius: 9999px; background: var(--badge-green-bg); color: var(--badge-green-text); font-weight: 700; }
@@ -1392,15 +1302,10 @@
 /* Admin Empty & Status banners */
 .admin-empty { text-align: center; padding: 48px 24px; color: var(--muted); }
 .admin-empty > svg { width: 32px; height: 32px; color: var(--muted); margin: auto; }
-.admin-empty h2 { margin: 10px 0 6px; color: var(--ink); font: 800 16px var(--font-jakarta); }
+.admin-empty h2 { margin: 10px 0 6px; color: var(--ink); font: 800 16px var(--font-inter); }
 .admin-empty p { margin: 0; font-size: 12px; line-height: 1.6; }
 .admin-empty.compact { padding: 28px 12px; }
 .admin-empty.compact > svg { width: 24px; height: 24px; }
-
-.admin-success, .admin-error, .admin-info { margin-top: 16px; border-radius: 11px; padding: 11px 14px; font-size: 11px; font-weight: 700; }
-.admin-success { background: var(--badge-green-bg); border: 1px solid var(--green); color: var(--badge-green-text); }
-.admin-error { background: var(--badge-red-bg); border: 1px solid var(--badge-red-text); color: var(--badge-red-text); }
-.admin-info { background: var(--badge-blue-bg); border: 1px solid var(--blue); color: var(--badge-blue-text); }
 
 .company-admin-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .company-admin-name > i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--badge-blue-bg); color: var(--blue); flex: none; }
@@ -1428,7 +1333,7 @@
   padding: 26px;
   box-shadow: var(--card-shadow);
 }
-.admin-profile-banner h1 { font: 800 26px var(--font-jakarta); letter-spacing: -0.03em; margin: 4px 0 2px; }
+.admin-profile-banner h1 { font: 800 26px var(--font-inter); letter-spacing: -0.03em; margin: 4px 0 2px; }
 .admin-profile-banner p { margin: 0; color: var(--on-brand-soft); font-size: 12px; }
 .admin-profile-banner > strong { font-size: 11px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 10px 14px; }
 
@@ -1436,7 +1341,7 @@
 .admin-profile-grid > article, .admin-detail-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: var(--card-shadow); }
 .admin-profile-grid article > header, .admin-detail-section > header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .admin-profile-grid header > svg, .admin-detail-section header > svg { box-sizing: content-box; width: 18px; padding: 8px; border-radius: 10px; background: var(--badge-blue-bg); color: var(--blue); }
-.admin-profile-grid h2, .admin-detail-section h2 { font: 800 15px var(--font-jakarta); margin: 0; color: var(--ink); }
+.admin-profile-grid h2, .admin-detail-section h2 { font: 800 15px var(--font-inter); margin: 0; color: var(--ink); }
 .admin-profile-grid header p, .admin-detail-section header p { font-size: 10px; color: var(--muted); margin: 2px 0 0; }
 .admin-profile-grid dl { margin: 0; display: grid; gap: 10px; }
 .admin-profile-grid dl > div { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; }
@@ -1531,44 +1436,25 @@
 .registrations-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
 .registrations-filters .season-picker select:disabled { opacity: 0.6; }
 
-.registrations-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 28px;
-}
-
-.registrations-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-.registrations-card-header h2 { font: 800 16px var(--font-jakarta); color: var(--ink); margin: 0; }
-.registrations-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.registrations-actions .dt-view-button:disabled,
-.registrations-actions .primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.registrations-actions .primary {
+/* The one filled button a table's heading row is allowed, for the action that
+   produces something: an export. Everything beside it stays outlined. */
+.dt-actions .dt-view-button:disabled,
+.dt-actions .primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.dt-actions .primary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px;
+  gap: 8px;
+  padding: 0 18px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--navy);
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 700;
+  color: var(--on-brand);
+  font-weight: 600;
   box-shadow: 0 2px 8px rgba(var(--deep-rgb), 0.28);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.registrations-actions .primary:hover:not(:disabled) { transform: translateY(-1px); }
-.registrations-actions .primary svg { width: 14px; }
+.dt-actions .primary:hover:not(:disabled) { transform: translateY(-1px); }
+.dt-actions .primary svg { width: 17px; }
 
 .permission-categories-grid {
   display: grid;
@@ -1588,7 +1474,7 @@
 }
 
 .permission-category-box h3 {
-  font: 800 12px var(--font-jakarta);
+  font: 800 12px var(--font-inter);
   margin: 0;
   color: var(--ink);
   text-transform: uppercase;

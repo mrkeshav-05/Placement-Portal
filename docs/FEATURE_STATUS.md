@@ -35,6 +35,19 @@ Every admin list below renders through the shared `DataTable` in `frontend/src/c
 | Encryption | Persistent utility | n/a | AES-256-GCM helper and tests exist in both services; active on Aadhaar and PAN | Integrate into other sensitive fields as needed |
 | CI/Docker | Persistent | n/a | Per-service Dockerfiles, prod and dev Compose stacks, one-shot migration container, health routes, three-job CI. Verified end to end: all images build and the stack reaches healthy with migrations and admin seeding applied. | Add a deployment target and production secrets |
 
+## UI component migration
+
+Persistence is unaffected by this; the table above still describes the data paths.
+
+| Surface | Component layer | Boundary | Next step |
+| --- | --- | --- | --- |
+| Admin composer forms | shadcn/ui | `company-form.tsx` and `event-form.tsx` are Card/Label/Input/Textarea/Checkbox/Switch/Select/ToggleGroup/Popover/Command; `react-day-picker` still supplies the deadline month grid directly, since shadcn's `Calendar` targets v9 and this repo runs v10 | Adopt shadcn `Calendar` if it moves to react-day-picker 10 |
+| Admin dialogs | shadcn/ui | All 20 render through `AdminDialog` → Radix, which added the focus trap and Escape handling none of them had. `announcement-composer.tsx` keeps its inline `composer-field` dropdowns and the `useDismissOnOutsideClick` hook | Convert the composer's inline dropdowns to `Popover` and retire the hook |
+| Admin export column picker | shadcn/ui | `export-columns-dialog.tsx` groups the columns, locks the required ones behind a lock icon, offers a per-group checkbox and two columns of optional fields, scrolls its body inside an 85vh cap, and keeps `Apply (N columns)` on a fixed footer. Only the registrations table configures it | Offer it on the students and offers exports |
+| Admin status banners | shadcn/ui | Every `.admin-success`/`.admin-error`/`.admin-info` div is now `Alert`, with repo-added `success` and `info` variants so the status hues survive | — |
+| Admin data tables | Bespoke, restyled to the reference grid | All 12 tables across 11 screens render through `DataTable`, which now also owns the section heading, the row count, the actions row, and the card. Metrics follow the NSUT reference (50px header at 15px/600, 61px rows, 440x44 search) on this portal's tokens, so dark mode still works. Pinned columns measure their own offsets. shadcn's `Table` is still not installed; filters, pagination, and view menus stay hand-written | Decide whether `DataTable` keeps its own CSS or moves onto shadcn `Table` + `DropdownMenu` |
+| Student portal | Bespoke | Not migrated. `profile-view.tsx` holds 10 `.modal-backdrop` dialogs; `forms-view`, `dashboard-feed`, and `interview-experiences-view` hold more. `identity-document-row.tsx` is the one exception and was already on shadcn | Migrate its dialogs onto `AdminDialog`'s pattern, then its forms |
+
 ## Open blockers
 
 *None currently blocking core student or admin workflows.*

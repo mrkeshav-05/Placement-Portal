@@ -1,10 +1,29 @@
 "use client";
 
-import { CalendarDays, Check, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { saveCompany, type CompanyActionResult } from "@/app/admin/companies/actions";
-import { useDismissOnOutsideClick } from "@/components/common/picker";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { COMPANY_CATEGORIES } from "@/lib/company-schema";
 
 export type CompanyFormValues = {
@@ -37,11 +56,8 @@ export function CompanyForm({ company }: { company: CompanyFormValues | null }) 
   // stands in the way of creating a second one.
   const [confirmed, setConfirmed] = useState(Boolean(company));
 
-  const [sessionOpen, setSessionOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<CompanyActionResult>({});
-
-  const sessionRef = useDismissOnOutsideClick(() => setSessionOpen(false));
 
   async function submit() {
     const formData = new FormData();
@@ -68,133 +84,151 @@ export function CompanyForm({ company }: { company: CompanyFormValues | null }) 
   ].filter(Boolean) as string[];
 
   return (
-    <div className="form-card">
-      <header className="form-card-header">
-        <h2>Company Details</h2>
-        <p>
+    <Card className="mt-[18px]">
+      <CardHeader>
+        <CardTitle>Company Details</CardTitle>
+        <CardDescription>
           {company
             ? "Correct the company information held by the placement portal."
             : "Enter the company information to add it to the placement portal."}
-        </p>
-      </header>
+        </CardDescription>
+      </CardHeader>
 
-      {result.success ? <div className="admin-success">{result.success}</div> : null}
-      {result.error ? <div className="admin-error">{result.error}</div> : null}
+      <CardContent className="grid gap-4">
+        {result.success ? (
+          <Alert>
+            <AlertDescription>{result.success}</AlertDescription>
+          </Alert>
+        ) : null}
+        {result.error ? (
+          <Alert variant="destructive">
+            <AlertDescription>{result.error}</AlertDescription>
+          </Alert>
+        ) : null}
 
-      <div className="event-form">
-        <label className="event-field">
-          <span className="field-label required">Company Name</span>
-          <input
+        <div className="grid gap-2">
+          <Label htmlFor="company-name">
+            Company Name <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="company-name"
             value={name}
             maxLength={120}
             onChange={(input) => setName(input.target.value)}
             placeholder="Enter company name"
           />
-        </label>
+        </div>
 
-        <div className="event-field">
-          <span className="field-label">Company Category</span>
-          <div className="choice-row">
+        <div className="grid gap-2">
+          <Label>Company Category</Label>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            spacing={2}
+            value={category}
+            // Radix clears a single toggle group when the active item is
+            // pressed again; a company always has a category, so ignore that.
+            onValueChange={(next) => next && setCategory(next)}
+          >
             {COMPANY_CATEGORIES.map((option) => (
-              <button
-                type="button"
+              <ToggleGroupItem
                 key={option}
-                className={`choice-pill${category === option ? " selected" : ""}`}
-                aria-pressed={category === option}
-                onClick={() => setCategory(option)}
+                value={option}
+                // The outline variant only tints the active item, which reads
+                // as a hover rather than a choice. Fill it with the institute
+                // blue, as the reference design fills its selected pill.
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:hover:bg-primary/90"
               >
-                <i />
                 {option}
-              </button>
+              </ToggleGroupItem>
             ))}
-          </div>
-          <small className="field-hint">
+          </ToggleGroup>
+          <p className="text-muted-foreground text-xs">
             A dream-round company stays open to students who already hold an offer.
-          </small>
+          </p>
         </div>
 
-        <div className="event-field narrow">
-          <span className="field-label">Placement Session</span>
-          <div className="event-picker" ref={sessionRef}>
-            <button
-              type="button"
-              className="composer-field filled"
-              onClick={() => setSessionOpen((open) => !open)}
-            >
-              <CalendarDays />
-              <b className="field-value">{placementSession}</b>
-              <ChevronDown className={sessionOpen ? "tick open" : "tick"} />
-            </button>
-            {sessionOpen ? (
-              <div className="composer-dropdown">
-                {sessions.map((session) => (
-                  <button
-                    type="button"
-                    key={session}
-                    className={`dropdown-option${session === placementSession ? " selected" : ""}`}
-                    onClick={() => {
-                      setPlacementSession(session);
-                      setSessionOpen(false);
-                    }}
-                  >
-                    {session}
-                    {session === placementSession ? <Check /> : null}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+        <div className="grid gap-2">
+          <Label htmlFor="placement-session">Placement Session</Label>
+          <Select
+            value={String(placementSession)}
+            onValueChange={(next) => setPlacementSession(Number(next))}
+          >
+            <SelectTrigger id="placement-session" className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {sessions.map((session) => (
+                <SelectItem key={session} value={String(session)}>
+                  {session}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <label className="event-field">
-          <span className="field-label">Company Turnover</span>
-          <input
+        <div className="grid gap-2">
+          <Label htmlFor="company-turnover">Company Turnover</Label>
+          <Input
+            id="company-turnover"
             value={turnover}
             maxLength={120}
             onChange={(input) => setTurnover(input.target.value)}
             placeholder="Leave Blank if not applicable"
           />
-        </label>
+        </div>
 
-        <label className="event-field">
-          <span className="field-label required">Company Info</span>
-          <textarea
+        <div className="grid gap-2">
+          <Label htmlFor="company-info">
+            Company Info <span className="text-destructive">*</span>
+          </Label>
+          <Textarea
+            id="company-info"
             value={description}
             rows={5}
             maxLength={2000}
             onChange={(input) => setDescription(input.target.value)}
             placeholder="Enter company information"
           />
-        </label>
+        </div>
 
         {company ? null : (
-          <button
-            type="button"
-            className="confirm-row"
-            aria-pressed={confirmed}
-            onClick={() => setConfirmed((checked) => !checked)}
-          >
-            <i className={confirmed ? "box checked" : "box"} />
-            <span>Are you sure this company doesn&apos;t already exist?</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="confirm-new"
+              checked={confirmed}
+              onCheckedChange={(checked) => setConfirmed(checked === true)}
+            />
+            <Label htmlFor="confirm-new" className="font-normal">
+              Are you sure this company doesn&apos;t already exist?
+            </Label>
+          </div>
         )}
 
-        <div className="event-form-actions">
-          {missing.length ? <p className="field-hint">Still needed: {missing.join(", ")}.</p> : null}
-          <div>
-            <button type="button" className="ghost" onClick={() => router.push("/admin/companies")}>
+        <div className="grid justify-items-end gap-2">
+          {missing.length ? (
+            <p className="text-muted-foreground text-xs">
+              Still needed: {missing.join(", ")}.
+            </p>
+          ) : null}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/admin/companies")}
+            >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               disabled={saving || missing.length > 0 || !confirmed}
               onClick={submit}
             >
               {saving ? "Saving…" : company ? "Save Changes" : "Add Company"}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

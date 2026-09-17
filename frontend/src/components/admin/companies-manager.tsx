@@ -11,6 +11,7 @@ import {
   type DataTableFilter,
 } from "@/components/common/data-table";
 import { COMPANY_CATEGORIES } from "@/lib/company-schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminCompanyItem = {
   id: string;
@@ -47,7 +48,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "name",
         header: "Company",
-        width: "minmax(240px, 2fr)",
+        width: "240px",
         sortValue: (company) => company.name,
         hideable: false,
         cell: (company) => (
@@ -65,7 +66,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "category",
         header: "Category",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (company) => company.category,
         cell: (company) =>
           company.category ? (
@@ -77,7 +78,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "placementSession",
         header: "Session",
-        width: "minmax(100px, 0.8fr)",
+        width: "100px",
         sortValue: (company) => company.placementSession,
         cell: (company) =>
           company.placementSession ?? <span className="dt-muted">Not set</span>,
@@ -85,14 +86,14 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "turnover",
         header: "Turnover",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (company) => company.turnover,
         cell: (company) => company.turnover || <span className="dt-muted">Not provided</span>,
       },
       {
         id: "website",
         header: "Website",
-        width: "minmax(150px, 1fr)",
+        width: "150px",
         sortValue: (company) => company.website,
         cell: (company) =>
           company.website ? (
@@ -106,7 +107,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "jobs",
         header: "Events",
-        width: "minmax(140px, 1fr)",
+        width: "140px",
         sortValue: (company) => company.jobCount,
         cell: (company) => (
           <span className="dt-numeric">
@@ -117,7 +118,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "createdAt",
         header: "Created",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (company) => new Date(company.createdAt),
         cell: (company) => dateFormat.format(new Date(company.createdAt)),
       },
@@ -190,10 +191,11 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
         </Link>
       </section>
 
-      {result.success ? <div className="admin-success">{result.success}</div> : null}
-      {result.error ? <div className="admin-error">{result.error}</div> : null}
+      {result.success ? <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert> : null}
+      {result.error ? <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert> : null}
 
       <DataTable
+        title="All Companies"
         data={companies}
         columns={columns}
         getRowId={(company) => company.id}

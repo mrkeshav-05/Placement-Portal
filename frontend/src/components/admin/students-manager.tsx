@@ -38,7 +38,7 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
       {
         id: "student",
         header: "Student",
-        width: "minmax(220px, 1.6fr)",
+        width: "220px",
         sortValue: (student) => student.name,
         hideable: false,
         cell: (student) => (
@@ -56,7 +56,7 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
       {
         id: "academic",
         header: "Academic profile",
-        width: "minmax(200px, 1.6fr)",
+        width: "200px",
         sortValue: (student) => student.rollNumber,
         cell: (student) => (
           <span>
@@ -86,7 +86,7 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
       {
         id: "followUp",
         header: "Follow-up",
-        width: "minmax(180px, 1.4fr)",
+        width: "180px",
         sortValue: (student) => student.missedStreak,
         cell: (student) =>
           student.missedStreak >= 3 ? (
@@ -183,6 +183,7 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
       )}
 
       <DataTable
+        title="Student Records"
         data={visible}
         columns={columns}
         getRowId={(student) => student.id}

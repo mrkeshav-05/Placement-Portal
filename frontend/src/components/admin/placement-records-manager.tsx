@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Edit3, Plus, Trash2, X } from "lucide-react";
+import { Award, Edit3, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
@@ -17,11 +17,25 @@ import {
   type OfferStatus,
   type OfferType,
 } from "@/lib/offer-schema";
+import { AdminDialog } from "@/components/common/admin-dialog";
 import {
   DataTable,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type StudentOption = {
   id: string;
@@ -110,6 +124,9 @@ export function PlacementRecordsManager({
   const router = useRouter();
   const [editing, setEditing] = useState<OfferRecord | null | undefined>(undefined);
   const [formType, setFormType] = useState<OfferType>("FTE");
+  // Radix rejects an empty option value, so "not from a drive" is held as a
+  // sentinel here and posted back as the empty string the action expects.
+  const [jobProfileId, setJobProfileId] = useState("");
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<OfferActionResult>({});
 
@@ -121,6 +138,7 @@ export function PlacementRecordsManager({
   function openForm(offer: OfferRecord | null) {
     setResult({});
     setFormType(offer?.type ?? "FTE");
+    setJobProfileId(offer?.jobProfileId ?? "");
     setEditing(offer);
   }
 
@@ -146,7 +164,7 @@ export function PlacementRecordsManager({
       {
         id: "student",
         header: "Student",
-        width: "minmax(220px, 1.8fr)",
+        width: "220px",
         hideable: false,
         sortValue: (offer) => offer.student?.name ?? offer.student?.email,
         cell: (offer) => (
@@ -168,7 +186,7 @@ export function PlacementRecordsManager({
       {
         id: "company",
         header: "Company & role",
-        width: "minmax(180px, 1.4fr)",
+        width: "180px",
         sortValue: (offer) => offer.company?.name,
         cell: (offer) => (
           <span className="dt-primary">
@@ -180,7 +198,7 @@ export function PlacementRecordsManager({
       {
         id: "package",
         header: "Package",
-        width: "minmax(140px, 1fr)",
+        width: "140px",
         // Sorted on the amount, not on the formatted rupee string, and a CTC
         // is never compared against a monthly stipend.
         sortValue: (offer) => (isCtcType(offer.type) ? offer.ctc : offer.stipend),
@@ -196,7 +214,7 @@ export function PlacementRecordsManager({
       {
         id: "status",
         header: "Status",
-        width: "minmax(150px, 1fr)",
+        width: "150px",
         sortValue: (offer) => offer.status,
         cell: (offer) => (
           <span className="dt-primary">
@@ -308,11 +326,12 @@ export function PlacementRecordsManager({
         </button>
       </section>
 
-      {backendError ? <div className="admin-error">{backendError}</div> : null}
-      {result.success ? <div className="admin-success">{result.success}</div> : null}
-      {result.error ? <div className="admin-error">{result.error}</div> : null}
+      {backendError ? <Alert variant="destructive" className="mt-4"><AlertDescription>{backendError}</AlertDescription></Alert> : null}
+      {result.success ? <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert> : null}
+      {result.error ? <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert> : null}
 
       <DataTable
+        title="Offer Records"
         data={offers}
         columns={columns}
         filters={filters}
@@ -336,84 +355,106 @@ export function PlacementRecordsManager({
       />
 
       {editing !== undefined ? (
-        <div className="modal-backdrop">
-          <form className="modal job-profile-modal" action={submit}>
-            <header>
-              <div>
-                <span className="eyebrow">Placement record</span>
-                <h2>{editing ? "Edit offer" : "Add offer"}</h2>
-              </div>
-              <button type="button" onClick={() => setEditing(undefined)} aria-label="Close dialog">
-                <X />
-              </button>
-            </header>
+        <AdminDialog
+          onClose={() => setEditing(undefined)}
+          eyebrow="Placement record"
+          title={editing ? "Edit offer" : "Add offer"}
+          className="job-profile-modal sm:max-w-[900px]"
+        >
+          <form className="grid gap-3" action={submit}>
             <input type="hidden" name="id" value={editing?.id ?? ""} />
-            <div className="form-grid">
-              <label className="wide">
-                Student
-                <select name="userId" required defaultValue={editing?.userId ?? ""}>
-                  <option value="" disabled>
-                    Select a student
-                  </option>
-                  {students.map((student) => (
-                    <option key={student.id} value={student.id}>
-                      {studentLabel(student)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Company
-                <select name="companyId" required defaultValue={editing?.companyId ?? ""}>
-                  <option value="" disabled>
-                    Select a company
-                  </option>
-                  {companies.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Drive (optional)
-                <select name="jobProfileId" defaultValue={editing?.jobProfileId ?? ""}>
-                  <option value="">Not from a portal drive</option>
-                  {jobs.map((job) => (
-                    <option key={job.id} value={job.id}>
-                      {job.companyName ? `${job.companyName} · ` : ""}
-                      {job.title} ({job.batch})
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Offer type
-                <select
+            {/* The sentinel never leaves the browser: the action still reads an
+                empty string when the offer is not tied to a portal drive. */}
+            <input type="hidden" name="jobProfileId" value={jobProfileId} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="offer-student">Student</Label>
+                <Select name="userId" required defaultValue={editing?.userId ?? undefined}>
+                  <SelectTrigger id="offer-student" className="w-full">
+                    <SelectValue placeholder="Select a student" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {students.map((student) => (
+                      <SelectItem key={student.id} value={student.id}>
+                        {studentLabel(student)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-company">Company</Label>
+                <Select name="companyId" required defaultValue={editing?.companyId ?? undefined}>
+                  <SelectTrigger id="offer-company" className="w-full">
+                    <SelectValue placeholder="Select a company" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-drive">Drive (optional)</Label>
+                <Select
+                  value={jobProfileId || "__none"}
+                  onValueChange={(value) => setJobProfileId(value === "__none" ? "" : value)}
+                >
+                  <SelectTrigger id="offer-drive" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Not from a portal drive</SelectItem>
+                    {jobs.map((job) => (
+                      <SelectItem key={job.id} value={job.id}>
+                        {job.companyName ? `${job.companyName} · ` : ""}
+                        {job.title} ({job.batch})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-type">Offer type</Label>
+                <Select
                   name="type"
                   value={formType}
-                  onChange={(event) => setFormType(event.target.value as OfferType)}
+                  onValueChange={(value) => setFormType(value as OfferType)}
                 >
-                  {Object.entries(OFFER_TYPE_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Status
-                <select name="status" defaultValue={editing?.status ?? "OFFERED"}>
-                  {Object.entries(OFFER_STATUS_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Season (graduating batch)
-                <input
+                  <SelectTrigger id="offer-type" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(OFFER_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-status">Status</Label>
+                <Select name="status" defaultValue={editing?.status ?? "OFFERED"}>
+                  <SelectTrigger id="offer-status" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(OFFER_STATUS_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-batch">Season (graduating batch)</Label>
+                <Input
+                  id="offer-batch"
                   name="batch"
                   type="number"
                   required
@@ -421,11 +462,12 @@ export function PlacementRecordsManager({
                   max={2100}
                   defaultValue={editing?.batch ?? new Date().getFullYear() + 1}
                 />
-              </label>
+              </div>
               {isCtcType(formType) ? (
-                <label>
-                  Annual CTC (₹)
-                  <input
+                <div className="grid gap-2">
+                  <Label htmlFor="offer-ctc">Annual CTC (₹)</Label>
+                  <Input
+                    id="offer-ctc"
                     name="ctc"
                     type="number"
                     min={0}
@@ -434,11 +476,12 @@ export function PlacementRecordsManager({
                     defaultValue={editing?.ctc ?? ""}
                     placeholder="1800000"
                   />
-                </label>
+                </div>
               ) : (
-                <label>
-                  Monthly stipend (₹)
-                  <input
+                <div className="grid gap-2">
+                  <Label htmlFor="offer-stipend">Monthly stipend (₹)</Label>
+                  <Input
+                    id="offer-stipend"
                     name="stipend"
                     type="number"
                     min={0}
@@ -447,50 +490,58 @@ export function PlacementRecordsManager({
                     defaultValue={editing?.stipend ?? ""}
                     placeholder="75000"
                   />
-                </label>
+                </div>
               )}
-              <label>
-                Location
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="offer-location">Location</Label>
+                <Input
+                  id="offer-location"
                   name="location"
                   maxLength={200}
                   defaultValue={editing?.location ?? ""}
                   placeholder="Bengaluru"
                 />
-              </label>
-              <label>
-                Offer date
-                <input name="offeredAt" type="date" defaultValue={dateInputValue(editing?.offeredAt ?? null)} />
-              </label>
-              <label>
-                Joining date
-                <input
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-offered-at">Offer date</Label>
+                <Input
+                  id="offer-offered-at"
+                  name="offeredAt"
+                  type="date"
+                  defaultValue={dateInputValue(editing?.offeredAt ?? null)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-joining-date">Joining date</Label>
+                <Input
+                  id="offer-joining-date"
                   name="joiningDate"
                   type="date"
                   defaultValue={dateInputValue(editing?.joiningDate ?? null)}
                 />
-              </label>
-              <label className="wide">
-                Remarks
-                <textarea
+              </div>
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="offer-remarks">Remarks</Label>
+                <Textarea
+                  id="offer-remarks"
                   name="remarks"
                   rows={3}
                   maxLength={2000}
                   defaultValue={editing?.remarks ?? ""}
                   placeholder="Anything the office needs on file about this offer."
                 />
-              </label>
+              </div>
             </div>
-            <footer>
-              <button type="button" onClick={() => setEditing(undefined)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditing(undefined)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={saving}>
+              </Button>
+              <Button type="submit" disabled={saving}>
                 {saving ? "Saving…" : editing ? "Save changes" : "Add record"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       ) : null}
     </div>
   );

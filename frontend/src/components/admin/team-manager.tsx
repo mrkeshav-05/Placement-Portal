@@ -330,7 +330,7 @@ export function TeamManager({
       {
         id: "member",
         header: "Member",
-        width: "minmax(220px, 1.6fr)",
+        width: "220px",
         hideable: false,
         cell: (member) => {
           const initials =
@@ -378,7 +378,7 @@ export function TeamManager({
       {
         id: "role",
         header: "Role / designation",
-        width: "minmax(170px, 1.1fr)",
+        width: "170px",
         cell: (member) => {
           const isCoordinator =
             member.role.toLowerCase().includes("coordinator") ||
@@ -399,7 +399,7 @@ export function TeamManager({
       {
         id: "contact",
         header: "Contact details",
-        width: "minmax(200px, 1.3fr)",
+        width: "200px",
         cell: (member) => (
           <div className="space-y-0.5 text-xs">
             {member.email ? (
@@ -428,7 +428,7 @@ export function TeamManager({
       {
         id: "account",
         header: "User account & RBAC",
-        width: "minmax(190px, 1.2fr)",
+        width: "190px",
         cell: (member) =>
           member.hasUserAccount ? (
             <div className="space-y-1">
@@ -657,6 +657,7 @@ export function TeamManager({
       </section>
 
       <DataTable
+        title="Team Members"
         data={tabMembers}
         columns={columns}
         getRowId={(member) => member.id}

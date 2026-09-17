@@ -11,7 +11,6 @@ import {
   Send,
   Trash2,
   User,
-  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -20,11 +19,18 @@ import {
   respondFeedbackAction,
   type FeedbackActionResult,
 } from "@/app/admin/feedbacks/actions";
+import { AdminDialog } from "@/components/common/admin-dialog";
 import {
   DataTable,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminFeedbackItem = {
   id: string;
@@ -168,7 +174,7 @@ export function FeedbacksManager({
       {
         id: "student",
         header: "Student",
-        width: "minmax(200px, 1.8fr)",
+        width: "200px",
         hideable: false,
         sortValue: (item) => item.studentName || item.rollNumber || item.studentEmail,
         cell: (item) => (
@@ -187,14 +193,14 @@ export function FeedbacksManager({
       {
         id: "type",
         header: "Type",
-        width: "minmax(120px, 1.1fr)",
+        width: "120px",
         sortValue: (item) => item.feedbackType.toUpperCase(),
         cell: (item) => getTypeBadge(item.feedbackType),
       },
       {
         id: "subject",
         header: "Subject & Message",
-        width: "minmax(260px, 2.4fr)",
+        width: "260px",
         sortValue: (item) => item.subject,
         cell: (item) => (
           <>
@@ -218,7 +224,7 @@ export function FeedbacksManager({
       {
         id: "createdAt",
         header: "Submitted",
-        width: "minmax(120px, 1.1fr)",
+        width: "120px",
         sortValue: (item) => new Date(item.createdAt),
         cell: (item) => (
           <span style={{ fontWeight: 600, fontSize: "11px" }}>
@@ -229,7 +235,7 @@ export function FeedbacksManager({
       {
         id: "status",
         header: "Status",
-        width: "minmax(110px, 1fr)",
+        width: "110px",
         sortValue: (item) => item.resolved,
         cell: (item) =>
           item.resolved ? (
@@ -380,10 +386,11 @@ export function FeedbacksManager({
       </section>
 
       {/* Result feedback */}
-      {result.success && <div className="admin-success">{result.success}</div>}
-      {result.error && <div className="admin-error">{result.error}</div>}
+      {result.success && <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert>}
+      {result.error && <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert>}
 
       <DataTable
+        title="Submissions"
         data={feedbacks}
         columns={columns}
         getRowId={(item) => item.id}
@@ -405,135 +412,117 @@ export function FeedbacksManager({
 
       {/* Response & Detail Modal */}
       {activeItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "660px" }} onSubmit={(e) => { e.preventDefault(); handleRespondSubmit(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setActiveItem(null)}
+          eyebrow={activeItem.resolved ? "Support History" : "Support Response"}
+          title={activeItem.subject}
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[660px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => { e.preventDefault(); handleRespondSubmit(new FormData(e.currentTarget)); }}
+          >
             <input type="hidden" name="feedbackId" value={activeItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow">{activeItem.resolved ? "Support History" : "Support Response"}</span>
-                <h2>{activeItem.subject}</h2>
-              </div>
-              <button type="button" onClick={() => setActiveItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
 
-            <div style={{ display: "grid", gap: "14px", margin: "16px 0", fontSize: "12px", color: "var(--ink)" }}>
-              {/* Student info box */}
-              <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                    <User size={12} /> Student Details
-                  </span>
-                  {getTypeBadge(activeItem.feedbackType)}
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "8px" }}>
-                  <div>
-                    <strong style={{ display: "block" }}>{activeItem.studentName || "Name not recorded"}</strong>
-                    <small style={{ color: "var(--muted)" }}>{activeItem.studentEmail}</small>
-                  </div>
-                  <div>
-                    <span>Roll: <strong>{activeItem.rollNumber || "N/A"}</strong></span>
-                    <span style={{ display: "block" }}>
-                      Branch: <strong>{[activeItem.branch, activeItem.batch ? `Batch ${activeItem.batch}` : null].filter(Boolean).join(" - ") || "N/A"}</strong>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Message box */}
-              <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "12px", padding: "14px" }}>
-                <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                  Student Message · {new Date(activeItem.createdAt).toLocaleString("en-IN")}
+            {/* Student info box */}
+            <div className="bg-muted rounded-[10px] border px-3.5 py-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-bold uppercase">
+                  <User size={12} /> Student Details
                 </span>
-                <p style={{ margin: "6px 0 0", color: "var(--ink)", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
-                  {activeItem.message}
-                </p>
+                {getTypeBadge(activeItem.feedbackType)}
               </div>
 
-              {/* Reply field */}
-              <div style={{ display: "grid", gap: "6px" }}>
-                <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--ink)" }}>
-                  Placement Cell Response
-                </label>
-                <textarea
-                  name="adminResponse"
-                  rows={5}
-                  required
-                  minLength={2}
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Draft your official response to the student..."
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "10px",
-                    padding: "10px 12px",
-                    background: "var(--input-bg)",
-                    color: "var(--ink)",
-                    fontSize: "12px",
-                    lineHeight: "1.5",
-                  }}
-                />
-              </div>
-
-              {/* Resolve checkbox */}
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: 600, color: "var(--ink)", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={resolveCheck}
-                    onChange={(e) => setResolveCheck(e.target.checked)}
-                    style={{ width: "16px", height: "16px", accentColor: "var(--blue)" }}
-                  />
-                  Mark query as resolved
-                </label>
+              <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
+                <div>
+                  <strong className="block">{activeItem.studentName || "Name not recorded"}</strong>
+                  <small className="text-muted-foreground">{activeItem.studentEmail}</small>
+                </div>
+                <div>
+                  <span>Roll: <strong>{activeItem.rollNumber || "N/A"}</strong></span>
+                  <span className="block">
+                    Branch: <strong>{[activeItem.branch, activeItem.batch ? `Batch ${activeItem.batch}` : null].filter(Boolean).join(" - ") || "N/A"}</strong>
+                  </span>
+                </div>
               </div>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setActiveItem(null)}>
+            {/* Message box */}
+            <div className="bg-muted rounded-[10px] border px-3.5 py-3 text-xs">
+              <span className="text-muted-foreground text-[10px] font-bold uppercase">
+                Student Message · {new Date(activeItem.createdAt).toLocaleString("en-IN")}
+              </span>
+              <p className="mt-1.5 leading-relaxed whitespace-pre-wrap">
+                {activeItem.message}
+              </p>
+            </div>
+
+            {/* Reply field */}
+            <div className="grid gap-2">
+              <Label htmlFor="feedback-response">Placement Cell Response</Label>
+              <Textarea
+                id="feedback-response"
+                name="adminResponse"
+                rows={5}
+                required
+                minLength={2}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Draft your official response to the student..."
+              />
+            </div>
+
+            {/* Resolve checkbox */}
+            <Label className="font-normal">
+              <Checkbox
+                checked={resolveCheck}
+                onCheckedChange={(checked) => setResolveCheck(checked === true)}
+              />
+              Mark query as resolved
+            </Label>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setActiveItem(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--navy)", color: "#fff" }}>
-                <Send size={13} />
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                <Send />
                 {isPending ? "Submitting..." : activeItem.resolved ? "Update Response" : "Send Response"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* Delete Confirmation Modal */}
       {deletingItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "460px" }} onSubmit={(e) => { e.preventDefault(); handleDeleteSubmit(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setDeletingItem(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Delete</span>}
+          title="Delete Feedback?"
+          className="sm:max-w-[460px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => { e.preventDefault(); handleDeleteSubmit(new FormData(e.currentTarget)); }}
+          >
             <input type="hidden" name="feedbackId" value={deletingItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--badge-red-text)" }}>Delete</span>
-                <h2>Delete Feedback?</h2>
-              </div>
-              <button type="button" onClick={() => setDeletingItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
 
-            <p style={{ fontSize: "12px", color: "var(--muted)", lineHeight: "1.6", margin: "14px 0" }}>
+            <p className="text-muted-foreground text-xs leading-relaxed">
               Are you sure you want to delete message &ldquo;<strong>{deletingItem.subject}</strong>&rdquo; from <strong>{deletingItem.studentName || deletingItem.studentEmail}</strong>? This action cannot be undone.
             </p>
 
-            <footer>
-              <button type="button" onClick={() => setDeletingItem(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDeletingItem(null)}>
                 Keep message
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--badge-red-text)", color: "#fff" }}>
-                <Trash2 size={13} />
+              </Button>
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                <Trash2 />
                 {isPending ? "Deleting..." : "Yes, delete message"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
     </div>
   );

@@ -15,14 +15,25 @@ import {
   UserPlus,
   Users,
   UserX,
-  X,
 } from "lucide-react";
 import type { Role } from "@prisma/client";
+import { AdminDialog } from "@/components/common/admin-dialog";
 import {
   DataTable,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   createUserAction,
   deleteUserAction,
@@ -39,6 +50,7 @@ import {
   ROLE_METADATA,
   type PermissionKey,
 } from "@/lib/permissions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 /**
  * Role choices, highest tier first, derived from ROLE_METADATA so a role added
@@ -267,7 +279,7 @@ export function UsersManager({
       {
         id: "user",
         header: "User & title",
-        width: "minmax(230px, 1.8fr)",
+        width: "230px",
         hideable: false,
         sortValue: (u) => u.name ?? u.email,
         cell: (u) => {
@@ -301,7 +313,7 @@ export function UsersManager({
       {
         id: "role",
         header: "Role & tier",
-        width: "minmax(150px, 1fr)",
+        width: "150px",
         // Ordered by tier so a sort walks the hierarchy rather than the
         // alphabet: a super administrator is not "before" a coordinator.
         sortValue: (u) => (ROLE_METADATA[u.role] ?? ROLE_METADATA.STUDENT).tier,
@@ -320,7 +332,7 @@ export function UsersManager({
       {
         id: "academic",
         header: "Academic profile",
-        width: "minmax(160px, 1.2fr)",
+        width: "160px",
         sortValue: (u) => u.rollNumber,
         cell: (u) => (
           <div>
@@ -336,7 +348,7 @@ export function UsersManager({
       {
         id: "permissions",
         header: "Permissions",
-        width: "minmax(170px, 1.1fr)",
+        width: "170px",
         sortValue: (u) => u.customPermissions.length,
         cell: (u) => (
           <button
@@ -497,8 +509,8 @@ export function UsersManager({
       </section>
 
       {/* Action Results */}
-      {result.success && <div className="admin-success">{result.success}</div>}
-      {result.error && <div className="admin-error">{result.error}</div>}
+      {result.success && <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert>}
+      {result.error && <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert>}
 
       {/* Summary Metrics */}
       <section className="admin-metrics">
@@ -548,6 +560,7 @@ export function UsersManager({
       </section>
 
       <DataTable
+        title="Portal Users"
         data={users}
         columns={columns}
         filters={filters}
@@ -571,113 +584,114 @@ export function UsersManager({
       {/* MODAL: Add / Pre-provision User */}
       {/* ------------------------------------------------------------- */}
       {addingUser && (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleCreateUser}>
-            <header>
-              <div>
-                <span className="eyebrow">Directory Provisioning</span>
-                <h2>Add / Provision User Account</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAddingUser(false)}
-                aria-label="Close dialog"
-              >
-                <X size={18} />
-              </button>
-            </header>
-
-            <div className="form-grid">
-              <label className="wide">
-                Email Address *
-                <input
+        <AdminDialog
+          onClose={() => setAddingUser(false)}
+          eyebrow="Directory Provisioning"
+          title="Add / Provision User Account"
+          className="sm:max-w-[650px]"
+        >
+          <form className="grid gap-3" action={handleCreateUser}>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="new-user-email">
+                  Email Address <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="new-user-email"
                   name="email"
                   type="email"
                   required
                   placeholder="student@iiitl.ac.in or external-admin@example.com"
                 />
-              </label>
+              </div>
 
-              <label>
-                Full Name
-                <input name="name" placeholder="Tarun Sharma" />
-              </label>
+              <div className="grid gap-2">
+                <Label htmlFor="new-user-name">Full Name</Label>
+                <Input id="new-user-name" name="name" placeholder="Tarun Sharma" />
+              </div>
 
-              <label>
-                Assigned Role *
-                <select name="role" defaultValue="STUDENT">
-                  {ROLE_OPTIONS.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="grid gap-2">
+                <Label htmlFor="new-user-role">
+                  Assigned Role <span className="text-destructive">*</span>
+                </Label>
+                <Select name="role" defaultValue="STUDENT">
+                  <SelectTrigger id="new-user-role" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <label>
-                Designation / Title
-                <input name="title" placeholder="e.g. Lead Coordinator, Officer" />
-              </label>
+              <div className="grid gap-2">
+                <Label htmlFor="new-user-title">Designation / Title</Label>
+                <Input
+                  id="new-user-title"
+                  name="title"
+                  placeholder="e.g. Lead Coordinator, Officer"
+                />
+              </div>
 
-              <label>
-                Roll Number
-                <input name="rollNumber" placeholder="e.g. LCI2022001" />
-              </label>
+              <div className="grid gap-2">
+                <Label htmlFor="new-user-roll">Roll Number</Label>
+                <Input id="new-user-roll" name="rollNumber" placeholder="e.g. LCI2022001" />
+              </div>
 
-              <label>
-                Academic Branch
-                <input name="branch" placeholder="e.g. Computer Science & AI" />
-              </label>
+              <div className="grid gap-2">
+                <Label htmlFor="new-user-branch">Academic Branch</Label>
+                <Input
+                  id="new-user-branch"
+                  name="branch"
+                  placeholder="e.g. Computer Science & AI"
+                />
+              </div>
 
-              <label>
-                Graduation Batch
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="new-user-batch">Graduation Batch</Label>
+                <Input
+                  id="new-user-batch"
                   name="batch"
                   type="number"
                   min={2000}
                   max={2100}
                   placeholder="2026"
                 />
-              </label>
+              </div>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setAddingUser(false)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddingUser(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={saving}>
+              </Button>
+              <Button type="submit" disabled={saving}>
                 {saving ? "Provisioning…" : "Provision User"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Elevate / Change Role */}
       {/* ------------------------------------------------------------- */}
       {roleModalUser && (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleUpdateRole}>
-            <header>
-              <div>
-                <span className="eyebrow">Role Elevation & Management</span>
-                <h2>Elevate / Change Role</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setRoleModalUser(null)}
-                aria-label="Close dialog"
-              >
-                <X size={18} />
-              </button>
-            </header>
-
+        <AdminDialog
+          onClose={() => setRoleModalUser(null)}
+          eyebrow="Role Elevation & Management"
+          title="Elevate / Change Role"
+          className="sm:max-w-[650px]"
+        >
+          <form className="grid gap-3" action={handleUpdateRole}>
             <input type="hidden" name="userId" value={roleModalUser.id} />
 
-            <div className="mb-4 p-3 bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl">
+            <div className="bg-muted rounded-xl border p-3">
               <strong>{roleModalUser.name || "Unnamed User"}</strong>
-              <small className="block text-[var(--muted)]">{roleModalUser.email}</small>
+              <small className="text-muted-foreground block">{roleModalUser.email}</small>
               <div className="mt-2 text-[11px]">
                 Current Role:{" "}
                 <span className={`cell-status ${ROLE_METADATA[roleModalUser.role].badgeClass}`}>
@@ -686,44 +700,50 @@ export function UsersManager({
               </div>
             </div>
 
-            <div className="form-grid">
-              <label className="wide">
-                Select New Role *
-                <select
-                  name="role"
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as Role)}
-                >
+            <div className="grid gap-2">
+              <Label htmlFor="role-modal-role">
+                Select New Role <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                name="role"
+                value={selectedRole}
+                onValueChange={(value) => setSelectedRole(value as Role)}
+              >
+                <SelectTrigger id="role-modal-role" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
                   {ROLE_OPTIONS.map(({ value, label, description }) => (
-                    <option key={value} value={value}>
+                    <SelectItem key={value} value={value}>
                       {label} — {description}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
-              </label>
-
-              <label className="wide">
-                Designation / Title
-                <input
-                  name="title"
-                  value={selectedTitle}
-                  onChange={(e) => setSelectedTitle(e.target.value)}
-                  placeholder="e.g. Placement Coordinator, Senior Officer"
-                />
-              </label>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="mt-3 p-3 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-xs">
-              <p className="font-bold text-[var(--ink)] mb-1">
+            <div className="grid gap-2">
+              <Label htmlFor="role-modal-title">Designation / Title</Label>
+              <Input
+                id="role-modal-title"
+                name="title"
+                value={selectedTitle}
+                onChange={(e) => setSelectedTitle(e.target.value)}
+                placeholder="e.g. Placement Coordinator, Senior Officer"
+              />
+            </div>
+
+            <div className="bg-muted rounded-xl border p-3 text-xs">
+              <p className="mb-1 font-bold">
                 {ROLE_METADATA[selectedRole].label} Capabilities:
               </p>
-              <p className="text-[var(--muted)] mb-2">
+              <p className="text-muted-foreground mb-2">
                 {ROLE_METADATA[selectedRole].description}
               </p>
-              <div className="flex flex-wrap gap-1.5 mt-1">
+              <div className="mt-1 flex flex-wrap gap-1.5">
                 {ROLE_DEFAULT_PERMISSIONS[selectedRole].map((p) => (
                   <span key={p} className="permission-pill text-[9.5px]">
-                    <Check size={10} className="text-green-600" />
+                    <Check size={10} className="text-[var(--green)]" />
                     {p}
                   </span>
                 ))}
@@ -732,313 +752,282 @@ export function UsersManager({
 
             {roleModalUser.id === currentUserId &&
               (selectedRole === "STUDENT" || selectedRole === "PLACEMENT_VOLUNTEER") && (
-                <div className="admin-error mt-3">
-                  <ShieldAlert size={16} />
-                  Warning: You are demoting your own account. You may lose access to this admin panel.
-                </div>
+                <Alert variant="destructive">
+                  <ShieldAlert />
+                  <AlertDescription>
+                    Warning: You are demoting your own account. You may lose access to this
+                    admin panel.
+                  </AlertDescription>
+                </Alert>
               )}
 
-            <footer>
-              <button type="button" onClick={() => setRoleModalUser(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setRoleModalUser(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={saving}>
+              </Button>
+              <Button type="submit" disabled={saving}>
                 {saving ? "Updating Role…" : "Save Role Elevation"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Custom Permissions Matrix Editor */}
       {/* ------------------------------------------------------------- */}
       {permModalUser && (
-        <div className="modal-backdrop">
-          <div className="modal permission-matrix-modal">
-            <header>
-              <div>
-                <span className="eyebrow">Granular RBAC</span>
-                <h2>Custom Permissions Matrix</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPermModalUser(null)}
-                aria-label="Close dialog"
-              >
-                <X size={18} />
-              </button>
-            </header>
-
-            <div className="p-3 bg-[var(--surface-alt)] border border-[var(--border)] rounded-xl flex items-center justify-between">
-              <div>
-                <strong>{permModalUser.name || "User"}</strong>
-                <small className="block text-[var(--muted)]">{permModalUser.email}</small>
-              </div>
-              <div className="text-right">
-                <span className={`cell-status ${ROLE_METADATA[permModalUser.role].badgeClass}`}>
-                  {ROLE_METADATA[permModalUser.role].label}
-                </span>
-                <small className="block text-[9.5px] text-[var(--muted)] mt-1">
-                  Base Role Defaults
-                </small>
-              </div>
+        <AdminDialog
+          onClose={() => setPermModalUser(null)}
+          eyebrow="Granular RBAC"
+          title="Custom Permissions Matrix"
+          className="permission-matrix-modal max-h-[88vh] overflow-y-auto sm:max-w-[940px]"
+        >
+          <div className="bg-muted flex items-center justify-between rounded-xl border p-3">
+            <div>
+              <strong>{permModalUser.name || "User"}</strong>
+              <small className="text-muted-foreground block">{permModalUser.email}</small>
             </div>
-
-            <p className="text-xs text-[var(--muted)] mt-3">
-              Configure fine-grained permissions specifically for this user. You can grant privileges
-              beyond their role tier, or explicitly revoke default privileges.
-            </p>
-
-            <div className="permission-categories-grid">
-              {categories.map(([catName, defs]) => (
-                <div className="permission-category-box" key={catName}>
-                  <h3>{catName}</h3>
-
-                  {defs.map((def) => {
-                    const defaultInRole = (
-                      ROLE_DEFAULT_PERMISSIONS[permModalUser.role] as readonly PermissionKey[]
-                    ).includes(def.key);
-
-                    const isExplicitlyGranted = editingPermissions.includes(def.key);
-                    const isExplicitlyRevoked = editingPermissions.includes(`-${def.key}`);
-
-                    const effectiveActive =
-                      (defaultInRole && !isExplicitlyRevoked) || isExplicitlyGranted;
-
-                    return (
-                      <div className="permission-item-row" key={def.key}>
-                        <div className="permission-item-info">
-                          <strong>{def.label}</strong>
-                          <small>{def.description}</small>
-                        </div>
-
-                        <div className="permission-toggle-control">
-                          {defaultInRole ? (
-                            isExplicitlyRevoked ? (
-                              <span className="permission-pill custom-revoked">Revoked</span>
-                            ) : (
-                              <span className="inherited-tag">In Role</span>
-                            )
-                          ) : isExplicitlyGranted ? (
-                            <span className="permission-pill custom-granted">Granted</span>
-                          ) : null}
-
-                          <button
-                            type="button"
-                            onClick={() => togglePermissionOverride(def.key, defaultInRole)}
-                            className={`p-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                              effectiveActive
-                                ? "bg-green-600 text-white border-green-600"
-                                : "bg-[var(--surface-alt)] text-[var(--muted)] border-[var(--border)]"
-                            }`}
-                            title={`Toggle ${def.label}`}
-                          >
-                            {effectiveActive ? "Active" : "Off"}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+            <div className="text-right">
+              <span className={`cell-status ${ROLE_METADATA[permModalUser.role].badgeClass}`}>
+                {ROLE_METADATA[permModalUser.role].label}
+              </span>
+              <small className="text-muted-foreground mt-1 block text-[9.5px]">
+                Base Role Defaults
+              </small>
             </div>
-
-            <footer>
-              <button type="button" onClick={() => setPermModalUser(null)}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleUpdatePermissions}
-                disabled={saving}
-              >
-                {saving ? "Saving Matrix…" : "Save Permissions Matrix"}
-              </button>
-            </footer>
           </div>
-        </div>
+
+          <p className="text-muted-foreground text-xs">
+            Configure fine-grained permissions specifically for this user. You can grant privileges
+            beyond their role tier, or explicitly revoke default privileges.
+          </p>
+
+          <div className="permission-categories-grid">
+            {categories.map(([catName, defs]) => (
+              <div className="permission-category-box" key={catName}>
+                <h3>{catName}</h3>
+
+                {defs.map((def) => {
+                  const defaultInRole = (
+                    ROLE_DEFAULT_PERMISSIONS[permModalUser.role] as readonly PermissionKey[]
+                  ).includes(def.key);
+
+                  const isExplicitlyGranted = editingPermissions.includes(def.key);
+                  const isExplicitlyRevoked = editingPermissions.includes(`-${def.key}`);
+
+                  const effectiveActive =
+                    (defaultInRole && !isExplicitlyRevoked) || isExplicitlyGranted;
+
+                  return (
+                    <div className="permission-item-row" key={def.key}>
+                      <div className="permission-item-info">
+                        <strong>{def.label}</strong>
+                        <small>{def.description}</small>
+                      </div>
+
+                      <div className="permission-toggle-control">
+                        {defaultInRole ? (
+                          isExplicitlyRevoked ? (
+                            <span className="permission-pill custom-revoked">Revoked</span>
+                          ) : (
+                            <span className="inherited-tag">In Role</span>
+                          )
+                        ) : isExplicitlyGranted ? (
+                          <span className="permission-pill custom-granted">Granted</span>
+                        ) : null}
+
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant={effectiveActive ? "default" : "outline"}
+                          onClick={() => togglePermissionOverride(def.key, defaultInRole)}
+                          title={`Toggle ${def.label}`}
+                        >
+                          {effectiveActive ? "Active" : "Off"}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setPermModalUser(null)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleUpdatePermissions} disabled={saving}>
+              {saving ? "Saving Matrix…" : "Save Permissions Matrix"}
+            </Button>
+          </DialogFooter>
+        </AdminDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Edit User Details */}
       {/* ------------------------------------------------------------- */}
       {editingUser && (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleUpdateDetails}>
-            <header>
-              <div>
-                <span className="eyebrow">User Details</span>
-                <h2>Edit Account Info</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingUser(null)}
-                aria-label="Close dialog"
-              >
-                <X size={18} />
-              </button>
-            </header>
-
+        <AdminDialog
+          onClose={() => setEditingUser(null)}
+          eyebrow="User Details"
+          title="Edit Account Info"
+          className="sm:max-w-[650px]"
+        >
+          <form className="grid gap-3" action={handleUpdateDetails}>
             <input type="hidden" name="userId" value={editingUser.id} />
 
-            <div className="form-grid">
-              <label className="wide">
-                Full Name
-                <input
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="edit-user-name">Full Name</Label>
+                <Input
+                  id="edit-user-name"
                   name="name"
                   defaultValue={editingUser.name ?? ""}
                   placeholder="Student or Staff Name"
                 />
-              </label>
+              </div>
 
-              <label>
-                Designation / Title
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="edit-user-title">Designation / Title</Label>
+                <Input
+                  id="edit-user-title"
                   name="title"
                   defaultValue={editingUser.title ?? ""}
                   placeholder="e.g. Lead Coordinator"
                 />
-              </label>
+              </div>
 
-              <label>
-                Roll Number
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="edit-user-roll">Roll Number</Label>
+                <Input
+                  id="edit-user-roll"
                   name="rollNumber"
                   defaultValue={editingUser.rollNumber ?? ""}
                   placeholder="e.g. LCI2022001"
                 />
-              </label>
+              </div>
 
-              <label>
-                Branch
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="edit-user-branch">Branch</Label>
+                <Input
+                  id="edit-user-branch"
                   name="branch"
                   defaultValue={editingUser.branch ?? ""}
                   placeholder="e.g. Computer Science"
                 />
-              </label>
+              </div>
 
-              <label>
-                Batch
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="edit-user-batch">Batch</Label>
+                <Input
+                  id="edit-user-batch"
                   name="batch"
                   type="number"
                   defaultValue={editingUser.batch ?? ""}
                   placeholder="2026"
                 />
-              </label>
+              </div>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setEditingUser(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={saving}>
+              </Button>
+              <Button type="submit" disabled={saving}>
                 {saving ? "Saving…" : "Save Changes"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* MODAL: Delete User Confirmation */}
+      {/* MODAL: Set Sign-in Password */}
       {/* ------------------------------------------------------------- */}
       {passwordModalUser && (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleSetPassword}>
-            <header>
-              <div>
-                <span className="eyebrow">Sign-in password</span>
-                <h2>{passwordModalUser.name || passwordModalUser.email}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPasswordModalUser(null)}
-                aria-label="Close dialog"
-              >
-                <X size={18} />
-              </button>
-            </header>
-
+        <AdminDialog
+          onClose={() => setPasswordModalUser(null)}
+          eyebrow="Sign-in password"
+          title={passwordModalUser.name || passwordModalUser.email}
+          className="sm:max-w-[520px]"
+        >
+          <form className="grid gap-3" action={handleSetPassword}>
             <input type="hidden" name="userId" value={passwordModalUser.id} />
 
-            <p className="text-xs text-[var(--muted)] leading-relaxed my-3">
+            <p className="text-muted-foreground text-xs leading-relaxed">
               This replaces any password on the account. Share it over a channel you trust and
               ask them to change it at Account → Password. Use this to give a new staff member
               their first password, or to recover an account whose password was lost.
             </p>
 
-            <div className="form-grid">
-              <label>
-                <span>New password</span>
-                <input type="password" name="password" autoComplete="new-password" required />
-              </label>
-              <label>
-                <span>Confirm password</span>
-                <input
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="set-password">New password</Label>
+                <Input
+                  id="set-password"
+                  type="password"
+                  name="password"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="set-password-confirm">Confirm password</Label>
+                <Input
+                  id="set-password-confirm"
                   type="password"
                   name="confirmPassword"
                   autoComplete="new-password"
                   required
                 />
-              </label>
+              </div>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setPasswordModalUser(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPasswordModalUser(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={saving}>
+              </Button>
+              <Button type="submit" disabled={saving}>
                 {saving ? "Saving…" : "Set password"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL: Delete User Confirmation */}
+      {/* ------------------------------------------------------------- */}
       {deletingUser && (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleDeleteUser}>
-            <header>
-              <div>
-                <span className="eyebrow text-red-600">Danger Zone</span>
-                <h2>Delete User Account</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDeletingUser(null)}
-                aria-label="Close dialog"
-              >
-                <X size={18} />
-              </button>
-            </header>
-
+        <AdminDialog
+          onClose={() => setDeletingUser(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Danger Zone</span>}
+          title="Delete User Account"
+          className="sm:max-w-[520px]"
+        >
+          <form className="grid gap-3" action={handleDeleteUser}>
             <input type="hidden" name="userId" value={deletingUser.id} />
 
-            <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl my-3 text-xs leading-relaxed text-red-900 dark:text-red-200">
-              <p className="font-bold mb-1">Are you sure you want to delete this account?</p>
+            <div className="rounded-xl border border-[var(--badge-red-text)] bg-[var(--badge-red-bg)] p-4 text-xs leading-relaxed text-[var(--badge-red-text)]">
+              <p className="mb-1 font-bold">Are you sure you want to delete this account?</p>
               <p>
                 <strong>{deletingUser.name || "User"}</strong> ({deletingUser.email}) with role{" "}
                 <strong>{deletingUser.role}</strong> will be permanently removed.
               </p>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setDeletingUser(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDeletingUser(null)}>
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
+              </Button>
+              <Button type="submit" variant="destructive" disabled={saving}>
                 {saving ? "Deleting…" : "Confirm Delete User"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
     </div>
   );

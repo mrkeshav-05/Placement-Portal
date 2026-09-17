@@ -139,7 +139,7 @@ Refines the *UI system* section of `docs/PROJECT_CONTEXT.md` and the 2026-08-21 
 
 - **Material UI** was rejected: it ships an Emotion CSS-in-JS runtime, the Material Design visual language, and its own `ThemeProvider`, which would run in parallel with the CSS-custom-property theme system from 2026-08-25 and fight it.
 - **HeroUI** was rejected: it is configured as a Tailwind plugin through `tailwind.config.js`, and this repo runs Tailwind 4 with CSS-first config and no JS config file.
-- **shadcn/ui** was not adopted wholesale, but is the right choice if a kit is ever wanted, because it copies source into the repository rather than adding a dependency. `cmdk` is the primitive its `Command` component wraps, so adopting shadcn later does not invalidate this.
+- **shadcn/ui** was not adopted wholesale, but is the right choice if a kit is ever wanted, because it copies source into the repository rather than adding a dependency. `cmdk` is the primitive its `Command` component wraps, so adopting shadcn later does not invalidate this. *(Superseded on 2026-09-18: shadcn now owns the admin forms and dialogs. `cmdk` survives underneath its `Command`, exactly as anticipated here.)*
 
 Components remain styled with repository-owned semantic CSS in `globals.css` using the existing logo-derived tokens; `cmdk` is unstyled and contributes behaviour (filtering, keyboard navigation, `aria-selected`) only. Do not add a component kit without a new entry here.
 
@@ -382,3 +382,47 @@ Renames the surface the 2026-08-20 boundary calls "admin job profiles". `JobProf
 - **Degrees and branches are offered from the roster, not a hardcoded list.** `frontend/src/lib/event-options.ts` reads the distinct degree/branch pairs held by student accounts and groups branches under their degree, so eligibility can never name a cohort that does not exist. A drive being edited keeps any value the roster no longer explains, grouped under *Other*, rather than silently dropping it.
 - **`react-day-picker` is the second behavioural UI dependency, after `cmdk`.** The deadline is a day and a time, and `datetime-local` gives neither a month grid nor quarter-hour slots. Its own stylesheet is *not* imported, because it carries literal colours; the `rdp-*` classes are styled in `admin.css` from the semantic tokens, the same rule `cmdk` follows.
 - **Not built, and visible in the reference design: the per-event question builder, the attachment uploader, and a point of contact.** `JobProfile.attachments` and the `Coordinator` table exist but nothing writes them, and custom questions would need answer storage on `Application`. Rendering any of the three would have been a control that describes persistence the portal does not have.
+
+## 2026-09-18 — shadcn/ui owns the admin forms and dialogs
+
+Supersedes the shadcn bullet in *2026-09-15 — cmdk for the company picker*, which recorded that no kit had been adopted. shadcn was already installed — `components.json`, the Radix and `cva` dependencies, six primitives, and the `@theme inline` bridge — but only `identity-document-row.tsx` used it. This pass adopts it for the admin write surfaces.
+
+- **The token bridge stays the boundary.** shadcn utilities keep pointing at the repository's semantic tokens rather than shadcn's zinc palette, so a migrated control inherits the institute blue and both themes with no per-component edit. Nothing here changes the 2026-08-25 colour decision.
+- **Migrated: both composer forms and all twenty admin dialogs.** `company-form.tsx` and `event-form.tsx` are Card/Label/Input/Textarea/Checkbox/Switch/Select/ToggleGroup/Popover/Command. Every `.modal-backdrop` dialog under `components/admin` plus the two shared pickers now render through Radix.
+- **`components/common/admin-dialog.tsx` is the one dialog shell.** Each manager previously hand-rolled a backdrop, a close button, and a mousedown-to-dismiss handler, and **none of them trapped focus or closed on Escape**. Radix supplies the focus trap, Escape, scroll lock, and portal. `CompanyPicker` additionally loses a hand-rolled `createPortal` that existed only to escape a parent's `backdrop-filter` containing block.
+- **Semantics improved where the old markup faked a control.** Category pills were `<button>`s and are now a radio group; the duplicate-check acknowledgement was a `<button>` with an `<i className="box">` and is now a real checkbox; the degree and branch lists likewise. This was the migration's main non-visual gain.
+- **Alert carries the status hues.** shadcn's `Alert` has only `default` and `destructive`, both neutral-backed, which would have flattened a "saved" banner to grey. `success` and `info` variants were added to the primitive reading `--badge-green-bg`/`--green` and `--badge-blue-bg`/`--blue`, because green, amber, and blue carry meaning here.
+- **The missing `@layer base` rule was the real bug this uncovered.** shadcn components ask for a bare `border`, whose colour in Tailwind is `currentColor`; without shadcn's own base layer, every card, input, and dialog drew a near-white hairline in dark mode and a near-black one in light. `globals.css` now carries `@layer base { * { @apply border-border outline-ring/50 } }`. It is layered, so the unlayered hand-written rules still win wherever they name a colour.
+- **A select cannot hold an empty value.** Radix rejects `SelectItem value=""`, so the two genuinely clearable pickers — an announcement's company and a placement record's drive — use a `__none` sentinel and post the real empty string through state or a hidden input. Server action payloads are unchanged; the full list of posted field names was diffed against the pre-migration files.
+- **Not migrated, deliberately: the student portal.** `profile-view.tsx` alone holds ten dialogs, and `forms-view`, `dashboard-feed`, and `interview-experiences-view` hold more. They still use `.modal-backdrop`, which is why that CSS survives. Admin list *tables* are also untouched: `data-table.tsx` stays bespoke, so shadcn's `Table` is not in the repo.
+- **Known cosmetic regression.** Radix renders a select's value on the client, so the Placement Year and Batch triggers paint blank for one frame before hydration where a native `<select>` showed the value immediately.
+
+## 2026-09-18 — The admin data grid follows the reference portal's structure, not its palette
+
+Every admin list already rendered through one `DataTable`, so standardising the
+portal was a restyle rather than a migration. The grid now follows the NSUT
+reference layout: a section heading carrying the live row count, right-aligned
+list actions beside it, and one bordered card holding the 440x44 search, the
+grid, and the pagination. The metrics are the reference's — a 50px light header
+at 15px/600, 61px rows at 15px, a 12px card radius, no zebra striping and no
+shadow.
+
+The reference's own colours were not adopted. Its pink-red accent (#FF1744),
+#111111 ink and #FFFFFF page have no rung in the ramp this portal fixed on
+2026-09-17, and a literal accent would have had nothing to say in dark mode.
+The grid therefore reads its colours from the existing tokens, which is why the
+same markup renders as white-on-white in light mode and near-black with navy
+chrome in dark mode. Only the structure, density and type scale were copied.
+
+Two smaller decisions came out of the same pass:
+
+- Pinned columns measure their offsets instead of deriving them. A column's
+  declared `width` is a minimum that padding and content routinely exceed, so
+  accumulating declared widths put every column after the first at too small an
+  offset and they overlapped by the difference. The offsets are now read from
+  the rendered header widths through a `ResizeObserver`.
+- 56 column `width` values were `minmax(120px, 1fr)`, a CSS Grid function that
+  is invalid on a table cell and had always been dropped. They are now the px
+  minimum each one already named, which is also what makes pinning possible.
+
+Plus Jakarta Sans is gone; Inter is the only typeface, headings included.

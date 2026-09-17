@@ -8,7 +8,6 @@ import {
   Eye,
   MessageSquareText,
   Trash2,
-  X,
   XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,11 +18,35 @@ import {
   rejectInterviewExperienceAction,
   type InterviewExperienceActionResult,
 } from "@/app/admin/interview-experiences/actions";
+import { AdminDialog } from "@/components/common/admin-dialog";
 import {
   DataTable,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+/** One labelled panel in the inspection dialog. */
+function DetailBox({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-muted rounded-[10px] border px-3.5 py-3">
+      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-bold uppercase">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
 
 const QUESTION_SECTIONS: { key: string; label: string }[] = [
   { key: "dsaQuestions", label: "DSA questions asked" },
@@ -122,7 +145,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
       {
         id: "student",
         header: "Student",
-        width: "minmax(200px, 1.8fr)",
+        width: "200px",
         hideable: false,
         sortValue: (item) => item.author?.name || item.author?.rollNumber || item.author?.email,
         cell: (item) => (
@@ -141,7 +164,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
       {
         id: "company",
         header: "Company & role",
-        width: "minmax(180px, 1.6fr)",
+        width: "180px",
         sortValue: (item) => item.companyName,
         cell: (item) => (
           <>
@@ -153,14 +176,14 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
       {
         id: "interviewType",
         header: "Type",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (item) => item.interviewType,
         cell: (item) => <span style={{ fontSize: "11px" }}>{item.interviewType}</span>,
       },
       {
         id: "status",
         header: "Status",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         sortValue: (item) => item.status,
         cell: (item) => (
           <>
@@ -365,10 +388,11 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
         </article>
       </section>
 
-      {result.success && <div className="admin-success">{result.success}</div>}
-      {result.error && <div className="admin-error">{result.error}</div>}
+      {result.success && <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert>}
+      {result.error && <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert>}
 
       <DataTable
+        title="Submissions"
         data={experiences}
         columns={columns}
         getRowId={(item) => item.id}
@@ -392,138 +416,148 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
 
       {/* Details modal */}
       {detailItem && (
-        <div className="modal-backdrop">
-          <div className="modal" style={{ maxWidth: "680px", maxHeight: "88vh", overflowY: "auto" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Inspection</span>
-                <h2>{detailItem.companyName}</h2>
-              </div>
-              <button type="button" onClick={() => setDetailItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
+        <AdminDialog
+          onClose={() => setDetailItem(null)}
+          eyebrow="Inspection"
+          title={detailItem.companyName}
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[680px]"
+        >
+          <div className="grid gap-3 text-xs">
+            <DetailBox label="Student">
+              <strong className="mt-1 block">
+                {detailItem.author?.name || "Name not recorded"}
+              </strong>
+              <small className="text-muted-foreground">
+                {[detailItem.author?.rollNumber, detailItem.author?.branch, detailItem.author?.batch]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </small>
+            </DetailBox>
 
-            <div style={{ display: "grid", gap: "12px", margin: "14px 0", fontSize: "12px" }}>
-              <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "10px", padding: "12px 14px" }}>
-                <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>Student</span>
-                <strong style={{ display: "block", marginTop: "4px" }}>{detailItem.author?.name || "Name not recorded"}</strong>
-                <small style={{ color: "var(--muted)" }}>
-                  {[detailItem.author?.rollNumber, detailItem.author?.branch, detailItem.author?.batch].filter(Boolean).join(" · ")}
-                </small>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "10px", padding: "10px 14px" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <DetailBox
+                label={
+                  <>
                     <Briefcase size={12} /> Role
-                  </span>
-                  <strong style={{ display: "block", marginTop: "4px" }}>{detailItem.role}</strong>
-                </div>
-                <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "10px", padding: "10px 14px" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                    <Calendar size={12} /> Batch & type
-                  </span>
-                  <strong style={{ display: "block", marginTop: "4px" }}>
-                    {detailItem.batch} · {detailItem.interviewType}
-                  </strong>
-                </div>
-              </div>
-
-              {QUESTION_SECTIONS.filter((s) => detailItem[s.key]).map((section) => (
-                <div key={section.key} style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderRadius: "10px", padding: "12px 14px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>{section.label}</span>
-                  <p style={{ margin: "6px 0 0", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{String(detailItem[section.key])}</p>
-                </div>
-              ))}
-
-              {detailItem.reviewNote && (
-                <div style={{ background: "var(--badge-orange-bg)", border: "1px solid var(--badge-orange-text)", borderRadius: "10px", padding: "10px 14px" }}>
-                  <span style={{ fontSize: "10px", color: "var(--badge-orange-text)", textTransform: "uppercase", fontWeight: 700 }}>Review note</span>
-                  <p style={{ margin: "6px 0 0" }}>{detailItem.reviewNote}</p>
-                </div>
-              )}
+                  </>
+                }
+              >
+                <strong className="mt-1 block">{detailItem.role}</strong>
+              </DetailBox>
+              <DetailBox
+                label={
+                  <>
+                    <Calendar size={12} /> Batch &amp; type
+                  </>
+                }
+              >
+                <strong className="mt-1 block">
+                  {detailItem.batch} · {detailItem.interviewType}
+                </strong>
+              </DetailBox>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setDetailItem(null)}>
-                Close
-              </button>
-            </footer>
+            {QUESTION_SECTIONS.filter((s) => detailItem[s.key]).map((section) => (
+              <DetailBox key={section.key} label={section.label}>
+                <p className="mt-1.5 leading-relaxed whitespace-pre-wrap">
+                  {String(detailItem[section.key])}
+                </p>
+              </DetailBox>
+            ))}
+
+            {detailItem.reviewNote && (
+              <div className="rounded-[10px] border border-[var(--badge-orange-text)] bg-[var(--badge-orange-bg)] px-3.5 py-2.5">
+                <span className="text-[10px] font-bold uppercase text-[var(--badge-orange-text)]">
+                  Review note
+                </span>
+                <p className="mt-1.5">{detailItem.reviewNote}</p>
+              </div>
+            )}
           </div>
-        </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDetailItem(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </AdminDialog>
       )}
 
       {/* Reject modal */}
       {rejectingItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "520px" }} onSubmit={(e) => { e.preventDefault(); handleReject(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setRejectingItem(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Decision</span>}
+          title="Reject submission"
+          className="sm:max-w-[520px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleReject(new FormData(e.currentTarget));
+            }}
+          >
             <input type="hidden" name="experienceId" value={rejectingItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--badge-red-text)" }}>Decision</span>
-                <h2>Reject submission</h2>
-              </div>
-              <button type="button" onClick={() => setRejectingItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
-            <p style={{ fontSize: "12px", color: "var(--muted)", margin: "10px 0" }}>
-              Rejecting the interview experience for <strong>{rejectingItem.companyName}</strong> submitted by{" "}
-              <strong>{rejectingItem.author?.name || rejectingItem.author?.rollNumber}</strong>. An optional note will be shared with the student.
+            <p className="text-muted-foreground text-xs">
+              Rejecting the interview experience for <strong>{rejectingItem.companyName}</strong>{" "}
+              submitted by{" "}
+              <strong>{rejectingItem.author?.name || rejectingItem.author?.rollNumber}</strong>. An
+              optional note will be shared with the student.
             </p>
-            <div style={{ margin: "14px 0" }}>
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--ink)", display: "grid", gap: "4px" }}>
-                Reviewer note (optional)
-                <textarea
-                  name="reviewNote"
-                  rows={3}
-                  placeholder="e.g. Please avoid sharing proprietary questions verbatim..."
-                  style={{ border: "1px solid var(--border)", borderRadius: "10px", padding: "8px 12px", background: "var(--input-bg)", color: "var(--ink)", fontSize: "12px" }}
-                />
-              </label>
+            <div className="grid gap-2">
+              <Label htmlFor="review-note">Reviewer note (optional)</Label>
+              <Textarea
+                id="review-note"
+                name="reviewNote"
+                rows={3}
+                placeholder="e.g. Please avoid sharing proprietary questions verbatim…"
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setRejectingItem(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setRejectingItem(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--badge-red-text)", color: "#fff" }}>
-                <XCircle size={14} />
+              </Button>
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                <XCircle />
                 {isPending ? "Rejecting..." : "Confirm rejection"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
 
       {/* Delete confirmation */}
       {deletingItem && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "460px" }} onSubmit={(e) => { e.preventDefault(); handleDelete(new FormData(e.currentTarget)); }}>
+        <AdminDialog
+          onClose={() => setDeletingItem(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Delete</span>}
+          title="Delete this submission?"
+          className="sm:max-w-[460px]"
+        >
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleDelete(new FormData(e.currentTarget));
+            }}
+          >
             <input type="hidden" name="experienceId" value={deletingItem.id} />
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--badge-red-text)" }}>Delete</span>
-                <h2>Delete this submission?</h2>
-              </div>
-              <button type="button" onClick={() => setDeletingItem(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
-            <p style={{ fontSize: "12px", color: "var(--muted)", lineHeight: "1.6", margin: "14px 0" }}>
-              This will permanently remove the interview experience for <strong>{deletingItem.companyName}</strong>. This action cannot be undone.
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              This will permanently remove the interview experience for{" "}
+              <strong>{deletingItem.companyName}</strong>. This action cannot be undone.
             </p>
-            <footer>
-              <button type="button" onClick={() => setDeletingItem(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDeletingItem(null)}>
                 Keep it
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--badge-red-text)", color: "#fff" }}>
-                <Trash2 size={13} />
+              </Button>
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                <Trash2 />
                 {isPending ? "Deleting..." : "Yes, delete"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       )}
     </div>
   );

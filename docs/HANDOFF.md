@@ -7,11 +7,77 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-18, admin data grid pass): `npm run lint` (the same pre-existing warning), `npm run type-check`, `npm run build`, 122 frontend unit tests, and all 12 admin tables measured in a signed-in browser in both themes. No backend file changed, so pytest was not re-run.
+- Last verified (2026-09-18, shadcn admin pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, and 122 frontend unit tests. No backend file changed, so pytest was not re-run.
 - Last verified (2026-09-18, Add Company pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 122 frontend unit tests, and 148 backend pytest tests in the running `backend` container.
 - Last verified (2026-09-17, events pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 119 frontend unit tests, and 148 backend pytest tests in the running `backend` container.
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## The admin data grid, 2026-09-18
+
+All 12 tables across the 11 admin screens already shared one `DataTable`, and
+there was no second table implementation anywhere, so this pass restyled the
+shared component instead of migrating anything.
+
+What moved into `DataTable`: the section heading (`title`), the live row count
+beside it, the list's buttons (`actions`), and a single bordered `.dt-card`
+wrapping the search, the grid, and the pagination. `toolbarActions` is gone —
+nothing used it. Each manager now passes `title`; the applications screen also
+passes its export buttons through `actions`, and its old `.registrations-card`
+markup and CSS are deleted. Every page keeps its own `<h1>` and filters.
+
+Two defects were found and fixed on the way, both pre-existing:
+
+- 56 column widths were `minmax(120px, 1fr)`, a CSS Grid function that a table
+  cell ignores, so no admin table had ever honoured a declared width. They are
+  now the px minimum each one named.
+- Deriving pinned-column offsets from those declared widths does not work: a
+  declared 70px renders at 91px once padding lands, so the second pinned column
+  overlapped the first by 21px. Offsets are now measured from the rendered
+  header cells through a `ResizeObserver`, keyed off the visible column set.
+
+Verified in the browser, signed in as the super admin, on every table: the
+three-state sort cycle with `aria-sort` following it, numerically correct
+sorting (CGPA ascending gives 8.22 before 10, not "10" before "8.4"),
+search, horizontal scrolling with S.No and Roll Number pinned, the export modal
+capping at exactly 85vh with a scrolling body and a fixed footer, and the same
+metrics on all 12 tables (50px header at 15px/600, 61px rows, 440x44 search).
+
+Known and deliberate:
+
+- The team directory has no sortable column. Its row order *is* the published
+  display order and the arrows in its Order column are how that changes, so
+  sorting it would contradict the feature. Left alone.
+- One announcements row is 71px rather than 61px because it carries a third
+  metadata line. `height` is a minimum; clipping real data to hit the number
+  would be worse.
+- Only the registrations table configures the export column picker. The
+  students and offers screens export without one.
+- The spec this pass followed asked for a #FF1744 accent. It was declined in
+  favour of the institute blue, so the grid works in dark mode. See
+  `DECISIONS.md`.
+- Inter is now the only typeface. This is the change that was sitting in
+  `git stash`; it has been applied directly, so that stash entry is redundant
+  and can be dropped.
+
+## shadcn/ui for the admin forms and dialogs, 2026-09-18
+
+`DECISIONS.md` carries the reasoning under today's date. Nothing about persistence, authorization, or validation changed in this pass; it is the presentation layer only.
+
+1. **Scope.** Both composer forms, all 20 admin dialogs, the two shared pickers, and every status banner. **The student portal and the admin data tables were deliberately left alone**, which is why `.modal-backdrop` and the `dt-*` CSS still exist. `FEATURE_STATUS.md` has a new *UI component migration* table with the per-surface boundary.
+2. **`AdminDialog` is the one admin dialog shell** (`components/common/admin-dialog.tsx`). Pass `eyebrow`, `title`, and a `className` for the width; do not re-add a backdrop div. Radix now supplies the focus trap and Escape, which no dialog had before.
+3. **Eleven primitives were added** by `npx shadcn@latest add`: card, textarea, checkbox, switch, popover, separator, alert, scroll-area, toggle, toggle-group, command. They import `cn` from the `cn` package and Radix from the unified `radix-ui` package, matching the six that were already here.
+4. **`globals.css` gained shadcn's missing `@layer base` rule.** Without `* { @apply border-border outline-ring/50 }`, every bare `border` in a shadcn component resolved to `currentColor` — a near-white hairline on cards, inputs, and dialogs in dark mode. If a hand-written rule ever loses its border colour, this layered rule is the fallback it now picks up.
+5. **279 lines of orphaned CSS were deleted** across `globals.css` and `admin.css` (the `event-form`/`field-*`/`choice-*`/`check-*`/`branch-*`/`time-*`/`switch`/`form-card`/`confirm-row`/`company-picker-*`/`admin-success` families). Each was confirmed to have no `className` reference first. `.rdp-*` was kept — react-day-picker generates those at runtime, so grep cannot see them.
+6. **Two `__none` sentinel selects exist** because Radix refuses an empty-valued item: the announcement's company and the placement record's drive. Both post the real empty string. Every posted field name in the six migrated managers was diffed against `git show HEAD:` and is identical.
+
+**Exercised in a browser.** On `/admin/events/add`: the company command palette, the deadline popover (month grid plus quarter-hour list, past days disabled), the degrees dialog, and Escape-to-close. On `/admin/companies/add`: the pills, session select, and gating checkbox. The permission matrix was opened in dark mode and its computed border read back as `#1F3A60` rather than the near-white it was before the base-layer fix. **Not clicked: an actual save through any migrated dialog** — provisioning a user, setting a password, approving a NOC, responding to a feedback, or saving a placement record. The field names are verified by diff, not by submission.
+
+**Known cosmetic regression.** Radix renders a select's value client-side, so Placement Year and Batch paint blank for one frame before hydration.
+
+**The Inter font change is still in `stash@{0}`, and it will now conflict.** It edits `layout.tsx` (no conflict) plus the `font-family` declaration in 45 rules across `globals.css` and `admin.css`. This pass deleted some of those very rules and added a block near the top of `globals.css`, so `git stash pop` will report conflicts in both stylesheets. Resolve by keeping this pass's structure and re-applying only the `var(--font-jakarta)` → `var(--font-inter)` substitution to the rules that survive.
 
 ## Add Company page, 2026-09-18
 

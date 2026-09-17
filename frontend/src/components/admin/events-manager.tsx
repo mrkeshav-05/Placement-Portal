@@ -11,6 +11,7 @@ import {
   type DataTableFilter,
 } from "@/components/common/data-table";
 import { EMPLOYMENT_TYPE_LABELS } from "@/lib/job-profile-schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminEventItem = {
   id: string;
@@ -60,7 +61,7 @@ export function EventsManager({
       {
         id: "role",
         header: "Event",
-        width: "minmax(260px, 2fr)",
+        width: "260px",
         sortValue: (event) => `${event.companyName} ${event.title}`,
         hideable: false,
         cell: (event) => (
@@ -82,7 +83,7 @@ export function EventsManager({
       {
         id: "eligibility",
         header: "Eligibility",
-        width: "minmax(200px, 1.4fr)",
+        width: "200px",
         sortValue: (event) => event.minCGPA,
         cell: (event) => (
           <span>
@@ -102,7 +103,7 @@ export function EventsManager({
       {
         id: "deadline",
         header: "Deadline",
-        width: "minmax(190px, 1.2fr)",
+        width: "190px",
         sortValue: (event) => new Date(event.registrationDeadline),
         cell: (event) => (
           <span>
@@ -214,9 +215,10 @@ export function EventsManager({
           </Link>
         ) : null}
       </section>
-      {result.success ? <div className="admin-success">{result.success}</div> : null}
-      {result.error ? <div className="admin-error">{result.error}</div> : null}
+      {result.success ? <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert> : null}
+      {result.error ? <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert> : null}
       <DataTable
+        title="Company Events"
         data={events}
         columns={columns}
         getRowId={(event) => event.id}

@@ -42,6 +42,14 @@ export type DataTableColumn<T> = {
   sortValue?: (row: T) => SortableValue;
   /** Column width, as a CSS value. Used as a minimum, not a cage. */
   width?: string;
+  /**
+   * Pins the column to the left edge while the rest scrolls sideways. Only
+   * the run of sticky columns starting at the first one can pin: the offset of
+   * each is the sum of the widths before it, and that sum is only knowable
+   * from a `width` in px. A sticky column without one is left unpinned rather
+   * than stacked at the wrong offset.
+   */
+  sticky?: boolean;
   align?: "left" | "center" | "right";
   /** Columns the viewer may hide. An actions column usually should not be. */
   hideable?: boolean;
@@ -84,15 +92,25 @@ export type DataTableProps<T> = {
   emptyIcon?: React.ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
+  /**
+   * The section heading above the card, e.g. "Registered Students". The
+   * matching row count is appended, and it follows the search and filters, so
+   * the heading always describes what is on screen rather than what was
+   * fetched.
+   */
+  title?: React.ReactNode;
+  /** Suppresses the count beside the title, for a list that is always whole. */
+  showCount?: boolean;
+  /** Buttons for the heading row, right-aligned: export, download, add. */
+  actions?: React.ReactNode;
   /** Page-specific controls that belong beside the search box. */
   toolbarExtras?: React.ReactNode;
-  /** Controls pinned to the right of the toolbar, such as an export button. */
-  toolbarActions?: React.ReactNode;
   /** A column pinned before the first one, for bulk-select checkboxes. */
   leadingColumn?: {
     header: React.ReactNode;
     cell: (row: T) => React.ReactNode;
     width?: string;
+    sticky?: boolean;
   };
   rowClassName?: (row: T) => string | undefined;
   /** Narrower than this and the table scrolls sideways instead of squeezing. */
@@ -119,6 +137,82 @@ export type DataTableView<T> = {
 };
 
 const DEFAULT_PAGE_SIZES = [10, 20, 50, 100];
+
+const LEADING_COLUMN_ID = "__leading";
+
+/**
+ * The run of columns pinned to the left edge.
+ *
+ * Only a leading run can pin: a pinned column in the middle of scrolling ones
+ * would cover them. The run stops at the first column that is not sticky.
+ */
+function stickyRun<T>(
+  columns: DataTableColumn<T>[],
+  leading: DataTableProps<T>["leadingColumn"],
+): string[] {
+  const ids: string[] = [];
+  if (leading) {
+    if (!leading.sticky) return ids;
+    ids.push(LEADING_COLUMN_ID);
+  }
+  for (const column of columns) {
+    if (!column.sticky) break;
+    ids.push(column.id);
+  }
+  return ids;
+}
+
+/**
+ * Where each pinned column sits, measured rather than derived.
+ *
+ * A column's declared `width` is a minimum that padding and content routinely
+ * exceed, so accumulating the declared values puts every column after the
+ * first at too small an offset and they overlap. Reading the rendered header
+ * widths is the only honest source. Widths are used, not positions, because a
+ * sticky cell's own offset already includes the shift being measured.
+ */
+function useStickyOffsets(
+  stickyIds: string[],
+  deps: readonly unknown[],
+): [Record<string, number>, React.RefObject<HTMLTableElement | null>] {
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [offsets, setOffsets] = useState<Record<string, number>>({});
+  const key = stickyIds.join("|");
+
+  useEffect(() => {
+    const table = tableRef.current;
+    if (!table || !key) {
+      setOffsets((current) => (Object.keys(current).length ? {} : current));
+      return;
+    }
+
+    function measure() {
+      const next: Record<string, number> = {};
+      let cursor = 0;
+      for (const id of key.split("|")) {
+        const cell = table!.querySelector<HTMLElement>(`thead [data-column-id="${id}"]`);
+        if (!cell) break;
+        next[id] = cursor;
+        cursor += cell.getBoundingClientRect().width;
+      }
+      setOffsets((current) => {
+        const ids = Object.keys(next);
+        const same =
+          ids.length === Object.keys(current).length &&
+          ids.every((id) => Math.abs((current[id] ?? -1) - next[id]) < 0.5);
+        return same ? current : next;
+      });
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(table);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, ...deps]);
+
+  return [offsets, tableRef];
+}
 
 const COLUMN_PREFERENCE_EVENT = "tnp:table-columns";
 
@@ -375,8 +469,10 @@ export function DataTable<T>({
   emptyIcon,
   emptyTitle = "No results found",
   emptyDescription = "Try changing your search or filters.",
+  title,
+  showCount = true,
+  actions,
   toolbarExtras,
-  toolbarActions,
   leadingColumn,
   rowClassName,
   minWidth,
@@ -461,11 +557,40 @@ export function DataTable<T>({
   }, [query, filterState, sort, result]);
 
   const columnCount = visibleColumns.length + (leadingColumn ? 1 : 0);
-  const showToolbar = Boolean(searchText || filters.length || toolbarExtras || toolbarActions ||
+  const showToolbar = Boolean(searchText || filters.length || toolbarExtras ||
     (columnVisibility && hideableColumns.length > 1));
+
+  // Recomputed from the visible set, so hiding a pinned column re-pins the
+  // ones behind it rather than leaving a gap at the left edge.
+  const stickyIds = useMemo(
+    () => stickyRun(visibleColumns, leadingColumn),
+    [visibleColumns, leadingColumn],
+  );
+  const [stickyLeft, tableRef] = useStickyOffsets(stickyIds, [pageSize, result.rows.length]);
+
+  function pinned(columnId: string) {
+    const left = stickyLeft[columnId];
+    return { className: left === undefined ? undefined : "dt-sticky", left };
+  }
+  const leadingPin = pinned(LEADING_COLUMN_ID);
 
   return (
     <div className="data-table">
+      {title || actions ? (
+        <div className="dt-header">
+          {title ? (
+            <h2 className="dt-title">
+              {title}
+              {showCount ? <span>({result.filteredCount})</span> : null}
+            </h2>
+          ) : (
+            <span />
+          )}
+          {actions ? <div className="dt-actions">{actions}</div> : null}
+        </div>
+      ) : null}
+
+      <div className="dt-card">
       {showToolbar ? (
         <div className="dt-toolbar">
           {searchText ? (
@@ -514,7 +639,6 @@ export function DataTable<T>({
           {toolbarExtras}
 
           <div className="dt-toolbar-end">
-            {toolbarActions}
             {columnVisibility && hideableColumns.length > 1 ? (
               <ColumnMenu
                 columns={hideableColumns}
@@ -527,12 +651,21 @@ export function DataTable<T>({
       ) : null}
 
       <div className="dt-scroll">
-        <table className="dt-table" style={minWidth ? { minWidth } : undefined}>
+        <table
+          className="dt-table"
+          ref={tableRef}
+          style={minWidth ? { minWidth } : undefined}
+        >
           {caption ? <caption className="dt-caption">{caption}</caption> : null}
           <thead>
             <tr>
               {leadingColumn ? (
-                <th scope="col" style={{ width: leadingColumn.width ?? "44px" }}>
+                <th
+                  scope="col"
+                  data-column-id={LEADING_COLUMN_ID}
+                  className={leadingPin.className}
+                  style={{ width: leadingColumn.width ?? "44px", left: leadingPin.left }}
+                >
                   {leadingColumn.header}
                 </th>
               ) : null}
@@ -547,12 +680,16 @@ export function DataTable<T>({
                       : "descending"
                     : "none";
 
+                const pin = pinned(column.id);
+
                 return (
                   <th
                     key={column.id}
                     scope="col"
+                    data-column-id={column.id}
                     aria-sort={ariaSort}
-                    style={{ width: column.width, textAlign: column.align }}
+                    className={pin.className}
+                    style={{ width: column.width, textAlign: column.align, left: pin.left }}
                   >
                     {column.sortValue ? (
                       <button
@@ -596,12 +733,23 @@ export function DataTable<T>({
             ) : result.rows.length ? (
               result.rows.map((row) => (
                 <tr key={getRowId(row)} className={rowClassName?.(row)}>
-                  {leadingColumn ? <td>{leadingColumn.cell(row)}</td> : null}
-                  {visibleColumns.map((column) => (
-                    <td key={column.id} style={{ textAlign: column.align }}>
-                      {column.cell(row)}
+                  {leadingColumn ? (
+                    <td className={leadingPin.className} style={{ left: leadingPin.left }}>
+                      {leadingColumn.cell(row)}
                     </td>
-                  ))}
+                  ) : null}
+                  {visibleColumns.map((column) => {
+                    const pin = pinned(column.id);
+                    return (
+                      <td
+                        key={column.id}
+                        className={pin.className}
+                        style={{ textAlign: column.align, left: pin.left }}
+                      >
+                        {column.cell(row)}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             ) : (
@@ -687,6 +835,7 @@ export function DataTable<T>({
           </div>
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

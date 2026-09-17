@@ -31,6 +31,7 @@ import {
   buildDefaultExportSelection,
   type ExportColumnDef,
 } from "@/components/admin/export-columns-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminApplicationRow = {
   id: string;
@@ -346,7 +347,7 @@ export function ApplicationsManager({
       {
         id: "candidate",
         header: "Candidate",
-        width: "minmax(200px, 1.5fr)",
+        width: "200px",
         hideable: false,
         sortValue: (app) => app.studentName,
         cell: (app) => (
@@ -360,14 +361,14 @@ export function ApplicationsManager({
       {
         id: "branch",
         header: "Branch",
-        width: "minmax(130px, 1fr)",
+        width: "130px",
         sortValue: (app) => app.branch,
         cell: (app) => app.branch ?? <span className="dt-muted">Not specified</span>,
       },
       {
         id: "batch",
         header: "Batch",
-        width: "90px",
+        width: "100px",
         sortValue: (app) => app.batch,
         cell: (app) => <span className="dt-numeric">{app.batch ?? "—"}</span>,
       },
@@ -381,7 +382,7 @@ export function ApplicationsManager({
       {
         id: "job",
         header: "Job & company",
-        width: "minmax(190px, 1.4fr)",
+        width: "190px",
         sortValue: (app) => `${app.companyName} ${app.jobTitle}`,
         cell: (app) => (
           <span className="dt-primary">
@@ -393,7 +394,7 @@ export function ApplicationsManager({
       {
         id: "appliedAt",
         header: "Applied",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         // `appliedAt` is already a display string from the server, so the raw
         // date is parsed here rather than compared as text.
         sortValue: (app) => new Date(app.appliedAt),
@@ -402,7 +403,7 @@ export function ApplicationsManager({
       {
         id: "resume",
         header: "Resume",
-        width: "minmax(140px, 1fr)",
+        width: "140px",
         sortValue: (app) => app.resumeLabel,
         cell: (app) =>
           app.resumeUrl ? (
@@ -486,14 +487,17 @@ export function ApplicationsManager({
       {
         id: "sno",
         header: "S.No",
-        width: "64px",
+        width: "70px",
+        sticky: true,
         hideable: false,
+        sortValue: (app) => indexById.get(app.id) ?? 0,
         cell: (app) => <span className="dt-numeric">{(indexById.get(app.id) ?? 0) + 1}</span>,
       },
       {
         id: "rollNumber",
         header: "Roll Number",
-        width: "minmax(120px, 1fr)",
+        width: "150px",
+        sticky: true,
         hideable: false,
         sortValue: (app) => app.rollNumber,
         cell: (app) => app.rollNumber ?? <span className="dt-muted">—</span>,
@@ -501,7 +505,7 @@ export function ApplicationsManager({
       {
         id: "name",
         header: "Name",
-        width: "minmax(160px, 1.2fr)",
+        width: "200px",
         hideable: false,
         sortValue: (app) => app.studentName,
         cell: (app) => <strong>{app.studentName}</strong>,
@@ -509,33 +513,35 @@ export function ApplicationsManager({
       {
         id: "contact",
         header: "Contact",
-        width: "minmax(120px, 1fr)",
+        width: "140px",
+        sortValue: (app) => app.contactNumber,
         cell: (app) => app.contactNumber ?? <span className="dt-muted">—</span>,
       },
       {
         id: "instituteEmail",
         header: "Institute Mail ID",
-        width: "minmax(190px, 1.3fr)",
+        width: "300px",
         sortValue: (app) => app.studentEmail,
         cell: (app) => app.studentEmail,
       },
       {
         id: "personalEmail",
         header: "Personal Mail ID",
-        width: "minmax(190px, 1.3fr)",
+        width: "300px",
+        sortValue: (app) => app.personalEmail,
         cell: (app) => app.personalEmail ?? <span className="dt-muted">—</span>,
       },
       {
         id: "degree",
         header: "Degree",
-        width: "minmax(90px, 0.8fr)",
+        width: "100px",
         sortValue: (app) => app.degree,
         cell: (app) => app.degree ?? <span className="dt-muted">—</span>,
       },
       {
         id: "branch",
         header: "Branch",
-        width: "minmax(100px, 0.8fr)",
+        width: "100px",
         sortValue: (app) => app.branch,
         cell: (app) => app.branch ?? <span className="dt-muted">—</span>,
       },
@@ -570,7 +576,7 @@ export function ApplicationsManager({
       {
         id: "resume",
         header: "Resume",
-        width: "minmax(120px, 1fr)",
+        width: "120px",
         cell: (app) =>
           app.resumeUrl ? (
             <a
@@ -601,9 +607,12 @@ export function ApplicationsManager({
       </section>
 
       {statusMessage ? (
-        <div className={statusMessage.type === "success" ? "admin-success" : "admin-error"}>
-          {statusMessage.text}
-        </div>
+        <Alert
+          variant={statusMessage.type === "success" ? "success" : "destructive"}
+          className="mt-4"
+        >
+          <AlertDescription>{statusMessage.text}</AlertDescription>
+        </Alert>
       ) : null}
 
       <div className="registrations-filters">
@@ -665,10 +674,10 @@ export function ApplicationsManager({
         </label>
       </div>
 
-      <section className="admin-card registrations-card">
-        <div className="registrations-card-header">
-          <h2>Registered Students{jobId ? ` (${scopedApplications.length})` : ""}</h2>
-          <div className="registrations-actions">
+      <DataTable
+        title="Registered Students"
+        actions={
+          <>
             <button type="button" className="dt-view-button" onClick={() => setExportDialogOpen(true)}>
               <SlidersHorizontal />
               Customize Export
@@ -692,28 +701,25 @@ export function ApplicationsManager({
               <FileSpreadsheet />
               Export Excel
             </button>
-          </div>
-        </div>
-
-        <DataTable
-          data={scopedApplications}
-          columns={registrationColumns}
-          getRowId={(app) => app.id}
-          searchText={(app) =>
-            `${app.studentName} ${app.studentEmail} ${app.personalEmail ?? ""} ${app.rollNumber ?? ""} ${app.contactNumber ?? ""} ${app.branch ?? ""}`
-          }
-          searchPlaceholder="Search..."
-          columnStorageKey="registrations"
-          minWidth={1500}
-          emptyIcon={<Users />}
-          emptyTitle={jobId ? "No matching registrations" : "Select a company event"}
-          emptyDescription={
-            jobId
-              ? "Try a different search."
-              : "Select a company event to view registrations."
-          }
-        />
-      </section>
+          </>
+        }
+        data={scopedApplications}
+        columns={registrationColumns}
+        getRowId={(app) => app.id}
+        searchText={(app) =>
+          `${app.studentName} ${app.studentEmail} ${app.personalEmail ?? ""} ${app.rollNumber ?? ""} ${app.contactNumber ?? ""} ${app.branch ?? ""} ${app.degree ?? ""} ${app.batch ?? ""}`
+        }
+        searchPlaceholder="Search..."
+        columnStorageKey="registrations"
+        minWidth={1500}
+        emptyIcon={<Users />}
+        emptyTitle={jobId ? "No matching registrations" : "Select a company event"}
+        emptyDescription={
+          jobId
+            ? "Try a different search."
+            : "Select a company event to view registrations."
+        }
+      />
 
       {exportDialogOpen ? (
         <ExportColumnsDialog
@@ -731,9 +737,6 @@ export function ApplicationsManager({
           <h1>Applications</h1>
           <p>Review candidate profiles, download resumes, and manage recruitment stage progression.</p>
         </div>
-        <a href={exportHref} download title="Export CSV of filtered applications">
-          <Download /> Export CSV
-        </a>
       </section>
 
       <section className="admin-metrics">
@@ -820,6 +823,13 @@ export function ApplicationsManager({
       )}
 
       <DataTable
+        title="Candidates"
+        actions={
+          <a className="dt-view-button" href={exportHref} download>
+            <Download />
+            Export CSV
+          </a>
+        }
         data={applications}
         columns={columns}
         filters={filters}

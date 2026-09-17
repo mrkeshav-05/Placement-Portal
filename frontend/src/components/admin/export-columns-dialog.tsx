@@ -1,6 +1,12 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Lock } from "lucide-react";
+
+import { AdminDialog } from "@/components/common/admin-dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export type ExportColumnDef<T> = {
   id: string;
@@ -17,9 +23,11 @@ export function buildDefaultExportSelection<T>(columns: ExportColumnDef<T>[]): S
 }
 
 /**
- * Column-picker modal for a customized export. Mirrors the grouped
- * `.permission-category-box` layout already used for the RBAC matrix, so a
- * second, unrelated grid style did not need to be invented.
+ * Column picker for a customized export.
+ *
+ * The body scrolls and the footer does not, because the count in "Apply (13
+ * columns)" is the confirmation that the selection is what was intended, and a
+ * list of forty columns would otherwise push it off the screen.
  */
 export function ExportColumnsDialog<T>({
   columns,
@@ -46,6 +54,18 @@ export function ExportColumnsDialog<T>({
     onChange(next);
   }
 
+  /** Clears the group when all of it is on, otherwise fills it. */
+  function toggleGroup(group: string) {
+    const members = columns.filter((c) => c.group === group && !c.locked);
+    const allOn = members.every((c) => selected.has(c.id));
+    const next = new Set(selected);
+    for (const member of members) {
+      if (allOn) next.delete(member.id);
+      else next.add(member.id);
+    }
+    onChange(next);
+  }
+
   function selectAll() {
     const next = new Set(selected);
     for (const c of optional) next.add(c.id);
@@ -57,65 +77,91 @@ export function ExportColumnsDialog<T>({
   }
 
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal export-columns-modal">
-        <header>
-          <div>
-            <h2>Customize Export Columns</h2>
-            <p className="text-xs text-[var(--muted)] mt-1">
-              Select which columns to include in the Excel export.
-            </p>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close dialog">
-            <X size={18} />
-          </button>
-        </header>
-
-        <div className="export-columns-toolbar">
-          <button type="button" className="dt-view-button" onClick={selectAll}>
-            Select All
-          </button>
-          <button type="button" className="dt-view-button" onClick={resetDefaults}>
-            Reset Defaults
-          </button>
-          <span className="export-columns-count">
-            {lockedCount} locked &middot; {selectedOptionalCount} optional selected
-          </span>
-        </div>
-
-        <div className="permission-categories-grid export-columns-grid">
-          {groups.map((group) => (
-            <div className="permission-category-box" key={group}>
-              <h3>{group}</h3>
-              {columns
-                .filter((c) => c.group === group)
-                .map((c) => (
-                  <label key={c.id} className="dt-check">
-                    <input
-                      type="checkbox"
-                      checked={c.locked || selected.has(c.id)}
-                      disabled={c.locked}
-                      onChange={() => toggle(c.id)}
-                    />
-                    <span>
-                      {c.label}
-                      {c.locked ? <small className="text-[var(--muted)]"> (required)</small> : null}
-                    </span>
-                  </label>
-                ))}
-            </div>
-          ))}
-        </div>
-
-        <footer>
-          <button type="button" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="button" onClick={onApply}>
-            Apply ({lockedCount + selectedOptionalCount} columns)
-          </button>
-        </footer>
+    <AdminDialog
+      onClose={onClose}
+      title="Customize Export Columns"
+      description="Select which columns to include in the Excel export."
+      // Wide enough for two columns of labels per group, and capped so the
+      // dialog never outgrows the viewport.
+      className="flex max-h-[85vh] flex-col gap-0 overflow-hidden sm:max-w-[980px]"
+    >
+      <div className="flex flex-wrap items-center gap-2.5 border-b py-3.5">
+        <Button type="button" variant="outline" size="sm" onClick={selectAll}>
+          Select All
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={resetDefaults}>
+          Reset Defaults
+        </Button>
+        <span className="text-muted-foreground ml-auto text-xs font-semibold">
+          {lockedCount} locked &middot; {selectedOptionalCount} optional selected
+        </span>
       </div>
-    </div>
+
+      <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 py-4">
+        <div className="grid gap-5">
+          {groups.map((group) => {
+            const members = columns.filter((c) => c.group === group);
+            const groupOptional = members.filter((c) => !c.locked);
+            const checkedCount = groupOptional.filter((c) => selected.has(c.id)).length;
+
+            return (
+              <section key={group} className="grid gap-2.5">
+                <Label className="w-fit font-semibold">
+                  <Checkbox
+                    checked={
+                      !groupOptional.length || checkedCount === groupOptional.length
+                        ? true
+                        : checkedCount === 0
+                          ? false
+                          : "indeterminate"
+                    }
+                    disabled={!groupOptional.length}
+                    onCheckedChange={() => toggleGroup(group)}
+                    aria-label={`Toggle every optional column in ${group}`}
+                  />
+                  {group}
+                </Label>
+
+                {/* Two columns, so forty fields do not become forty rows. */}
+                <div className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                  {members.map((c) => (
+                    <Label
+                      key={c.id}
+                      className={
+                        c.locked
+                          ? "text-muted-foreground py-1.5 font-normal"
+                          : "py-1.5 font-normal"
+                      }
+                    >
+                      {c.locked ? (
+                        <Lock className="size-3.5 shrink-0" aria-hidden />
+                      ) : (
+                        <Checkbox
+                          checked={selected.has(c.id)}
+                          onCheckedChange={() => toggle(c.id)}
+                        />
+                      )}
+                      <span>
+                        {c.label}
+                        {c.locked ? <small> (required)</small> : null}
+                      </span>
+                    </Label>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </div>
+
+      <DialogFooter className="shrink-0 border-t pt-4">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="button" onClick={onApply}>
+          Apply ({lockedCount + selectedOptionalCount} columns)
+        </Button>
+      </DialogFooter>
+    </AdminDialog>
   );
 }

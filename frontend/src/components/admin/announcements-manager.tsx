@@ -14,7 +14,6 @@ import {
   Trash2,
   Undo2,
   User,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,12 +24,28 @@ import {
   setAnnouncementStatusAction,
   type AnnouncementActionResult,
 } from "@/app/admin/announcements/actions";
+import { AdminDialog } from "@/components/common/admin-dialog";
 import {
   DataTable,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { AnnouncementStatus } from "@/lib/announcement-schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminAnnouncementItem = {
   id: string;
@@ -56,6 +71,9 @@ export type AnnouncementAttachment = {
   mimeType: string;
   sizeBytes: number;
 };
+
+/** Stands in for "no company" in the picker, which cannot hold an empty value. */
+const NO_COMPANY = "__none";
 
 export type CompanyOption = {
   id: string;
@@ -105,6 +123,10 @@ export function AnnouncementsManager({
   const [formCategory, setFormCategory] = useState<"COMPANY_EVENT" | "GENERAL">("GENERAL");
   const [formTags, setFormTags] = useState<string[]>([]);
   const [customTagInput, setCustomTagInput] = useState("");
+  // Empty means "no company". Radix rejects an empty-valued item, so the
+  // picker shows NO_COMPANY instead and `submitForm` posts the empty string
+  // the action already reads as null.
+  const [formCompanyId, setFormCompanyId] = useState("");
   // Which footer button was pressed. A ref, not state, because the value has
   // to be readable inside the submit handler of the same click.
   const submitStatus = useRef<AnnouncementStatus>("PUBLISHED");
@@ -130,6 +152,7 @@ export function AnnouncementsManager({
     setFormCategory(item.category);
     setFormTags([...item.tags]);
     setCustomTagInput("");
+    setFormCompanyId(item.companyId ?? "");
     // Editing keeps the announcement where it is: saving a live announcement
     // must not quietly withdraw it, and saving a draft must not publish it.
     submitStatus.current = item.status;
@@ -159,6 +182,7 @@ export function AnnouncementsManager({
     formData.set("tags", JSON.stringify(formTags));
     formData.set("category", formCategory);
     formData.set("status", submitStatus.current);
+    formData.set("companyId", formCategory === "COMPANY_EVENT" ? formCompanyId : "");
     const nextResult = await saveAnnouncementAction(formData);
     setResult(nextResult);
     setSaving(false);
@@ -184,7 +208,7 @@ export function AnnouncementsManager({
       {
         id: "title",
         header: "Title & Overview",
-        width: "minmax(260px, 1.6fr)",
+        width: "260px",
         hideable: false,
         sortValue: (item) => item.title,
         cell: (item) => (
@@ -246,7 +270,7 @@ export function AnnouncementsManager({
       {
         id: "status",
         header: "Status & Target",
-        width: "minmax(140px, 1fr)",
+        width: "140px",
         sortValue: (item) => item.status,
         cell: (item) => (
           <>
@@ -277,10 +301,12 @@ export function AnnouncementsManager({
       {
         id: "tags",
         header: "Tags",
-        width: "minmax(140px, 1fr)",
+        width: "140px",
         sortValue: (item) => item.tags.length,
+        // One line, like every other cell: the grid scrolls sideways, so a
+        // second tag widens the column instead of deepening the row.
         cell: (item) => (
-          <span style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+          <span style={{ display: "flex", gap: 4 }}>
             {item.tags.length > 0 ? (
               item.tags.slice(0, 3).map((tag) => (
                 <span
@@ -321,7 +347,7 @@ export function AnnouncementsManager({
       {
         id: "published",
         header: "Author & Published",
-        width: "minmax(150px, 1fr)",
+        width: "150px",
         // Sorts by the date the cell shows, which is the publication date once
         // an announcement is live and the writing date while it is a draft.
         sortValue: (item) =>
@@ -473,8 +499,8 @@ export function AnnouncementsManager({
         </span>
       </nav>
 
-      {result.success ? <div className="admin-success">{result.success}</div> : null}
-      {result.error ? <div className="admin-error">{result.error}</div> : null}
+      {result.success ? <Alert variant="success" className="mt-4"><AlertDescription>{result.success}</AlertDescription></Alert> : null}
+      {result.error ? <Alert variant="destructive" className="mt-4"><AlertDescription>{result.error}</AlertDescription></Alert> : null}
 
       {/* Metrics Banner */}
       <section className="admin-metrics">
@@ -524,6 +550,7 @@ export function AnnouncementsManager({
       </section>
 
       <DataTable
+        title="Announcements"
         data={announcements}
         columns={columns}
         getRowId={(item) => item.id}
@@ -549,289 +576,181 @@ export function AnnouncementsManager({
 
       {/* CREATE / EDIT MODAL */}
       {editing !== undefined ? (
-        <div className="modal-backdrop">
-          <form
-            key={editing?.id ?? "create"}
-            className="modal"
-            action={submitForm}
-            style={{ width: "min(720px, 100%)" }}
-          >
-            <header>
-              <div>
-                <span className="eyebrow">Announcement Record</span>
-                <h2>{editing ? "Edit announcement" : "Create announcement"}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditing(undefined)}
-                aria-label="Close dialog"
-              >
-                <X />
-              </button>
-            </header>
-
+        <AdminDialog
+          onClose={() => setEditing(undefined)}
+          eyebrow="Announcement Record"
+          title={editing ? "Edit announcement" : "Create announcement"}
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[720px]"
+        >
+          <form key={editing?.id ?? "create"} className="grid gap-3" action={submitForm}>
             <input type="hidden" name="id" value={editing?.id ?? ""} />
 
-            <div className="form-grid">
-              {/* Title */}
-              <label className="wide">
-                Announcement Title *
-                <input
-                  name="title"
-                  required
-                  minLength={2}
-                  maxLength={200}
-                  defaultValue={editing?.title ?? ""}
-                  placeholder="e.g., Google Technical Assessment Shortlist & Schedule"
-                />
-              </label>
-
-              {/* Category Segmented Selector */}
-              <div className="wide">
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "var(--ink)",
-                    marginBottom: 6,
-                  }}
-                >
-                  Category *
-                </span>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <button
-                    type="button"
-                    onClick={() => setFormCategory("GENERAL")}
-                    style={{
-                      flex: 1,
-                      padding: "10px 14px",
-                      borderRadius: 10,
-                      border: "1px solid",
-                      borderColor:
-                        formCategory === "GENERAL" ? "var(--blue)" : "var(--border)",
-                      background:
-                        formCategory === "GENERAL"
-                          ? "var(--surface-highlight)"
-                          : "var(--surface-alt)",
-                      color: formCategory === "GENERAL" ? "var(--ink)" : "var(--muted)",
-                      fontWeight: formCategory === "GENERAL" ? 700 : 500,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                      fontSize: 12,
-                    }}
-                  >
-                    <Megaphone size={16} />
-                    General Update
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormCategory("COMPANY_EVENT")}
-                    style={{
-                      flex: 1,
-                      padding: "10px 14px",
-                      borderRadius: 10,
-                      border: "1px solid",
-                      borderColor:
-                        formCategory === "COMPANY_EVENT" ? "var(--blue)" : "var(--border)",
-                      background:
-                        formCategory === "COMPANY_EVENT"
-                          ? "var(--surface-highlight)"
-                          : "var(--surface-alt)",
-                      color:
-                        formCategory === "COMPANY_EVENT" ? "var(--ink)" : "var(--muted)",
-                      fontWeight: formCategory === "COMPANY_EVENT" ? 700 : 500,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                      fontSize: 12,
-                    }}
-                  >
-                    <Building2 size={16} />
-                    Company Drive / Event
-                  </button>
-                </div>
-              </div>
-
-              {/* Associated Company (when category is Company Event) */}
-              {formCategory === "COMPANY_EVENT" ? (
-                <label className="wide">
-                  Associated Company
-                  <select
-                    name="companyId"
-                    defaultValue={editing?.companyId ?? ""}
-                  >
-                    <option value="">-- Select Recruiting Company (Optional) --</option>
-                    {companies.map((comp) => (
-                      <option value={comp.id} key={comp.id}>
-                        {comp.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-
-              {/* Tags Selector & Custom Tag Input */}
-              <div className="wide">
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "var(--ink)",
-                    marginBottom: 6,
-                  }}
-                >
-                  Tags & Badges
-                </span>
-
-                {/* Preset Suggestions */}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                  {PRESET_TAGS.map((tag) => {
-                    const isSelected = formTags.includes(tag);
-                    return (
-                      <button
-                        type="button"
-                        key={tag}
-                        onClick={() => togglePresetTag(tag)}
-                        style={{
-                          fontSize: 10,
-                          fontWeight: isSelected ? 700 : 500,
-                          padding: "4px 9px",
-                          borderRadius: 9999,
-                          border: "1px solid",
-                          borderColor: isSelected ? "var(--blue)" : "var(--border)",
-                          background: isSelected ? "var(--badge-blue-bg)" : "var(--card-bg)",
-                          color: isSelected ? "var(--blue)" : "var(--muted)",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {isSelected ? "✓ " : "+ "}
-                        {tag}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Active Selected Tags Display */}
-                {formTags.length > 0 ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 6,
-                      padding: "8px 10px",
-                      background: "var(--surface-alt)",
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      marginBottom: 8,
-                    }}
-                  >
-                    {formTags.map((tag) => (
-                      <span
-                        key={tag}
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: "3px 8px",
-                          borderRadius: 6,
-                          background: "var(--card-bg)",
-                          border: "1px solid var(--border)",
-                          color: "var(--ink)",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 5,
-                        }}
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          style={{
-                            border: 0,
-                            background: "transparent",
-                            cursor: "pointer",
-                            color: "var(--muted)",
-                            padding: 0,
-                            lineHeight: 1,
-                          }}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-
-                {/* Custom tag adder */}
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input
-                    value={customTagInput}
-                    onChange={(e) => setCustomTagInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addCustomTag();
-                      }
-                    }}
-                    placeholder="Add custom tag (press Enter or Add)..."
-                    style={{ fontSize: 11 }}
-                  />
-                  <button
-                    type="button"
-                    onClick={addCustomTag}
-                    style={{
-                      padding: "0 14px",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      background: "var(--surface-alt)",
-                      color: "var(--ink)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              {/* Content / Body */}
-              <label className="wide">
-                Announcement Content *
-                <textarea
-                  name="content"
-                  required
-                  rows={8}
-                  minLength={2}
-                  maxLength={10000}
-                  defaultValue={editing?.content ?? ""}
-                  placeholder="Enter the full announcement details, test links, shortlist instructions, eligibility criteria, etc."
-                />
-              </label>
+            {/* Title */}
+            <div className="grid gap-2">
+              <Label htmlFor="announcement-title">Announcement Title *</Label>
+              <Input
+                id="announcement-title"
+                name="title"
+                required
+                minLength={2}
+                maxLength={200}
+                defaultValue={editing?.title ?? ""}
+                placeholder="e.g., Google Technical Assessment Shortlist & Schedule"
+              />
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setEditing(undefined)}>
+            {/* Category Segmented Selector */}
+            <div className="grid gap-2">
+              <Label>Category *</Label>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                spacing={2}
+                className="w-full"
+                value={formCategory}
+                // Radix clears a single toggle group when the active item is
+                // pressed again; an announcement is always one category or the
+                // other, so that clearing is ignored.
+                onValueChange={(next) =>
+                  next && setFormCategory(next as "COMPANY_EVENT" | "GENERAL")
+                }
+              >
+                <ToggleGroupItem
+                  value="GENERAL"
+                  className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:hover:bg-primary/90"
+                >
+                  <Megaphone />
+                  General Update
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="COMPANY_EVENT"
+                  className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:hover:bg-primary/90"
+                >
+                  <Building2 />
+                  Company Drive / Event
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            {/* Associated Company (when category is Company Event) */}
+            {formCategory === "COMPANY_EVENT" ? (
+              <div className="grid gap-2">
+                <Label htmlFor="announcement-company">Associated Company</Label>
+                <Select
+                  value={formCompanyId || NO_COMPANY}
+                  onValueChange={(next) =>
+                    setFormCompanyId(next === NO_COMPANY ? "" : next)
+                  }
+                >
+                  <SelectTrigger id="announcement-company" className="w-full">
+                    <SelectValue placeholder="-- Select Recruiting Company (Optional) --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_COMPANY}>No company</SelectItem>
+                    {companies.map((comp) => (
+                      <SelectItem value={comp.id} key={comp.id}>
+                        {comp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {/* Tags Selector & Custom Tag Input */}
+            <div className="grid gap-2">
+              <Label>Tags &amp; Badges</Label>
+
+              {/* Preset Suggestions */}
+              <div className="flex flex-wrap gap-1.5">
+                {PRESET_TAGS.map((tag) => {
+                  const isSelected = formTags.includes(tag);
+                  return (
+                    <Button
+                      type="button"
+                      key={tag}
+                      size="xs"
+                      variant={isSelected ? "default" : "outline"}
+                      className="rounded-full"
+                      onClick={() => togglePresetTag(tag)}
+                    >
+                      {isSelected ? "✓ " : "+ "}
+                      {tag}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {/* Active Selected Tags Display */}
+              {formTags.length > 0 ? (
+                <div className="bg-muted flex flex-wrap gap-1.5 rounded-md border px-2.5 py-2">
+                  {formTags.map((tag) => (
+                    <Badge key={tag} variant="outline" className="bg-background gap-1.5">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        aria-label={`Remove ${tag}`}
+                        className="text-muted-foreground hover:text-foreground leading-none"
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Custom tag adder */}
+              <div className="flex gap-2">
+                <Input
+                  value={customTagInput}
+                  onChange={(e) => setCustomTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addCustomTag();
+                    }
+                  }}
+                  placeholder="Add custom tag (press Enter or Add)..."
+                />
+                <Button type="button" variant="outline" onClick={addCustomTag}>
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            {/* Content / Body */}
+            <div className="grid gap-2">
+              <Label htmlFor="announcement-content">Announcement Content *</Label>
+              <Textarea
+                id="announcement-content"
+                name="content"
+                required
+                rows={8}
+                minLength={2}
+                maxLength={10000}
+                defaultValue={editing?.content ?? ""}
+                placeholder="Enter the full announcement details, test links, shortlist instructions, eligibility criteria, etc."
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditing(undefined)}>
                 Cancel
-              </button>
+              </Button>
               {/* Two submit buttons rather than a status dropdown: the choice
                   is the act, and the label says who will see the result. */}
-              <button
+              <Button
                 type="submit"
+                variant="outline"
                 disabled={saving}
                 onClick={() => {
                   submitStatus.current = "DRAFT";
                 }}
               >
                 {saving ? "Saving…" : "Save as draft"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={saving}
                 onClick={() => {
@@ -843,198 +762,138 @@ export function AnnouncementsManager({
                   : editing?.status === "PUBLISHED"
                     ? "Save & keep live"
                     : "Publish to students"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       ) : null}
 
       {/* DETAIL PREVIEW MODAL */}
       {previewing ? (
-        <div className="modal-backdrop">
-          <div className="modal" style={{ width: "min(680px, 100%)" }}>
-            <header>
-              <div>
-                <span className="eyebrow">
-                  {previewing.category === "COMPANY_EVENT"
-                    ? "Company Drive Announcement"
-                    : "General Notice"}
+        <AdminDialog
+          onClose={() => setPreviewing(null)}
+          eyebrow={
+            previewing.category === "COMPANY_EVENT"
+              ? "Company Drive Announcement"
+              : "General Notice"
+          }
+          title={previewing.title}
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[680px]"
+        >
+          <div className="grid gap-4">
+            {/* Metadata Banner */}
+            <div className="bg-muted flex flex-wrap items-center gap-3 rounded-[10px] border px-3.5 py-2.5 text-xs">
+              {previewing.companyName ? (
+                <div className="flex items-center gap-1.5">
+                  <Building2 size={14} className="text-[var(--blue)]" />
+                  <strong>{previewing.companyName}</strong>
+                </div>
+              ) : null}
+
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <Calendar size={14} />
+                <span>
+                  {new Intl.DateTimeFormat("en-IN", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(previewing.createdAt))}
                 </span>
-                <h2>{previewing.title}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPreviewing(null)}
-                aria-label="Close dialog"
-              >
-                <X />
-              </button>
-            </header>
-
-            <div style={{ padding: "16px 0", display: "grid", gap: 16 }}>
-              {/* Metadata Banner */}
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "10px 14px",
-                  background: "var(--surface-alt)",
-                  borderRadius: 10,
-                  border: "1px solid var(--border)",
-                  fontSize: 11,
-                }}
-              >
-                {previewing.companyName ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ink)" }}>
-                    <Building2 size={14} color="var(--blue)" />
-                    <strong>{previewing.companyName}</strong>
-                  </div>
-                ) : null}
-
-                <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)" }}>
-                  <Calendar size={14} />
-                  <span>
-                    {new Intl.DateTimeFormat("en-IN", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(new Date(previewing.createdAt))}
-                  </span>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)" }}>
-                  <User size={14} />
-                  <span>{previewing.createdByName || previewing.createdByEmail || "Placement Cell"}</span>
-                </div>
               </div>
 
-              {/* Tags */}
-              {previewing.tags.length > 0 ? (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {previewing.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        padding: "3px 8px",
-                        borderRadius: 9999,
-                        background: "var(--badge-blue-bg)",
-                        color: "var(--blue)",
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              {/* Body text with whitespace preservation */}
-              <div
-                style={{
-                  color: "var(--ink)",
-                  fontSize: 13,
-                  lineHeight: 1.7,
-                  whiteSpace: "pre-wrap",
-                  background: "var(--card-bg)",
-                  padding: 16,
-                  borderRadius: 10,
-                  border: "1px solid var(--border)",
-                }}
-              >
-                {previewing.content}
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <User size={14} />
+                <span>{previewing.createdByName || previewing.createdByEmail || "Placement Cell"}</span>
               </div>
-
-              {previewing.attachments.length ? (
-                <div style={{ display: "grid", gap: 8 }}>
-                  <span className="attachments-label">
-                    Attachments ({previewing.attachments.length})
-                  </span>
-                  <div className="attachment-links">
-                    {previewing.attachments.map((file) => (
-                      <a
-                        key={file.fileUrl}
-                        href={file.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Paperclip />
-                        {file.fileName}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
             </div>
 
-            <footer>
-              <button
-                type="button"
-                onClick={() => {
-                  const toEdit = previewing;
-                  setPreviewing(null);
-                  openEditModal(toEdit);
-                }}
-              >
-                Edit
-              </button>
-              <button type="button" onClick={() => setPreviewing(null)}>
-                Done
-              </button>
-            </footer>
+            {/* Tags */}
+            {previewing.tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {previewing.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    className="bg-[var(--badge-blue-bg)] text-[var(--blue)]"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Body text with whitespace preservation */}
+            <div className="rounded-[10px] border p-4 text-[13px] leading-relaxed whitespace-pre-wrap">
+              {previewing.content}
+            </div>
+
+            {previewing.attachments.length ? (
+              <div className="grid gap-2">
+                <span className="attachments-label">
+                  Attachments ({previewing.attachments.length})
+                </span>
+                <div className="attachment-links">
+                  {previewing.attachments.map((file) => (
+                    <a
+                      key={file.fileUrl}
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Paperclip />
+                      {file.fileName}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
-        </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const toEdit = previewing;
+                setPreviewing(null);
+                openEditModal(toEdit);
+              }}
+            >
+              Edit
+            </Button>
+            <Button type="button" onClick={() => setPreviewing(null)}>
+              Done
+            </Button>
+          </DialogFooter>
+        </AdminDialog>
       ) : null}
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleting ? (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleRemove} style={{ width: "min(460px, 100%)" }}>
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--badge-red-text)" }}>
-                  Confirm Deletion
-                </span>
-                <h2>Delete Announcement</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDeleting(null)}
-                aria-label="Close dialog"
-              >
-                <X />
-              </button>
-            </header>
-
+        <AdminDialog
+          onClose={() => setDeleting(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Confirm Deletion</span>}
+          title="Delete Announcement"
+          className="sm:max-w-[460px]"
+        >
+          <form className="grid gap-3" action={handleRemove}>
             <input type="hidden" name="announcementId" value={deleting.id} />
 
-            <div style={{ padding: "14px 0", fontSize: 12, color: "var(--ink)", lineHeight: 1.5 }}>
+            <div className="text-xs leading-relaxed">
               Are you sure you want to delete <strong>&ldquo;{deleting.title}&rdquo;</strong>?
-              <p style={{ margin: "8px 0 0", color: "var(--muted)", fontSize: 11 }}>
+              <p className="text-muted-foreground mt-2 text-[11px]">
                 This action cannot be undone. The announcement will be immediately removed from student dashboards.
               </p>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setDeleting(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDeleting(null)}>
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                style={{
-                  background: "var(--badge-red-text)",
-                  color: "#fff",
-                  border: 0,
-                  fontWeight: 700,
-                }}
-              >
+              </Button>
+              <Button type="submit" variant="destructive" disabled={saving}>
                 {saving ? "Deleting…" : "Delete announcement"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </AdminDialog>
       ) : null}
     </div>
   );
