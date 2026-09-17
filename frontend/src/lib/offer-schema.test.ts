@@ -4,7 +4,9 @@ import {
   formatRupees,
   formatStipend,
   isCtcType,
+  offerBulkFormSchema,
   offerFormSchema,
+  parseRollNumbers,
 } from "./offer-schema";
 
 const base = {
@@ -77,6 +79,80 @@ test("the season must be a four-digit year and the student and company are requi
     offerFormSchema.safeParse({ ...base, companyId: "", type: "FTE", ctc: "10" }).success,
     false,
   );
+});
+
+test("a pasted roll-number list survives whatever the spreadsheet produced", () => {
+  // Commas, spaces, tabs, newlines, and semicolons all appear in real pastes,
+  // often mixed in the same one.
+  assert.deepEqual(parseRollNumbers("2023UCS1632, 2023UME4018"), [
+    "2023UCS1632",
+    "2023UME4018",
+  ]);
+  assert.deepEqual(parseRollNumbers("2023UCS1632\n2023UME4018\t2023UEE4661"), [
+    "2023UCS1632",
+    "2023UME4018",
+    "2023UEE4661",
+  ]);
+  assert.deepEqual(parseRollNumbers("2023ucs1632; 2023ume4018"), [
+    "2023UCS1632",
+    "2023UME4018",
+  ]);
+});
+
+test("roll numbers are de-duplicated in the order they were entered", () => {
+  // The same student cannot hold the same record twice, so a repeat in the
+  // paste is the office's typo rather than a second record.
+  assert.deepEqual(parseRollNumbers("  B ,a,  A ,b,a "), ["B", "A"]);
+  assert.deepEqual(parseRollNumbers("   "), []);
+  assert.deepEqual(parseRollNumbers(""), []);
+});
+
+test("a bulk run needs a company, a job title, an amount, and at least one student", () => {
+  const complete = {
+    companyId: "cmp_1",
+    type: "FTE",
+    status: "OFFERED",
+    jobTitle: "Associate Engineer",
+    batch: "2027",
+    ctc: "1800000",
+    rollNumbers: ["2023UCS1632"],
+  };
+  assert.equal(offerBulkFormSchema.safeParse(complete).success, true);
+
+  for (const [field, value] of [
+    ["companyId", ""],
+    ["jobTitle", "   "],
+    ["rollNumbers", []],
+  ] as const) {
+    const parsed = offerBulkFormSchema.safeParse({ ...complete, [field]: value });
+    assert.equal(parsed.success, false, `${field} should be required`);
+  }
+});
+
+test("a bulk run prices itself by type, exactly as a single record does", () => {
+  const base = {
+    companyId: "cmp_1",
+    status: "ACCEPTED",
+    jobTitle: "Summer Intern",
+    batch: "2027",
+    rollNumbers: ["2023UCS1632", "2023UME4018"],
+  };
+
+  const missingStipend = offerBulkFormSchema.safeParse({ ...base, type: "INTERNSHIP" });
+  assert.equal(missingStipend.success, false);
+  assert.equal(missingStipend.error?.issues[0]?.path[0], "stipend");
+
+  // The amount that does not belong to the type is dropped, so a whole paste
+  // cannot land with a stipend the dashboard would average as a salary.
+  const internship = offerBulkFormSchema.parse({
+    ...base,
+    type: "INTERNSHIP",
+    ctc: "1800000",
+    stipend: "50000",
+  });
+  assert.equal(internship.ctc, null);
+  assert.equal(internship.stipend, 50_000);
+  assert.equal(internship.rollNumbers.length, 2);
 });
 
 test("packages read in the units the office uses", () => {

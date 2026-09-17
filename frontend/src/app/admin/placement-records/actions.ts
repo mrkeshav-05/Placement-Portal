@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { backendFetch } from "@/lib/api-client";
 import { requirePermission } from "@/lib/admin-session";
-import { offerDeleteSchema, offerFormSchema } from "@/lib/offer-schema";
+import {
+  offerBulkFormSchema,
+  offerDeleteSchema,
+  offerFormSchema,
+  parseRollNumbers,
+} from "@/lib/offer-schema";
 import {
   PERM_PLACEMENT_RECORDS_CREATE,
   PERM_PLACEMENT_RECORDS_DELETE,
@@ -11,6 +16,12 @@ import {
 } from "@/lib/permissions";
 
 export type OfferActionResult = { error?: string; success?: string };
+
+/** A bulk run reports both halves: what was written and what was not. */
+export type OfferBulkActionResult = OfferActionResult & {
+  created?: number;
+  skipped?: { rollNumber: string; reason: string }[];
+};
 
 // Offers exist only in the backend. Unlike the older admin screens there is no
 // Prisma fallback here: the dashboard aggregates these rows, and a second
@@ -43,6 +54,7 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
     jobProfileId: formData.get("jobProfileId") ?? "",
     type: formData.get("type"),
     status: formData.get("status") || "OFFERED",
+    jobTitle: formData.get("jobTitle") ?? "",
     batch: formData.get("batch"),
     ctc: formData.get("ctc") ?? "",
     stipend: formData.get("stipend") ?? "",
@@ -63,6 +75,7 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
     jobProfileId: offer.jobProfileId,
     type: offer.type,
     status: offer.status,
+    jobTitle: offer.jobTitle,
     batch: offer.batch,
     ctc: offer.ctc,
     stipend: offer.stipend,
@@ -90,6 +103,76 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
 
   revalidateOfferPages();
   return { success: id ? "Placement record updated." : "Placement record added." };
+}
+
+export async function saveOfferBulkAction(
+  formData: FormData,
+): Promise<OfferBulkActionResult> {
+  await requirePermission(PERM_PLACEMENT_RECORDS_CREATE);
+
+  const parsed = offerBulkFormSchema.safeParse({
+    companyId: formData.get("companyId"),
+    jobProfileId: formData.get("jobProfileId") ?? "",
+    type: formData.get("type"),
+    status: formData.get("status") || "OFFERED",
+    jobTitle: formData.get("jobTitle") ?? "",
+    batch: formData.get("batch"),
+    ctc: formData.get("ctc") ?? "",
+    stipend: formData.get("stipend") ?? "",
+    location: formData.get("location") ?? "",
+    remarks: formData.get("remarks") ?? "",
+    // The field holds whatever was pasted; the parser is the single definition
+    // of how that becomes a list, shared with the client-side chips.
+    rollNumbers: parseRollNumbers(String(formData.get("rollNumbers") ?? "")),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Check the record details." };
+  }
+
+  const bulk = parsed.data;
+
+  let result: { created: number; skipped?: { rollNumber: string; reason: string }[] };
+  try {
+    result = await backendFetch<{
+      created: number;
+      skipped?: { rollNumber: string; reason: string }[];
+    }>("/api/v1/offers/bulk", {
+      method: "POST",
+      body: JSON.stringify({
+        companyId: bulk.companyId,
+        jobProfileId: bulk.jobProfileId,
+        type: bulk.type,
+        status: bulk.status,
+        jobTitle: bulk.jobTitle,
+        batch: bulk.batch,
+        ctc: bulk.ctc,
+        stipend: bulk.stipend,
+        location: bulk.location,
+        remarks: bulk.remarks,
+        rollNumbers: bulk.rollNumbers,
+      }),
+    });
+  } catch (error) {
+    return { error: backendMessage(error, "Failed to create the placement records.") };
+  }
+
+  revalidateOfferPages();
+
+  const skipped = result.skipped ?? [];
+  if (!result.created) {
+    return {
+      error: "No records were created. Check the roll numbers below.",
+      created: 0,
+      skipped,
+    };
+  }
+
+  return {
+    success: `Created ${result.created} placement record${result.created === 1 ? "" : "s"}.`,
+    created: result.created,
+    skipped,
+  };
 }
 
 export async function deleteOfferAction(formData: FormData): Promise<OfferActionResult> {

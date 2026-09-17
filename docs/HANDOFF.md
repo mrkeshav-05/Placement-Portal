@@ -7,6 +7,7 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-18, bulk placement records pass): `npm run lint` (the same pre-existing `DATE_FMT` warning), `npm run type-check`, `npm run build` with `/admin/placement-records/add` registered, 126 frontend unit tests, and 158 backend pytest tests including 8 new ones covering the bulk endpoint's partial-result semantics. **Not walked in a signed-in browser**: the Cursor browser holds a redirect-looping cookie for `localhost:3000` that cannot be cleared through CDP, and nobody on this machine has an admin password to hand. `http://127.0.0.1:3000` is a clean cookie origin and renders the login page, so that is the way in.
 - Last verified (2026-09-18, Makefile/containerisation pass): `make up` from a stopped stack to all three services healthy, `make seed` loading 445 roster students plus the demonstration dataset, `make test-backend` (148 pytest tests in the container), `make db-dump`, the `db-remove-demo`/`db-seed-demo` round trip, `make db-studio` answering on port 5555, and the `.env` bootstrap and `make admin` allowlist edit exercised in a scratch directory so the real `.env` was untouched.
 - Last verified (2026-09-18, admin data grid pass): `npm run lint` (the same pre-existing warning), `npm run type-check`, `npm run build`, 122 frontend unit tests, and all 12 admin tables measured in a signed-in browser in both themes. No backend file changed, so pytest was not re-run.
 - Last verified (2026-09-18, shadcn admin pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, and 122 frontend unit tests. No backend file changed, so pytest was not re-run.
@@ -15,6 +16,32 @@ This file carries short-lived working context between teammates and agents. Cano
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## Bulk placement records, 2026-09-18
+
+`/admin/placement-records/add` records one drive's outcome for a pasted list of
+roll numbers. The single-record dialog on the list page was kept, so there are
+now two ways in and the heading carries both.
+
+What to know before touching it:
+
+- **The endpoint returns a partial result on purpose.** `POST
+  /api/v1/offers/bulk` responds 201 even when it wrote nothing, with `created`
+  and a `skipped` list. The caller has to read both; the server action turns a
+  zero-created response into an error message and keeps the skipped rows on
+  screen to be corrected. Do not "fix" this into a 4xx.
+- **`Offer.jobTitle` reads with a fallback.** `OfferResponse.jobTitle` is
+  `offer.jobTitle or jobProfile.title`, so the response cannot tell you which
+  one it came from. The edit dialog therefore prefills the resolved value, and
+  saving it copies a drive's title onto the record. That is accepted: the
+  administrator saw the value. If it ever matters, expose the raw column and
+  the drive title as two fields rather than guessing in the frontend.
+- **Type and status were deliberately not renamed.** The reference screenshots
+  show a different vocabulary; the 2026-09-18 entry in `DECISIONS.md` says why
+  the portal keeps its own. Changing them is a Prisma enum migration plus
+  `placement_stats.py`, `analytics.py`, and the seed data.
+- **Not verified by clicking.** See the unverified boundary in Current state
+  above.
 
 ## Running the project, 2026-09-18
 

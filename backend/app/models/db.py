@@ -277,6 +277,9 @@ class Offer(Base):
     status: Mapped[OfferStatus] = mapped_column(
         Enum(OfferStatus, name="OfferStatus"), default=OfferStatus.OFFERED
     )
+    # Role as recorded, which may differ from the linked drive's title. Reads
+    # fall back to jobProfile.title when this is null.
+    jobTitle: Mapped[str | None] = mapped_column(String, nullable=True)
     # Placement season, held as the graduating batch year.
     batch: Mapped[int] = mapped_column(Integer)
     # Annual CTC in rupees for FTE and PPO offers.

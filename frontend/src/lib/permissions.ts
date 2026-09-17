@@ -448,6 +448,7 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionKey[]> = {
   "/admin/events/add": [PERM_JOBS_CREATE],
   "/admin/applications": [PERM_APPLICATIONS_VIEW],
   "/admin/placement-records": [PERM_PLACEMENT_RECORDS_VIEW],
+  "/admin/placement-records/add": [PERM_PLACEMENT_RECORDS_CREATE],
   "/admin/students": [PERM_STUDENTS_VIEW],
   "/admin/announcements": [PERM_ANNOUNCEMENTS_VIEW],
   "/admin/announcements/company-event": [PERM_ANNOUNCEMENTS_CREATE],

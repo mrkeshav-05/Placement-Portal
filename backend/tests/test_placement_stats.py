@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.models.db import OfferStatus, OfferType
-from app.schemas.offer import OfferCreate
+from app.schemas.offer import OfferBulkCreate, OfferCreate
 from app.services.placement_stats import (
     COUNTED_OFFER_STATUSES,
     PLACEMENT_TYPES,
@@ -93,3 +93,39 @@ def test_an_internship_needs_a_monthly_stipend_not_a_ctc():
         userId="usr_1", companyId="cmp_1", type="INTERNSHIP", batch=2027, stipend=75_000
     )
     assert offer.stipend == 75_000
+
+
+def test_a_bulk_run_is_priced_by_the_same_rule_as_a_single_record():
+    # Recording forty rows at once must not be a way around the amount rule.
+    with pytest.raises(ValidationError):
+        OfferBulkCreate(
+            companyId="cmp_1", type="FTE", batch=2027, rollNumbers=["2023UCS1632"]
+        )
+
+    bulk = OfferBulkCreate(
+        companyId="cmp_1",
+        type="FTE",
+        batch=2027,
+        ctc=1_800_000,
+        jobTitle="Associate Engineer",
+        rollNumbers=["2023UCS1632", "2023UME4018"],
+    )
+    assert bulk.ctc == 1_800_000
+    assert bulk.status == "OFFERED"
+    assert len(bulk.rollNumbers) == 2
+
+
+def test_a_bulk_run_needs_at_least_one_roll_number_and_has_an_upper_bound():
+    with pytest.raises(ValidationError):
+        OfferBulkCreate(companyId="cmp_1", type="PPO", batch=2027, ctc=1, rollNumbers=[])
+
+    # A paste is a season's drive, not the whole roster; the cap keeps one
+    # request from writing thousands of rows in a single transaction.
+    with pytest.raises(ValidationError):
+        OfferBulkCreate(
+            companyId="cmp_1",
+            type="PPO",
+            batch=2027,
+            ctc=1,
+            rollNumbers=[f"ROLL{index}" for index in range(501)],
+        )

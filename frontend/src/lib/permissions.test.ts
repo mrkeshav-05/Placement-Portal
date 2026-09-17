@@ -162,6 +162,9 @@ test("canAccessAdminRoute guards routes based on permission requirements", () =>
   // Nor does browsing recruiters imply registering one.
   assert.equal(canAccessAdminRoute(volunteer, "/admin/companies"), true);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/companies/add"), false);
+  // Nor does reading the season's offers imply recording a drive's worth of them.
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/placement-records"), true);
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/placement-records/add"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/applications"), true);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/users"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/settings"), false);
@@ -198,6 +201,8 @@ test("the admin sidebar only offers routes the account can open", () => {
   assert.equal(visible.includes("/admin/events/add"), false);
   assert.ok(visible.includes("/admin/companies"));
   assert.equal(visible.includes("/admin/companies/add"), false);
+  assert.ok(visible.includes("/admin/placement-records"));
+  assert.equal(visible.includes("/admin/placement-records/add"), false);
   assert.ok(visible.includes("/admin/noc-requests"));
   assert.equal(visible.includes("/admin/users"), false);
   // team.view is the public directory; the admin console is team.manage.

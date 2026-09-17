@@ -33,6 +33,7 @@ class OfferCompanySummary(BaseModel):
 class OfferBase(BaseModel):
     type: str
     status: str = "OFFERED"
+    jobTitle: Optional[str] = Field(None, max_length=200)
     batch: int = Field(..., ge=2000, le=2100)
     ctc: Optional[float] = Field(None, ge=0)
     stipend: Optional[float] = Field(None, ge=0)
@@ -40,6 +41,14 @@ class OfferBase(BaseModel):
     offeredAt: Optional[datetime] = None
     joiningDate: Optional[datetime] = None
     remarks: Optional[str] = Field(None, max_length=2000)
+
+
+def _require_amount_for_type(offer_type: str, ctc: Optional[float], stipend: Optional[float]):
+    normalized = (offer_type or "").strip().upper()
+    if normalized in _CTC_TYPES and ctc is None:
+        raise ValueError("An annual CTC is required for FTE and PPO offers.")
+    if normalized == "INTERNSHIP" and stipend is None:
+        raise ValueError("A monthly stipend is required for internship offers.")
 
 
 class OfferCreate(OfferBase):
@@ -50,17 +59,47 @@ class OfferCreate(OfferBase):
 
     @model_validator(mode="after")
     def validate_amount(self) -> "OfferCreate":
-        offer_type = (self.type or "").strip().upper()
-        if offer_type in _CTC_TYPES and self.ctc is None:
-            raise ValueError("An annual CTC is required for FTE and PPO offers.")
-        if offer_type == "INTERNSHIP" and self.stipend is None:
-            raise ValueError("A monthly stipend is required for internship offers.")
+        _require_amount_for_type(self.type, self.ctc, self.stipend)
         return self
+
+
+class OfferBulkCreate(OfferBase):
+    """
+    One configuration applied to a list of roll numbers.
+
+    The office records a drive's outcome in one go: the season, company, drive,
+    type, status, package and role are the same for every student, and only the
+    roll numbers differ. Roll numbers rather than ids, because that is what a
+    spreadsheet paste contains.
+    """
+
+    companyId: str
+    jobProfileId: Optional[str] = None
+    rollNumbers: list[str] = Field(..., min_length=1, max_length=500)
+
+    @model_validator(mode="after")
+    def validate_amount(self) -> "OfferBulkCreate":
+        _require_amount_for_type(self.type, self.ctc, self.stipend)
+        return self
+
+
+class OfferBulkRejection(BaseModel):
+    """A roll number no record could be created for, and why."""
+
+    rollNumber: str
+    reason: str
+
+
+class OfferBulkResult(BaseModel):
+    created: int
+    offers: list["OfferResponse"] = []
+    skipped: list[OfferBulkRejection] = []
 
 
 class OfferUpdate(BaseModel):
     type: Optional[str] = None
     status: Optional[str] = None
+    jobTitle: Optional[str] = Field(None, max_length=200)
     batch: Optional[int] = Field(None, ge=2000, le=2100)
     ctc: Optional[float] = Field(None, ge=0)
     stipend: Optional[float] = Field(None, ge=0)
@@ -78,7 +117,6 @@ class OfferResponse(OfferBase):
     companyId: str
     jobProfileId: Optional[str] = None
     applicationId: Optional[str] = None
-    jobTitle: Optional[str] = None
     decidedAt: Optional[datetime] = None
     createdAt: datetime
     updatedAt: datetime
@@ -86,3 +124,7 @@ class OfferResponse(OfferBase):
     company: Optional[OfferCompanySummary] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# OfferBulkResult refers to OfferResponse before it is declared.
+OfferBulkResult.model_rebuild()

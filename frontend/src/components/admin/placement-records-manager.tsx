@@ -1,6 +1,7 @@
 "use client";
 
-import { Award, Edit3, Plus, Trash2 } from "lucide-react";
+import { Award, Download, Edit3, Plus, Trash2, Users } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
@@ -166,6 +167,7 @@ export function PlacementRecordsManager({
         header: "Student",
         width: "220px",
         hideable: false,
+        sticky: true,
         sortValue: (offer) => offer.student?.name ?? offer.student?.email,
         cell: (offer) => (
           <span className="company-admin-name">
@@ -174,26 +176,46 @@ export function PlacementRecordsManager({
             </i>
             <span>
               <strong>{offer.student?.name ?? "Student"}</strong>
-              <small>
-                {[offer.student?.rollNumber, offer.student?.branch, offer.student?.degree]
-                  .filter(Boolean)
-                  .join(" · ") || "Profile incomplete"}
-              </small>
+              <small>{offer.student?.rollNumber ?? "Profile incomplete"}</small>
             </span>
           </span>
         ),
       },
       {
+        id: "degree",
+        header: "Degree",
+        width: "110px",
+        sortValue: (offer) => offer.student?.degree,
+        cell: (offer) => offer.student?.degree ?? <span className="dt-muted">—</span>,
+      },
+      {
+        id: "branch",
+        header: "Branch",
+        width: "120px",
+        sortValue: (offer) => offer.student?.branch,
+        cell: (offer) => offer.student?.branch ?? <span className="dt-muted">—</span>,
+      },
+      {
         id: "company",
-        header: "Company & role",
-        width: "180px",
+        header: "Company",
+        width: "170px",
         sortValue: (offer) => offer.company?.name,
-        cell: (offer) => (
-          <span className="dt-primary">
-            <strong>{offer.company?.name ?? "—"}</strong>
-            <small>{offer.jobTitle ?? offer.location ?? "Recorded off-portal"}</small>
-          </span>
-        ),
+        cell: (offer) => <strong>{offer.company?.name ?? "—"}</strong>,
+      },
+      {
+        id: "type",
+        header: "Type",
+        width: "150px",
+        sortValue: (offer) => offer.type,
+        cell: (offer) => <span className="cell-tag">{OFFER_TYPE_LABELS[offer.type]}</span>,
+      },
+      {
+        id: "jobTitle",
+        header: "Job title",
+        width: "200px",
+        sortValue: (offer) => offer.jobTitle,
+        cell: (offer) =>
+          offer.jobTitle ?? <span className="dt-muted">Recorded off-portal</span>,
       },
       {
         id: "package",
@@ -203,12 +225,9 @@ export function PlacementRecordsManager({
         // is never compared against a monthly stipend.
         sortValue: (offer) => (isCtcType(offer.type) ? offer.ctc : offer.stipend),
         cell: (offer) => (
-          <span className="dt-primary">
-            <strong className="dt-numeric">
-              {isCtcType(offer.type) ? formatRupees(offer.ctc) : formatStipend(offer.stipend)}
-            </strong>
-            <small>{OFFER_TYPE_LABELS[offer.type]}</small>
-          </span>
+          <strong className="dt-numeric">
+            {isCtcType(offer.type) ? formatRupees(offer.ctc) : formatStipend(offer.stipend)}
+          </strong>
         ),
       },
       {
@@ -285,6 +304,24 @@ export function PlacementRecordsManager({
         value: (offer) => String(offer.batch),
       },
       {
+        id: "company",
+        label: "Company",
+        // Built from the recorded offers, not the full company list: filtering
+        // by a company with no records would only ever empty the table.
+        options: [...new Set(offers.map((offer) => offer.company?.name).filter(Boolean))]
+          .sort()
+          .map((name) => ({ value: name as string, label: name as string })),
+        value: (offer) => offer.company?.name ?? "",
+      },
+      {
+        id: "degree",
+        label: "Degree",
+        options: [...new Set(offers.map((offer) => offer.student?.degree).filter(Boolean))]
+          .sort()
+          .map((degree) => ({ value: degree as string, label: degree as string })),
+        value: (offer) => offer.student?.degree ?? "",
+      },
+      {
         id: "type",
         label: "Type",
         options: Object.entries(OFFER_TYPE_LABELS).map(([value, label]) => ({ value, label })),
@@ -297,7 +334,7 @@ export function PlacementRecordsManager({
         value: (offer) => offer.status,
       },
     ],
-    [seasons],
+    [seasons, offers],
   );
 
   const createDisabledReason = backendError
@@ -308,6 +345,43 @@ export function PlacementRecordsManager({
         ? "Add a company before recording an offer."
         : null;
 
+  /**
+   * The table as the office reads it, not as it is stored: labels rather than
+   * enum values, and one Package column holding whichever of CTC or stipend
+   * the row's type uses.
+   */
+  function downloadRecords() {
+    if (!offers.length) return;
+    const rows = offers.map((offer, index) => ({
+      "S.No": index + 1,
+      Student: offer.student?.name ?? "",
+      "Roll Number": offer.student?.rollNumber ?? "",
+      Email: offer.student?.email ?? "",
+      Degree: offer.student?.degree ?? "",
+      Branch: offer.student?.branch ?? "",
+      Company: offer.company?.name ?? "",
+      Type: OFFER_TYPE_LABELS[offer.type],
+      "Job Title": offer.jobTitle ?? "",
+      Package: isCtcType(offer.type)
+        ? formatRupees(offer.ctc)
+        : formatStipend(offer.stipend),
+      Status: OFFER_STATUS_LABELS[offer.status],
+      Season: offer.batch,
+      Location: offer.location ?? "",
+      "Offer Date": formatDate(offer.offeredAt),
+      "Joining Date": formatDate(offer.joiningDate),
+      Notes: offer.remarks ?? "",
+    }));
+
+    // Loaded on demand: the sheet writer is far larger than this screen.
+    import("xlsx").then((XLSX) => {
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Placement records");
+      XLSX.writeFile(workbook, "placement-records.xlsx");
+    });
+  }
+
   return (
     <div className="admin-page">
       <section className="admin-heading">
@@ -316,14 +390,21 @@ export function PlacementRecordsManager({
           <h1>Offers</h1>
           <p>Every placement, pre-placement, and internship offer. The dashboard is built from these rows.</p>
         </div>
-        <button
-          disabled={Boolean(createDisabledReason)}
-          title={createDisabledReason ?? "Add placement record"}
-          onClick={() => openForm(null)}
-        >
-          <Plus />
-          Add record
-        </button>
+        <div className="admin-heading-actions">
+          {/* One record at a time, or a whole drive's outcome at once. */}
+          <Link className="secondary" href="/admin/placement-records/add">
+            <Users />
+            Add in bulk
+          </Link>
+          <button
+            disabled={Boolean(createDisabledReason)}
+            title={createDisabledReason ?? "Add placement record"}
+            onClick={() => openForm(null)}
+          >
+            <Plus />
+            Add record
+          </button>
+        </div>
       </section>
 
       {backendError ? <Alert variant="destructive" className="mt-4"><AlertDescription>{backendError}</AlertDescription></Alert> : null}
@@ -335,6 +416,17 @@ export function PlacementRecordsManager({
         data={offers}
         columns={columns}
         filters={filters}
+        actions={
+          <button
+            type="button"
+            className="dt-view-button"
+            disabled={!offers.length}
+            onClick={downloadRecords}
+          >
+            <Download />
+            Download placement records
+          </button>
+        }
         getRowId={(offer) => offer.id}
         searchText={(offer) =>
           `${offer.student?.name ?? ""} ${offer.student?.rollNumber ?? ""} ${
@@ -450,6 +542,19 @@ export function PlacementRecordsManager({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="offer-job-title">Job title</Label>
+                <Input
+                  id="offer-job-title"
+                  name="jobTitle"
+                  maxLength={200}
+                  defaultValue={editing?.jobTitle ?? ""}
+                  placeholder="Associate Engineer"
+                />
+                <small className="text-muted-foreground text-xs">
+                  Leave empty to show the linked drive&apos;s title instead.
+                </small>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="offer-batch">Season (graduating batch)</Label>

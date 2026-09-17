@@ -465,3 +465,44 @@ Two targets deliberately stay on the host. `make db-pack-demo` writes
 `seed-data.zip` back into the working tree, and `make check` runs the npm
 scripts a contributor already has installed; containerising either would trade
 a real benefit for a bind mount and a slower loop.
+
+## 2026-09-18 — Placement records can be entered a drive at a time, and an offer states its own role
+
+A season's outcome arrives as a list: one company, one package, one status,
+and forty roll numbers. Entering that through the single-record dialog meant
+re-selecting the company and re-typing the package forty times, with the
+student picker holding the whole roster on every open.
+
+`/admin/placement-records/add` sets the configuration once and applies it to a
+pasted list of roll numbers. The single-record dialog stays on the list page:
+correcting one row is still the common case, and the bulk screen is the wrong
+shape for it.
+
+Three decisions inside that:
+
+- **Roll numbers, not ids.** The office pastes a column out of a spreadsheet,
+  so the screen accepts commas, spaces, tabs, newlines and semicolons, upper-
+  cases, and de-duplicates while keeping the entered order. `parseRollNumbers`
+  is the single definition of that, shared by the chips in the browser and the
+  server action, so the two can never disagree about what was entered.
+- **A partial result, not all-or-nothing.** One mistyped roll number in a paste
+  of forty must not discard the other thirty-nine. `POST /api/v1/offers/bulk`
+  writes what it can and returns every roll number it could not record with a
+  reason: no such student, not a student account, or already holding that
+  record for the season. The last one is what makes a re-submitted paste safe.
+  The amount rule is unchanged — a bulk run is still refused without the CTC or
+  stipend its type requires, because recording forty rows at once is not a
+  looser kind of recording.
+- **`Offer.jobTitle` is a real column.** The role used to be read from the
+  linked drive, which leaves an off-portal offer with no role at all and cannot
+  express an offer for a role the drive was not named after. The column is
+  nullable and reads fall back to `jobProfile.title`, so every row written
+  before it keeps showing the role it always showed, and no backfill freezes a
+  title the drive can still be renamed to.
+
+The type and status vocabularies were left alone. The reference portal names
+its own — Placement, Summer Internship, Winter Internship, PPO against
+Offered, Accepted, Rejected, Withdrawn, Upgraded to PPO — but `OfferType` and
+`OfferStatus` already carry meanings the dashboard aggregates on, and renaming
+`DECLINED` to "Rejected" would have moved which party gave the offer up. The
+new screen therefore uses the same two dropdowns as the rest of the portal.

@@ -187,6 +187,16 @@
 }
 .admin-heading button:hover:not(:disabled), .admin-heading a:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(var(--deep-rgb), 0.38); }
 .admin-heading button svg, .admin-heading a svg { width: 14px; }
+/* Two ways into the same screen, one of them the lesser: placement records can
+   be added one at a time or a drive at a time, and only one can be filled. */
+.admin-heading-actions { display: flex; align-items: center; gap: 8px; }
+.admin-heading .secondary {
+  background: var(--card-bg);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+.admin-heading .secondary:hover { background: var(--surface-highlight); box-shadow: none; }
 
 /* Announcement composer: a funnel of pickers above a locked editor. Each
    choice narrows the next, so the controls read as one sequence. */

@@ -306,6 +306,11 @@ model Offer {
   applicationId String?     @unique
   type          OfferType
   status        OfferStatus @default(OFFERED)
+  /// Role as the office records it. A drive's own title is the default, but an
+  /// offer can be for a role the drive was not named after, and an offer with
+  /// no drive behind it has no other place to keep one. Reads fall back to
+  /// `jobProfile.title` so rows recorded before this column keep their role.
+  jobTitle      String?
   /// Placement season, held as the graduating batch year.
   batch         Int
   /// Annual CTC in rupees. Required for FTE and PPO offers.

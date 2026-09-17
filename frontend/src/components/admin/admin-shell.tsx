@@ -63,7 +63,14 @@ const nav: NavItem[] = [
       { label: "Add event", href: "/admin/events/add" },
     ],
   },
-  { label: "Placement records", href: "/admin/placement-records", icon: Award },
+  {
+    label: "Placement records",
+    icon: Award,
+    children: [
+      { label: "View placement records", href: "/admin/placement-records" },
+      { label: "Add placement records", href: "/admin/placement-records/add" },
+    ],
+  },
   { label: "Students", href: "/admin/students", icon: GraduationCap },
   { label: "Users & RBAC", href: "/admin/users", icon: ShieldCheck },
   { label: "Feedbacks", href: "/admin/feedbacks", icon: FileQuestion },
