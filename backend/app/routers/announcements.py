@@ -255,6 +255,7 @@ async def create_announcement(
             email=caller_email,
             name=caller.get("name"),
             role=caller.get("role", "PLACEMENT_TEAM"),
+            updatedAt=datetime.now(timezone.utc),
         )
         db.add(author)
         await db.flush()

@@ -106,6 +106,7 @@ async def create_noc(
         endDate=data.endDate,
         status=NocStatus.PENDING,
         message=data.message.strip() if data.message else None,
+        updatedAt=datetime.now(timezone.utc),
     )
     db.add(noc)
     await db.commit()

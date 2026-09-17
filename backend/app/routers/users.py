@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import uuid
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, or_, select
@@ -233,6 +234,7 @@ async def create_user(
         customPermissions=data.customPermissions,
         isActive=data.isActive,
         semGPAs=[],
+        updatedAt=datetime.now(timezone.utc),
     )
 
     db.add(new_user)

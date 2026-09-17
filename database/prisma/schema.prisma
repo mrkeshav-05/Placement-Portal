@@ -143,7 +143,7 @@ model User {
   bans                         Int                   @default(0)
   qrCodeData                   String?
   createdAt                    DateTime              @default(now())
-  updatedAt                    DateTime              @updatedAt
+  updatedAt                    DateTime              @default(now()) @updatedAt
   accounts                     Account[]
   sessions                     Session[]
   applications                 Application[]
@@ -259,7 +259,7 @@ model Application {
   resumeId     String?
   status       ApplicationStatus @default(APPLIED)
   appliedAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  updatedAt    DateTime          @default(now()) @updatedAt
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   jobProfile   JobProfile        @relation(fields: [jobProfileId], references: [id], onDelete: Cascade)
   resume       Resume?           @relation(fields: [resumeId], references: [id], onDelete: SetNull)
@@ -341,7 +341,12 @@ model Offer {
   joiningDate   DateTime?
   remarks       String?
   createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  /// A DB-level default, not just Prisma's own `@updatedAt` bookkeeping: the
+  /// backend writes this table directly with SQLAlchemy, which never sets
+  /// this column itself, so a plain `@updatedAt` with no server-side default
+  /// left it NULL on every insert (see SystemSetting.updatedAt for the same
+  /// fix applied earlier).
+  updatedAt     DateTime    @default(now()) @updatedAt
   createdById   String
 
   user        User         @relation("OfferHolder", fields: [userId], references: [id], onDelete: Cascade)
@@ -386,7 +391,7 @@ model NocRequest {
   adminRemarks String?
   documentUrl  String?
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  updatedAt    DateTime  @default(now()) @updatedAt
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -419,7 +424,7 @@ model InterviewExperience {
   reviewedById            String?
   reviewedAt              DateTime?
   createdAt               DateTime                  @default(now())
-  updatedAt               DateTime                  @updatedAt
+  updatedAt               DateTime                  @default(now()) @updatedAt
   user                    User                      @relation("InterviewExperienceAuthor", fields: [userId], references: [id], onDelete: Cascade)
   reviewedBy              User?                     @relation("InterviewExperienceReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
 }

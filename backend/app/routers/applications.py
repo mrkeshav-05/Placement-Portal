@@ -196,6 +196,7 @@ async def apply_to_job(
         jobProfileId=job.id,
         resumeId=data.resumeId,
         status=ApplicationStatus.APPLIED,
+        updatedAt=datetime.now(timezone.utc),
     )
     db.add(app)
     await db.commit()

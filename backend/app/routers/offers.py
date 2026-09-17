@@ -349,6 +349,7 @@ async def create_offer(
         joiningDate=data.joiningDate,
         remarks=(data.remarks or "").strip() or None,
         createdById=caller.get("sub") or caller.get("id"),
+        updatedAt=datetime.now(timezone.utc),
     )
     db.add(offer)
     await db.commit()
@@ -475,6 +476,7 @@ async def create_offers_in_bulk(
                 joiningDate=data.joiningDate,
                 remarks=(data.remarks or "").strip() or None,
                 createdById=recorder,
+                updatedAt=datetime.now(timezone.utc),
             )
         )
         created_ids.append(offer_id)
