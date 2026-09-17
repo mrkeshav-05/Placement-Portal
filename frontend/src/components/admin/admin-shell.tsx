@@ -50,7 +50,8 @@ const nav: NavItem[] = [
     label: "Companies",
     icon: Building2,
     children: [
-      { label: "Add company", href: "/admin/companies" },
+      { label: "All companies", href: "/admin/companies" },
+      { label: "Add company", href: "/admin/companies/add" },
       { label: "View registrations", href: "/admin/applications" },
     ],
   },

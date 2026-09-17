@@ -159,6 +159,9 @@ test("canAccessAdminRoute guards routes based on permission requirements", () =>
   assert.equal(canAccessAdminRoute(volunteer, "/admin/job-profiles"), true);
   // Reading the event list does not imply creating one.
   assert.equal(canAccessAdminRoute(volunteer, "/admin/events/add"), false);
+  // Nor does browsing recruiters imply registering one.
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/companies"), true);
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/companies/add"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/applications"), true);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/users"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/settings"), false);
@@ -193,6 +196,8 @@ test("the admin sidebar only offers routes the account can open", () => {
   assert.ok(visible.includes("/admin/applications"));
   assert.ok(visible.includes("/admin/events"));
   assert.equal(visible.includes("/admin/events/add"), false);
+  assert.ok(visible.includes("/admin/companies"));
+  assert.equal(visible.includes("/admin/companies/add"), false);
   assert.ok(visible.includes("/admin/noc-requests"));
   assert.equal(visible.includes("/admin/users"), false);
   // team.view is the public directory; the admin console is team.manage.

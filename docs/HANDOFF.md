@@ -7,10 +7,25 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-18, Add Company pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 122 frontend unit tests, and 148 backend pytest tests in the running `backend` container.
 - Last verified (2026-09-17, events pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 119 frontend unit tests, and 148 backend pytest tests in the running `backend` container.
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## Add Company page, 2026-09-18
+
+`DECISIONS.md` carries the reasoning under today's date.
+
+1. **Three routes, one form.** `/admin/companies/add` and `/admin/companies/[id]/edit` share `frontend/src/components/admin/company-form.tsx`; the list's modal is gone and its edit action is a link. The sidebar group is now *All companies*, *Add company*, *View registrations*.
+2. **Three new nullable columns on `Company`**: `category`, `placementSession`, `turnover`. Migration `20260918000000_company_profile_fields`, mirrored in `backend/app/models/db.py` and `backend/app/schemas/company.py`.
+3. **Category is Dream or First Round**, enforced by `companyFormSchema`. Nothing reads `Company.category` yet — eligibility does not treat a dream-round company differently, it only records that it is one.
+4. **Website and logo dropped from the form on request.** `saveCompany` omits both from its write payload, so existing values survive an edit, but no screen can set them any more and a new company therefore has no logo for students. Restoring an editor for them is the first item on the companies row in `FEATURE_STATUS.md`.
+5. **Company info is required by the form**, while `description` stays nullable for older rows.
+
+**Exercised in a browser end to end.** Created a company through the form with a category and session, confirmed the row in SQL, opened the edit route against it and saw every field hydrate, then deleted the row. The list shows the new Category and Session columns with filters. Not clicked: the list's delete button (the action was only re-gated, not rewritten) and the screens under an account that lacks `companies.create`, which is covered by unit tests instead.
+
+**If a save fails with `Unknown argument`, restart the dev server.** A running `next dev` holds the Prisma client it started with, so a schema change needs `npm run db:generate` *and* a restart. Same for the `migrate` container, which bakes `database/` into its image and needs `docker compose up -d --build migrate` to see a new migration folder.
 
 ## Job profiles become Events, 2026-09-17
 

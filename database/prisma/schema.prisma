@@ -181,6 +181,15 @@ model Company {
   logoUrl       String?
   website       String?
   description   String?
+  // How hard the drive is to clear, in the placement cell's own words: a
+  // dream-round company may be applied to even after an offer is in hand.
+  category      String?
+  // Recruiting season the record was raised for. The same idea as
+  // JobProfile.placementYear, under the label this screen uses.
+  placementSession Int?
+  // Quoted from the company as stated, so it stays free text rather than a
+  // parsed figure with an invented currency and unit.
+  turnover      String?
   createdAt     DateTime       @default(now())
   jobs          JobProfile[]
   announcements Announcement[]

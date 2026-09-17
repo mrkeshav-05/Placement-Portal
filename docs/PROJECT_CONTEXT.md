@@ -40,6 +40,7 @@ Important invariants:
 
 - One application per student/job profile.
 - Company names, user emails, and student roll numbers are unique where present.
+- A `Company` is the recruiter, registered at `/admin/companies/add`. Its `category` is `Dream` or `First Round` from `frontend/src/lib/company-schema.ts` and records the round the company recruits in; nothing evaluates it yet. `placementSession` is the season the record was raised for, and `turnover` is quoted as the company states it. `website` and `logoUrl` are still stored and still shown to students, but no screen edits them.
 - A `JobProfile` is the company event the admin portal composes at `/admin/events`. Its `placementYear` is the season the drive runs in and its `batch` is the graduating cohort it recruits; the two are not interchangeable. `jobCategory` is one of the four values in `frontend/src/lib/job-profile-schema.ts`, and `cap`, `companyBond`, and `duration` are quoted from the company as free text rather than parsed figures.
 - Job eligibility is evaluated from the student's current profile and job criteria: CGPA, batch, branch, degree, gender, backlogs, placement bans, and document completeness. An empty `allowedDegrees` or `allowedGenders` list, or one holding `all`/`any`, places no restriction; a restriction the profile cannot answer fails.
 - `NocRequest.message` is the student's remarks and `NocRequest.adminRemarks` is the placement cell's decision remarks. A decision never writes over the student's text.

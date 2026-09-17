@@ -186,6 +186,9 @@ class Company(Base):
     logoUrl: Mapped[str | None] = mapped_column(String, nullable=True)
     website: Mapped[str | None] = mapped_column(String, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    category: Mapped[str | None] = mapped_column(String, nullable=True)
+    placementSession: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    turnover: Mapped[str | None] = mapped_column(String, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     jobs: Mapped[list["JobProfile"]] = relationship(back_populates="company", cascade="all, delete-orphan")

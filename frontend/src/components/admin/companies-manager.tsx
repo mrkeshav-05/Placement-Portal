@@ -1,10 +1,16 @@
 "use client";
 
-import { Building2, Edit3, ExternalLink, Plus, Trash2, X } from "lucide-react";
+import { Building2, Edit3, ExternalLink, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { deleteCompany, saveCompany, type CompanyActionResult } from "@/app/admin/companies/actions";
-import { DataTable, type DataTableColumn } from "@/components/common/data-table";
+import { deleteCompany, type CompanyActionResult } from "@/app/admin/companies/actions";
+import {
+  DataTable,
+  type DataTableColumn,
+  type DataTableFilter,
+} from "@/components/common/data-table";
+import { COMPANY_CATEGORIES } from "@/lib/company-schema";
 
 export type AdminCompanyItem = {
   id: string;
@@ -12,6 +18,9 @@ export type AdminCompanyItem = {
   website: string | null;
   logoUrl: string | null;
   description: string | null;
+  category: string | null;
+  placementSession: number | null;
+  turnover: string | null;
   jobCount: number;
   activeJobCount: number;
   createdAt: string;
@@ -25,20 +34,7 @@ const dateFormat = new Intl.DateTimeFormat("en-IN", {
 
 export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] }) {
   const router = useRouter();
-  const [editing, setEditing] = useState<AdminCompanyItem | null | undefined>(undefined);
-  const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<CompanyActionResult>({});
-
-  async function submit(formData: FormData) {
-    setSaving(true);
-    const nextResult = await saveCompany(formData);
-    setResult(nextResult);
-    setSaving(false);
-    if (nextResult.success) {
-      setEditing(undefined);
-      router.refresh();
-    }
-  }
 
   async function remove(formData: FormData) {
     const nextResult = await deleteCompany(formData);
@@ -61,10 +57,37 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
             </i>
             <span>
               <strong>{company.name}</strong>
-              <small>{company.description || "No description"}</small>
+              <small>{company.description || "No company info"}</small>
             </span>
           </span>
         ),
+      },
+      {
+        id: "category",
+        header: "Category",
+        width: "minmax(120px, 1fr)",
+        sortValue: (company) => company.category,
+        cell: (company) =>
+          company.category ? (
+            <b className="cell-tag">{company.category}</b>
+          ) : (
+            <span className="dt-muted">Not set</span>
+          ),
+      },
+      {
+        id: "placementSession",
+        header: "Session",
+        width: "minmax(100px, 0.8fr)",
+        sortValue: (company) => company.placementSession,
+        cell: (company) =>
+          company.placementSession ?? <span className="dt-muted">Not set</span>,
+      },
+      {
+        id: "turnover",
+        header: "Turnover",
+        width: "minmax(120px, 1fr)",
+        sortValue: (company) => company.turnover,
+        cell: (company) => company.turnover || <span className="dt-muted">Not provided</span>,
       },
       {
         id: "website",
@@ -82,7 +105,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       },
       {
         id: "jobs",
-        header: "Job profiles",
+        header: "Events",
         width: "minmax(140px, 1fr)",
         sortValue: (company) => company.jobCount,
         cell: (company) => (
@@ -105,20 +128,17 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
         hideable: false,
         cell: (company) => (
           <span className="row-actions">
-            <button
+            <Link
+              href={`/admin/companies/${company.id}/edit`}
               title={`Edit ${company.name}`}
               aria-label={`Edit ${company.name}`}
-              onClick={() => {
-                setResult({});
-                setEditing(company);
-              }}
             >
               <Edit3 />
-            </button>
+            </Link>
             <form action={remove}>
               <input type="hidden" name="companyId" value={company.id} />
               <button
-                title={company.jobCount ? "Remove job profiles before deleting" : `Delete ${company.name}`}
+                title={company.jobCount ? "Remove events before deleting" : `Delete ${company.name}`}
                 aria-label={`Delete ${company.name}`}
                 disabled={company.jobCount > 0}
               >
@@ -134,23 +154,40 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
     [],
   );
 
+  const filters = useMemo<DataTableFilter<AdminCompanyItem>[]>(() => {
+    const sessions = Array.from(
+      new Set(companies.map((company) => company.placementSession).filter(Boolean)),
+    ).sort((a, b) => Number(b) - Number(a));
+
+    return [
+      {
+        id: "category",
+        label: "Category",
+        value: (company) => company.category ?? "",
+        options: COMPANY_CATEGORIES.map((category) => ({ value: category, label: category })),
+      },
+      {
+        id: "placementSession",
+        label: "Session",
+        value: (company) =>
+          company.placementSession ? String(company.placementSession) : "",
+        options: sessions.map((session) => ({ value: String(session), label: String(session) })),
+      },
+    ];
+  }, [companies]);
+
   return (
     <div className="admin-page">
       <section className="admin-heading">
         <div>
           <span className="eyebrow">Management</span>
           <h1>Companies</h1>
-          <p>Create recruiter profiles before publishing their job opportunities.</p>
+          <p>Create recruiter profiles before publishing their events.</p>
         </div>
-        <button
-          onClick={() => {
-            setResult({});
-            setEditing(null);
-          }}
-        >
+        <Link href="/admin/companies/add">
           <Plus />
           Add company
-        </button>
+        </Link>
       </section>
 
       {result.success ? <div className="admin-success">{result.success}</div> : null}
@@ -160,10 +197,13 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
         data={companies}
         columns={columns}
         getRowId={(company) => company.id}
-        searchText={(company) => `${company.name} ${company.website ?? ""} ${company.description ?? ""}`}
+        searchText={(company) =>
+          `${company.name} ${company.category ?? ""} ${company.description ?? ""}`
+        }
         searchPlaceholder="Search companies..."
+        filters={filters}
         columnStorageKey="companies"
-        minWidth={820}
+        minWidth={980}
         emptyIcon={<Building2 />}
         emptyTitle={companies.length ? "No matching companies" : "No companies yet"}
         emptyDescription={
@@ -172,72 +212,6 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
             : "Use Add company to create the first real recruiter record."
         }
       />
-
-      {editing !== undefined ? (
-        <div className="modal-backdrop">
-          <form className="modal" action={submit}>
-            <header>
-              <div>
-                <span className="eyebrow">Company record</span>
-                <h2>{editing ? "Edit company" : "Add company"}</h2>
-              </div>
-              <button type="button" onClick={() => setEditing(undefined)} aria-label="Close dialog">
-                <X />
-              </button>
-            </header>
-            <input type="hidden" name="id" value={editing?.id ?? ""} />
-            <div className="form-grid">
-              <label className="wide">
-                Company name
-                <input
-                  name="name"
-                  required
-                  minLength={2}
-                  maxLength={120}
-                  defaultValue={editing?.name ?? ""}
-                  placeholder="Example Technologies"
-                />
-              </label>
-              <label>
-                Website
-                <input
-                  name="website"
-                  type="url"
-                  defaultValue={editing?.website ?? ""}
-                  placeholder="https://example.com"
-                />
-              </label>
-              <label>
-                Logo URL
-                <input
-                  name="logoUrl"
-                  type="url"
-                  defaultValue={editing?.logoUrl ?? ""}
-                  placeholder="https://example.com/logo.png"
-                />
-              </label>
-              <label className="wide">
-                Description
-                <textarea
-                  name="description"
-                  rows={5}
-                  maxLength={2000}
-                  defaultValue={editing?.description ?? ""}
-                  placeholder="Short recruiter profile and industry overview"
-                />
-              </label>
-            </div>
-            <footer>
-              <button type="button" onClick={() => setEditing(undefined)}>
-                Cancel
-              </button>
-              <button type="submit" disabled={saving}>
-                {saving ? "Saving…" : editing ? "Save changes" : "Create company"}
-              </button>
-            </footer>
-          </form>
-        </div>
-      ) : null}
     </div>
   );
 }

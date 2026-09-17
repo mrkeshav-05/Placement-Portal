@@ -7,6 +7,9 @@ class CompanyBase(BaseModel):
     logoUrl: Optional[str] = None
     website: Optional[str] = None
     description: Optional[str] = None
+    category: Optional[str] = None
+    placementSession: Optional[int] = None
+    turnover: Optional[str] = None
 
 class CompanyCreate(CompanyBase):
     pass
@@ -16,6 +19,9 @@ class CompanyUpdate(BaseModel):
     logoUrl: Optional[str] = None
     website: Optional[str] = None
     description: Optional[str] = None
+    category: Optional[str] = None
+    placementSession: Optional[int] = None
+    turnover: Optional[str] = None
 
 class CompanyResponse(CompanyBase):
     id: str
