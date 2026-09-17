@@ -71,6 +71,8 @@ export const offerFormSchema = z
     userId: z.string().trim().min(1, "Select a student."),
     companyId: z.string().trim().min(1, "Select a company."),
     jobProfileId: optionalText,
+    /** Links a freshly-created offer back to the application it came from. */
+    applicationId: optionalText,
     type: z.enum(OFFER_TYPES),
     status: z.enum(OFFER_STATUSES).default("OFFERED"),
     jobTitle: optionalText,

@@ -4,14 +4,20 @@ import { backendFetch } from "@/lib/api-client";
 import { db } from "@/lib/db";
 import { companyColor, companyInitials, formatPortalDate } from "@/lib/job-presenters";
 import { requireStudent } from "@/lib/student-session";
+import { studentFacingStatus } from "@/lib/application-status";
 import type { ApplicationStatus } from "@prisma/client";
 
+// OFFER_ACCEPTED/OFFER_DECLINED never reach a student's own status — the
+// backend and the Prisma fallback below both mask them to SELECTED — but the
+// map still needs every enum member to satisfy the Record type.
 const STATUS_MESSAGES: Record<ApplicationStatus, string> = {
   APPLIED: "Application submitted",
   SHORTLISTED: "Shortlisted by the placement team",
   INTERVIEW: "Interview stage",
   SELECTED: "Offer received",
   REJECTED: "Application not selected",
+  OFFER_ACCEPTED: "Offer received",
+  OFFER_DECLINED: "Offer received",
   WITHDRAWN: "Application withdrawn",
 };
 
@@ -44,7 +50,7 @@ export default async function Page() {
           role: application.jobTitle ?? "Role",
           company,
           applied: formatPortalDate(application.appliedAt),
-          status: application.status,
+          status: studentFacingStatus(application.status),
           next: STATUS_MESSAGES[application.status] ?? "In progress",
           color: companyColor(company),
           initials: companyInitials(company),
@@ -62,7 +68,7 @@ export default async function Page() {
         role: application.jobProfile.title,
         company: application.jobProfile.company.name,
         applied: formatPortalDate(application.appliedAt),
-        status: application.status,
+        status: studentFacingStatus(application.status),
         next: STATUS_MESSAGES[application.status] ?? "In progress",
         color: companyColor(application.jobProfile.company.name),
         initials: companyInitials(application.jobProfile.company.name),

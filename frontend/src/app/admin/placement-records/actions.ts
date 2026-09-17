@@ -29,6 +29,9 @@ export type OfferBulkActionResult = OfferActionResult & {
 function revalidateOfferPages() {
   revalidatePath("/admin/placement-records");
   revalidatePath("/admin/dashboard");
+  // An offer created from an application (see RecordPlacementDialog) needs
+  // that page's "already recorded" state to reflect the new link.
+  revalidatePath("/admin/applications");
 }
 
 function backendMessage(error: unknown, fallback: string): string {
@@ -52,6 +55,7 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
     userId: formData.get("userId"),
     companyId: formData.get("companyId"),
     jobProfileId: formData.get("jobProfileId") ?? "",
+    applicationId: formData.get("applicationId") ?? "",
     type: formData.get("type"),
     status: formData.get("status") || "OFFERED",
     jobTitle: formData.get("jobTitle") ?? "",
@@ -87,6 +91,8 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
 
   try {
     if (id) {
+      // An offer's application link is set once, at creation, and never
+      // changed — `OfferUpdate` on the backend has no field for it.
       await backendFetch(`/api/v1/offers/${id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -94,7 +100,7 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
     } else {
       await backendFetch("/api/v1/offers", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, applicationId: offer.applicationId }),
       });
     }
   } catch (error) {
