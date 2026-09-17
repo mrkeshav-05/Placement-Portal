@@ -7,7 +7,16 @@ import { requireAdmin } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import type { ApplicationStatus } from "@prisma/client";
 
-const validStatuses = ["APPLIED", "SHORTLISTED", "INTERVIEW", "SELECTED", "REJECTED", "WITHDRAWN"] as const;
+const validStatuses = [
+  "APPLIED",
+  "SHORTLISTED",
+  "INTERVIEW",
+  "SELECTED",
+  "REJECTED",
+  "OFFER_ACCEPTED",
+  "OFFER_DECLINED",
+  "WITHDRAWN",
+] as const;
 
 const updateStatusSchema = z.object({
   applicationId: z.string().min(1),

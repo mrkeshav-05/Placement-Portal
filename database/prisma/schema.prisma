@@ -33,6 +33,11 @@ enum ApplicationStatus {
   INTERVIEW
   SELECTED
   REJECTED
+  /// Candidate confirmed they are taking the offer. Admin-only: students see
+  /// this as SELECTED (see studentFacingStatus in the applications router).
+  OFFER_ACCEPTED
+  /// Candidate turned the offer down. Admin-only, same masking as above.
+  OFFER_DECLINED
   WITHDRAWN
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useMemo, useTransition } from "react";
 import {
   Download,
@@ -14,6 +15,7 @@ import {
   ClipboardList,
   SlidersHorizontal,
   FileSpreadsheet,
+  Award,
 } from "lucide-react";
 import type { ApplicationStatus } from "@prisma/client";
 import {
@@ -31,7 +33,9 @@ import {
   buildDefaultExportSelection,
   type ExportColumnDef,
 } from "@/components/admin/export-columns-dialog";
+import { RecordPlacementDialog } from "@/components/admin/record-placement-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, isHiredStatus } from "@/lib/application-status";
 
 export type AdminApplicationRow = {
   id: string;
@@ -55,6 +59,8 @@ export type AdminApplicationRow = {
   resumeUrl: string | null;
   resumeLabel: string | null;
   status: ApplicationStatus;
+  /** The linked placement record, if the office has already recorded one. */
+  offerId: string | null;
   appliedAt: string;
   updatedAt: string;
 };
@@ -84,17 +90,10 @@ const REGISTRATION_EXPORT_COLUMNS: ExportColumnDef<AdminApplicationRow>[] = [
   { id: "cgpa10", label: "CGPA 10th", group: "Academic", defaultSelected: true, value: (row) => row.class10Percent ?? "" },
   { id: "companyName", label: "Company", group: "Application", value: (row) => row.companyName },
   { id: "jobTitle", label: "Role", group: "Application", value: (row) => row.jobTitle },
-  { id: "status", label: "Status", group: "Application", value: (row) => row.status },
+  { id: "status", label: "Status", group: "Application", value: (row) => APPLICATION_STATUS_LABELS[row.status] },
 ];
 
-const ALL_STATUSES: ApplicationStatus[] = [
-  "APPLIED",
-  "SHORTLISTED",
-  "INTERVIEW",
-  "SELECTED",
-  "REJECTED",
-  "WITHDRAWN",
-];
+const ALL_STATUSES: ApplicationStatus[] = [...APPLICATION_STATUSES];
 
 /** The filter ids the backend export understands, matched one to one below. */
 const JOB_FILTER = "job";
@@ -108,6 +107,7 @@ export function ApplicationsManager({
   applications: AdminApplicationRow[];
   jobs: JobOption[];
 }) {
+  const router = useRouter();
   const [applications, setApplications] = useState<AdminApplicationRow[]>(initialApplications);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -158,6 +158,8 @@ export function ApplicationsManager({
     buildDefaultExportSelection(REGISTRATION_EXPORT_COLUMNS),
   );
   const [downloadingResumes, setDownloadingResumes] = useState(false);
+
+  const [placementDialogApp, setPlacementDialogApp] = useState<AdminApplicationRow | null>(null);
 
   const registrationsFileLabel = useMemo(() => {
     const job = jobs.find((j) => j.id === jobId);
@@ -327,12 +329,14 @@ export function ApplicationsManager({
   const getStatusBadgeClass = (status: ApplicationStatus) => {
     switch (status) {
       case "SELECTED":
+      case "OFFER_ACCEPTED":
         return "cell-status";
       case "SHORTLISTED":
         return "cell-status";
       case "INTERVIEW":
         return "cell-status draft";
       case "REJECTED":
+      case "OFFER_DECLINED":
         return "cell-status pending";
       case "WITHDRAWN":
         return "cell-status pending";
@@ -427,12 +431,14 @@ export function ApplicationsManager({
         header: "Status",
         width: "130px",
         sortValue: (app) => app.status,
-        cell: (app) => <b className={getStatusBadgeClass(app.status)}>{app.status}</b>,
+        cell: (app) => (
+          <b className={getStatusBadgeClass(app.status)}>{APPLICATION_STATUS_LABELS[app.status]}</b>
+        ),
       },
       {
         id: "stage",
         header: "Stage action",
-        width: "150px",
+        width: "170px",
         hideable: false,
         cell: (app) => (
           <select
@@ -444,11 +450,37 @@ export function ApplicationsManager({
           >
             {ALL_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {APPLICATION_STATUS_LABELS[s]}
               </option>
             ))}
           </select>
         ),
+      },
+      {
+        id: "placement",
+        header: "Placement record",
+        width: "170px",
+        hideable: false,
+        cell: (app) =>
+          isHiredStatus(app.status) ? (
+            app.offerId ? (
+              <a className="admin-external-link" href="/admin/placement-records" title="Open placement records">
+                <Award />
+                Recorded
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="dt-view-button"
+                onClick={() => setPlacementDialogApp(app)}
+              >
+                <Award />
+                Record placement
+              </button>
+            )
+          ) : (
+            <span className="dt-muted">—</span>
+          ),
       },
     ],
     [isPending],
@@ -468,7 +500,7 @@ export function ApplicationsManager({
       {
         id: STATUS_FILTER,
         label: "Status",
-        options: ALL_STATUSES.map((status) => ({ value: status, label: status })),
+        options: ALL_STATUSES.map((status) => ({ value: status, label: APPLICATION_STATUS_LABELS[status] })),
         value: (app) => app.status,
       },
       {
@@ -802,21 +834,35 @@ export function ApplicationsManager({
               onClick={() => handleBulkStatusChange("INTERVIEW")}
               disabled={isPending}
             >
-              Move to Interview
+              Assessment / Interview
             </button>
             <button
               className="select"
               onClick={() => handleBulkStatusChange("SELECTED")}
               disabled={isPending}
             >
-              Select / Offer
+              Select
             </button>
             <button
               className="reject"
               onClick={() => handleBulkStatusChange("REJECTED")}
               disabled={isPending}
             >
-              Reject
+              Not Selected
+            </button>
+            <button
+              className="select"
+              onClick={() => handleBulkStatusChange("OFFER_ACCEPTED")}
+              disabled={isPending}
+            >
+              Offer Accepted
+            </button>
+            <button
+              className="reject"
+              onClick={() => handleBulkStatusChange("OFFER_DECLINED")}
+              disabled={isPending}
+            >
+              Offer Declined
             </button>
           </div>
         </div>
@@ -868,6 +914,18 @@ export function ApplicationsManager({
             : "Student applications submitted to active job postings will appear here."
         }
       />
+
+      {placementDialogApp ? (
+        <RecordPlacementDialog
+          application={placementDialogApp}
+          onClose={() => setPlacementDialogApp(null)}
+          onSaved={() => {
+            setPlacementDialogApp(null);
+            setStatusMessage({ type: "success", text: "Placement record saved." });
+            router.refresh();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

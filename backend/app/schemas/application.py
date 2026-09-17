@@ -50,6 +50,7 @@ class AdminApplicationItem(BaseModel):
     resumeUrl: Optional[str] = None
     resumeLabel: Optional[str] = None
     status: str
+    offerId: Optional[str] = None
     appliedAt: datetime
     updatedAt: datetime
 

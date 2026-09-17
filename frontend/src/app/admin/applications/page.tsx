@@ -34,6 +34,7 @@ type BackendAdminAppItem = {
   resumeUrl: string | null;
   resumeLabel: string | null;
   status: ApplicationStatus;
+  offerId: string | null;
   appliedAt: string;
   updatedAt: string;
 };
@@ -81,6 +82,7 @@ export default async function Page() {
       resumeUrl: a.resumeUrl,
       resumeLabel: a.resumeLabel,
       status: a.status,
+      offerId: a.offerId,
       appliedAt: formatPortalDate(a.appliedAt),
       updatedAt: formatPortalDate(a.updatedAt),
     }));
@@ -92,6 +94,7 @@ export default async function Page() {
         user: true,
         jobProfile: { include: { company: true } },
         resume: true,
+        offer: true,
       },
     });
 
@@ -117,6 +120,7 @@ export default async function Page() {
       resumeUrl: a.resume?.fileUrl || null,
       resumeLabel: a.resume?.label || null,
       status: a.status,
+      offerId: a.offer?.id ?? null,
       appliedAt: formatPortalDate(a.appliedAt),
       updatedAt: formatPortalDate(a.updatedAt),
     }));
