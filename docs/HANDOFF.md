@@ -17,6 +17,25 @@ This file carries short-lived working context between teammates and agents. Cano
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
 
+## A compile error that outlives its fix, 2026-09-18
+
+`make dev` served `CssSyntaxError: admin.css:1472:1: Missing closing }` on every
+page, against a file that was balanced on disk, in the container, and in a
+clean `npm run build`. The error was a Turbopack cache entry, poisoned by a
+watcher that read `admin.css` mid-write while an editor was rewriting it.
+
+It survived `down`, `up --build`, and recreating the container, because
+`frontend/.next` is the `frontend_next` **named volume** — declared in
+`docker-compose.dev.yml` so container builds never write into the host tree.
+Named volumes are not removed by `down`; only `down -v` or an explicit
+`docker volume rm` touches them.
+
+`make clear-cache` is the way out. It removes the frontend container with its
+volumes and leaves the database alone, which `make clean` does not. Reach for it
+whenever a compile error keeps being reported after the file is demonstrably
+fine: check the brace balance once, and if it is even, the file is not the
+problem.
+
 ## Bulk placement records, 2026-09-18
 
 `/admin/placement-records/add` records one drive's outcome for a pasted list of

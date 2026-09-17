@@ -23,7 +23,7 @@ COMPOSE_DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 TOOLS       := $(COMPOSE) run --rm tools
 APP_SERVICES := db backend frontend
 
-.PHONY: help up dev down stop start restart build rebuild ps urls health logs \
+.PHONY: help up dev down stop start restart build rebuild clear-cache ps urls health logs \
         logs-frontend logs-backend logs-db seed env secrets admin password \
         db-migrate db-migrate-new db-seed-admins db-seed-students db-seed-demo \
         db-remove-demo db-pack-demo db-sync-admins db-reset db-studio db-psql \
@@ -69,6 +69,18 @@ build: ## Build the images
 
 rebuild: ## Build the images from scratch, ignoring the cache
 	$(COMPOSE) build --no-cache
+
+# The frontend's .next lives in a named volume so container builds never write
+# to the host tree. That volume outlives `down` and `up --build`, so a compile
+# error cached in it survives every restart and goes on being served after the
+# file is fixed. This is the way out, and it leaves the database alone.
+clear-cache: ## Delete the frontend build cache (fixes a compile error that outlives a fix)
+	@# -s stops the container first; -v takes the anonymous and named volumes
+	@# attached to it, which is the .next cache and nothing else.
+	$(COMPOSE) rm -fsv frontend
+	@volume=$$(docker volume ls -q --filter name=frontend_next | head -1); \
+		if [ -n "$$volume" ]; then docker volume rm "$$volume"; fi
+	@printf "\n  Cache cleared. Start the stack again with: make dev\n\n"
 
 ##@ Inspect
 

@@ -285,6 +285,7 @@ Student profiles appear under `/admin/students` after their first institute Goog
 | `make up` / `make dev` | Run the stack, with or without hot reload |
 | `make down` / `make stop` / `make restart` | Control a running stack |
 | `make ps` / `make health` / `make logs` | See what is running and why it is not |
+| `make clear-cache` | Drop the frontend build cache when a fixed compile error keeps being served |
 | `make urls` | Print the published URLs, read from Compose |
 | `make seed` | Migrations, administrators, the roster, and demonstration data |
 | `make db-migrate` | Apply pending migrations |
