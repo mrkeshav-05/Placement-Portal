@@ -17,6 +17,31 @@ This file carries short-lived working context between teammates and agents. Cano
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
 
+## The table's view notification is guarded, 2026-09-18
+
+`/admin/applications` and `/admin/team` were throwing `Maximum update depth
+exceeded` from `DataTable`'s `onViewChange` effect. Both callers set state from
+that callback — `setView` and `setVisibleMembers(view.rows)` — and every caller
+writes `searchText` as an inline arrow. A new function identity on each render
+rebuilds the `applyTablePipeline` memo, so `result` is a new object, so the
+effect fires, so the caller sets state, so the table re-renders, forever. The
+existing ref around `onViewChange` did not help: the unstable prop was the
+search mapper, not the listener.
+
+The fix is `sameTableView` in `src/lib/data-table.ts`, which the effect consults
+before notifying. It compares the view's contents — including rows element by
+element, because the pipeline rebuilds the array out of the same row objects —
+so a render that changed nothing notifies nobody. Four unit tests cover it.
+
+Two things not to do here:
+
+- **Do not hold `searchText` in a ref.** It was the first attempt and the React
+  compiler lint rule refuses it: the pipeline runs during render, so the ref
+  would be read during render. The guard lives in the effect for that reason.
+- **Do not assume memoising the callers is enough.** Stabilising `searchText`
+  at 11 call sites would also stop the loop, but the next inline prop
+  reintroduces it. The guard holds regardless of what a caller passes.
+
 ## A compile error that outlives its fix, 2026-09-18
 
 `make dev` served `CssSyntaxError: admin.css:1472:1: Missing closing }` on every

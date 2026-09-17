@@ -6,6 +6,8 @@ import {
   nextSortState,
   rowMatchesFilters,
   rowMatchesQuery,
+  sameTableView,
+  type TableViewSnapshot,
 } from "./data-table";
 
 type Row = {
@@ -241,4 +243,76 @@ test("a header click cycles unsorted, ascending, descending, unsorted", () => {
 
   // Moving to another column starts that column's own cycle.
   assert.deepEqual(nextSortState(second, "batch"), { columnId: "batch", direction: "asc" });
+});
+
+// A caller that sets state from the table's view notification re-renders the
+// table, which rebuilds the pipeline into a new result object. Without this
+// guard the notification fires on that new object, sets state again, and the
+// two never settle — which is exactly the "Maximum update depth exceeded" the
+// registrations and team screens hit.
+function snapshot(rows: Row[], overrides: Partial<TableViewSnapshot<Row>> = {}) {
+  const filters = {};
+  return {
+    query: "",
+    filters,
+    sort: null,
+    rows,
+    filteredCount: rows.length,
+    page: 1,
+    pageCount: 1,
+    ...overrides,
+  } satisfies TableViewSnapshot<Row>;
+}
+
+test("a re-render that changed nothing reports the same view", () => {
+  const base = snapshot(rows.slice(0, 2));
+  // The array is rebuilt out of the same row objects, which is what the
+  // pipeline does on every render.
+  const rebuilt = { ...base, rows: [...base.rows] };
+
+  assert.equal(base.rows === rebuilt.rows, false, "the array identity must differ");
+  assert.equal(sameTableView(base, rebuilt), true);
+});
+
+test("nothing has been reported yet, so the first view always counts as new", () => {
+  assert.equal(sameTableView(null, snapshot(rows)), false);
+});
+
+test("a real change to the view is reported", () => {
+  const base = snapshot(rows.slice(0, 2));
+
+  // A different row in the same position.
+  assert.equal(sameTableView(base, snapshot([rows[0], rows[2]])), false);
+  // A row added.
+  assert.equal(sameTableView(base, snapshot(rows.slice(0, 3))), false);
+  // The same rows, reordered by a sort.
+  assert.equal(sameTableView(base, snapshot([rows[1], rows[0]])), false);
+
+  for (const change of [
+    { query: "isha" },
+    { sort: { columnId: "name", direction: "asc" as const } },
+    { filters: { branch: ["CSE"] } },
+    { filteredCount: 99 },
+    { page: 2 },
+    { pageCount: 5 },
+  ]) {
+    assert.equal(
+      sameTableView(base, snapshot(base.rows, change)),
+      false,
+      `${Object.keys(change)[0]} should count as a change`,
+    );
+  }
+});
+
+test("a sort flipped in place is reported, not swallowed", () => {
+  // Same column, opposite direction, and with two rows the page order can come
+  // back identical — the direction alone has to be enough.
+  const ascending = snapshot(rows.slice(0, 1), {
+    sort: { columnId: "name", direction: "asc" },
+  });
+  const descending = snapshot(ascending.rows, {
+    sort: { columnId: "name", direction: "desc" },
+    filters: ascending.filters,
+  });
+  assert.equal(sameTableView(ascending, descending), false);
 });

@@ -24,6 +24,7 @@ import {
 import {
   applyTablePipeline,
   nextSortState,
+  sameTableView,
   type SortableValue,
   type TableFilterState,
   type TableSort,
@@ -544,8 +545,15 @@ export function DataTable<T>({
     viewListener.current = onViewChange;
   }, [onViewChange]);
 
+  // Callers write `searchText` inline, so the pipeline above is rebuilt on
+  // every render and `result` is a new object each time. A caller that sets
+  // state from this callback therefore re-renders us, producing another new
+  // object, which would notify again and never settle. So the guard compares
+  // what the view contains rather than the object containing it, and a render
+  // that changed nothing notifies nobody.
+  const notifiedView = useRef<DataTableView<T> | null>(null);
   useEffect(() => {
-    viewListener.current?.({
+    const view: DataTableView<T> = {
       query,
       filters: filterState,
       sort,
@@ -553,7 +561,10 @@ export function DataTable<T>({
       filteredCount: result.filteredCount,
       page: result.page,
       pageCount: result.pageCount,
-    });
+    };
+    if (sameTableView(notifiedView.current, view)) return;
+    notifiedView.current = view;
+    viewListener.current?.(view);
   }, [query, filterState, sort, result]);
 
   const columnCount = visibleColumns.length + (leadingColumn ? 1 : 0);

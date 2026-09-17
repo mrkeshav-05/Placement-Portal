@@ -116,6 +116,46 @@ export type PipelineResult<T> = {
   page: number;
 };
 
+/** What the table reports to a caller watching the view. */
+export type TableViewSnapshot<T> = PipelineResult<T> & {
+  query: string;
+  filters: TableFilterState;
+  sort: TableSort | null;
+};
+
+/**
+ * Whether two view snapshots hold the same thing.
+ *
+ * This guards the table's view notification. Callers write the search mapper
+ * inline, so the pipeline is rebuilt on every render and its result is a new
+ * object each time; a caller that sets state from the notification would
+ * re-render the table, produce another new object, be notified again, and never
+ * settle. Comparing contents rather than object identity is what stops that.
+ *
+ * Rows are compared element by element, because the pipeline builds a fresh
+ * array out of the same row objects: the array is always new while its contents
+ * usually are not.
+ */
+export function sameTableView<T>(
+  before: TableViewSnapshot<T> | null,
+  after: TableViewSnapshot<T>,
+): boolean {
+  if (!before) return false;
+  if (
+    before.query !== after.query ||
+    before.filters !== after.filters ||
+    before.sort?.columnId !== after.sort?.columnId ||
+    before.sort?.direction !== after.sort?.direction ||
+    before.filteredCount !== after.filteredCount ||
+    before.page !== after.page ||
+    before.pageCount !== after.pageCount ||
+    before.rows.length !== after.rows.length
+  ) {
+    return false;
+  }
+  return before.rows.every((row, index) => row === after.rows[index]);
+}
+
 export function applyTablePipeline<T>({
   rows,
   query = "",
