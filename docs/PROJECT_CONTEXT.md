@@ -7,7 +7,7 @@ Last updated: 2026-09-17
 The IIIT Lucknow Training & Placement Portal serves two roles:
 
 - Students discover opportunities, maintain profiles and resumes, apply, track outcomes, submit feedback, request NOCs, browse and share moderated interview experiences, and access placement resources.
-- Administrators manage announcements, companies, job profiles, applications, students, feedback, NOCs, team members, administrators, and placement analytics.
+- Administrators manage announcements, companies, events (the drives, stored as `JobProfile`), applications, students, feedback, NOCs, team members, administrators, and placement analytics.
 
 ## Current architecture
 
@@ -24,6 +24,7 @@ The repository is split into three services, each with its own container.
 - Auth.js v5 beta with one credentials provider and JWT sessions; no OAuth provider
 - Zod for validation in the frontend, Pydantic in the backend
 - Lucide for icons
+- `cmdk` for the searchable recruiter picker and `react-day-picker` for the event deadline calendar; both are behaviour only, styled from the repository's own tokens, and neither stylesheet is imported
 - Node's test runner with `tsx` for frontend units; pytest for the backend
 - Docker Compose for the full stack, with a hot-reload override
 
@@ -39,6 +40,7 @@ Important invariants:
 
 - One application per student/job profile.
 - Company names, user emails, and student roll numbers are unique where present.
+- A `JobProfile` is the company event the admin portal composes at `/admin/events`. Its `placementYear` is the season the drive runs in and its `batch` is the graduating cohort it recruits; the two are not interchangeable. `jobCategory` is one of the four values in `frontend/src/lib/job-profile-schema.ts`, and `cap`, `companyBond`, and `duration` are quoted from the company as free text rather than parsed figures.
 - Job eligibility is evaluated from the student's current profile and job criteria: CGPA, batch, branch, degree, gender, backlogs, placement bans, and document completeness. An empty `allowedDegrees` or `allowedGenders` list, or one holding `all`/`any`, places no restriction; a restriction the profile cannot answer fails.
 - `NocRequest.message` is the student's remarks and `NocRequest.adminRemarks` is the placement cell's decision remarks. A decision never writes over the student's text.
 - An `Offer` is the placement record and the only source of package figures. An application is not an offer; the two are joined by an optional, unique `applicationId`. An FTE or PPO carries `ctc`, an internship carries `stipend`, and the type the offer is not clears the other. A `DECLINED` or `REVOKED` offer stays on file but is excluded from every statistic, a rule stated once in `COUNTED_OFFER_STATUSES`. The season is the batch stored on the offer, not the student's current batch.
@@ -70,7 +72,7 @@ The reusable access rules live in `frontend/src/lib/auth-access.ts` and `fronten
 ## Core workflow
 
 1. Profile data supplies CGPA, batch, branch, backlogs, bans, document completeness, and the default resume.
-2. Company Events presents job profiles and evaluates the profile against job criteria.
+2. Company Events presents the published events and evaluates the profile against their criteria.
 3. An eligible student applies with a selected/default resume.
 4. Applications tracks `APPLIED → SHORTLISTED → INTERVIEW → SELECTED` plus rejected/withdrawn outcomes.
 5. Dashboard aggregates open roles, deadlines, announcements, eligibility, and application counts.
@@ -152,4 +154,4 @@ docs/                            Shared project memory and decisions
 
 Data access is mid-migration. Profile, resumes, NOC/forms, uploads, feedback submission, and interview experiences call FastAPI through `frontend/src/lib/api-client.ts`. The dashboard, company events, applications, feedback listing, and every other `/admin` surface still call Prisma directly from Next.js server components and actions; porting them to backend endpoints is the outstanding work from the 2026-08-20 decision. Interview experiences was built FastAPI-only from the start, with no Prisma fallback in the frontend.
 
-Google-authenticated students are resolved to their Auth.js/Prisma `User`. The student shell, dashboard, company events, eligibility, applications, core profile fields, and feedback read user-owned records and show explicit empty/incomplete states instead of demonstration data. The admin shell identity, overview metrics, company management, student directory/profile inspection, and job-profile publishing are persistent. Resume file storage, NOC workflows, team/contact management, announcements, and the remaining admin workflows are incomplete and show explicit implementation states rather than fake records. Consult `docs/FEATURE_STATUS.md` before extending a feature.
+Google-authenticated students are resolved to their Auth.js/Prisma `User`. The student shell, dashboard, company events, eligibility, applications, core profile fields, and feedback read user-owned records and show explicit empty/incomplete states instead of demonstration data. The admin shell identity, overview metrics, company management, student directory/profile inspection, and event publishing are persistent. Resume file storage, NOC workflows, team/contact management, announcements, and the remaining admin workflows are incomplete and show explicit implementation states rather than fake records. Consult `docs/FEATURE_STATUS.md` before extending a feature.

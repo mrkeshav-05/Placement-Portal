@@ -154,7 +154,11 @@ test("holding only own-scoped permissions never opens the admin portal", () => {
 
 test("canAccessAdminRoute guards routes based on permission requirements", () => {
   const volunteer = { role: "PLACEMENT_VOLUNTEER", email: "vol@iiitl.ac.in" };
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/events"), true);
+  // The pre-rename path still resolves, because it only redirects.
   assert.equal(canAccessAdminRoute(volunteer, "/admin/job-profiles"), true);
+  // Reading the event list does not imply creating one.
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/events/add"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/applications"), true);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/users"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/settings"), false);
@@ -187,7 +191,8 @@ test("the admin sidebar only offers routes the account can open", () => {
   );
 
   assert.ok(visible.includes("/admin/applications"));
-  assert.ok(visible.includes("/admin/job-profiles"));
+  assert.ok(visible.includes("/admin/events"));
+  assert.equal(visible.includes("/admin/events/add"), false);
   assert.ok(visible.includes("/admin/noc-requests"));
   assert.equal(visible.includes("/admin/users"), false);
   // team.view is the public directory; the admin console is team.manage.

@@ -440,7 +440,11 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionKey[]> = {
   "/admin/dashboard": [PERM_ANALYTICS_VIEW],
   "/admin/users": [PERM_USERS_VIEW, PERM_USERS_MANAGE, PERM_RBAC_MANAGE],
   "/admin/companies": [PERM_COMPANIES_VIEW],
+  // Events were called job profiles until 2026-09-17; the old path is a
+  // redirect and still needs to be reachable to answer with one.
   "/admin/job-profiles": [PERM_JOBS_VIEW],
+  "/admin/events": [PERM_JOBS_VIEW],
+  "/admin/events/add": [PERM_JOBS_CREATE],
   "/admin/applications": [PERM_APPLICATIONS_VIEW],
   "/admin/placement-records": [PERM_PLACEMENT_RECORDS_VIEW],
   "/admin/students": [PERM_STUDENTS_VIEW],

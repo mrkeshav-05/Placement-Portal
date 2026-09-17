@@ -14,12 +14,13 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   saveAnnouncementAction,
   uploadAnnouncementAttachmentAction,
   type AnnouncementActionResult,
 } from "@/app/admin/announcements/actions";
+import { PickerModal, useDismissOnOutsideClick } from "@/components/common/picker";
 import {
   ATTACHMENT_EXTENSIONS,
   MAX_ATTACHMENTS,
@@ -64,52 +65,6 @@ const TAG_SUGGESTIONS = [
   "Policy",
   "Urgent",
 ];
-
-/** Closes a popover when the pointer goes down anywhere outside it. */
-function useDismissOnOutsideClick(onDismiss: () => void) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handle(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) onDismiss();
-    }
-    document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
-  }, [onDismiss]);
-
-  return ref;
-}
-
-function PickerModal({
-  title,
-  onClose,
-  children,
-}: {
-  title: string;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
-      <div
-        className="modal picker-modal"
-        role="dialog"
-        aria-label={title}
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header>
-          <div>
-            <h2>{title}</h2>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close dialog">
-            <X />
-          </button>
-        </header>
-        <div className="picker-body">{children}</div>
-      </div>
-    </div>
-  );
-}
 
 export function AnnouncementComposer({
   category,

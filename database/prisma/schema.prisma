@@ -203,10 +203,19 @@ model JobProfile {
   allowedGenders       String[]
   jobCategory          String?
   batch                Int
+  // Season the drive belongs to, which is not always the graduating batch it
+  // is open to: a 2027-season internship recruits the 2028 batch.
+  placementYear        Int
   registrationDeadline DateTime
   status               JobStatus      @default(DRAFT)
   description          String?
   openingOverview      String?
+  // Policy and offer terms the placement cell writes as the company states
+  // them, so they stay free text rather than a parsed figure.
+  cap                  String?
+  companyBond          String?
+  duration             String?
+  redirectUrl          String?
   attachments          String[]
   createdAt            DateTime       @default(now())
   createdById          String

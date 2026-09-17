@@ -17,9 +17,14 @@ class JobBase(BaseModel):
     allowedGenders: list[str] = []
     jobCategory: Optional[str] = None
     batch: int
+    placementYear: int
     registrationDeadline: datetime
     description: Optional[str] = None
     openingOverview: Optional[str] = None
+    cap: Optional[str] = None
+    companyBond: Optional[str] = None
+    duration: Optional[str] = None
+    redirectUrl: Optional[str] = None
     attachments: list[str] = []
 
 class JobCreate(JobBase):
@@ -39,9 +44,14 @@ class JobUpdate(BaseModel):
     allowedGenders: Optional[list[str]] = None
     jobCategory: Optional[str] = None
     batch: Optional[int] = None
+    placementYear: Optional[int] = None
     registrationDeadline: Optional[datetime] = None
     description: Optional[str] = None
     openingOverview: Optional[str] = None
+    cap: Optional[str] = None
+    companyBond: Optional[str] = None
+    duration: Optional[str] = None
+    redirectUrl: Optional[str] = None
     attachments: Optional[list[str]] = None
 
 class JobStatusUpdate(BaseModel):

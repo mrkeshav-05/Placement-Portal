@@ -441,6 +441,242 @@
 }
 .picker-list button:hover { border-color: var(--blue); background: var(--surface-alt); }
 .picker-list button.selected { border-color: var(--blue); background: var(--surface-highlight); }
+.picker-footer { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle); }
+.picker-footer button {
+  border: 0;
+  border-radius: 10px;
+  background: var(--navy);
+  color: #fff;
+  padding: 12px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.picker-footer small { font-size: 10px; color: var(--muted); line-height: 1.6; }
+
+/* Event form. One long column of labelled fields, so a drive is composed in
+   the order the placement cell reads it out: season, company, role, then
+   eligibility, then terms. */
+.event-form { display: grid; gap: 16px; margin-top: 18px; }
+.event-form-row.two { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.event-field { display: grid; gap: 7px; min-width: 0; }
+.event-picker { position: relative; }
+.field-label { font-size: 12px; font-weight: 700; color: var(--ink); }
+.field-label.required::after { content: " *"; color: var(--badge-red-text); }
+.field-hint { font-size: 10px; color: var(--muted); line-height: 1.6; }
+.event-field input, .event-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-alt);
+  color: var(--ink);
+  font: 600 12px var(--font-inter, inherit);
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+.event-field textarea { resize: vertical; line-height: 1.7; font-weight: 500; }
+.event-field input::placeholder, .event-field textarea::placeholder { color: var(--muted); font-weight: 500; }
+.event-field input:focus, .event-field textarea:focus { border-color: var(--blue); background: var(--card-bg); }
+/* The picked year sits at the far end of the control, the label at the near
+   end, matching the season pickers on the announcement composers. */
+.composer-field .field-value { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--ink); }
+.dropdown-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dropdown-option svg { width: 13px; color: var(--green); }
+
+.choice-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.choice-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.choice-pill > i {
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  flex: none;
+  transition: all 0.18s ease;
+}
+.choice-pill:hover { border-color: var(--blue); }
+.choice-pill.selected { border-color: var(--blue); background: var(--surface-highlight); }
+.choice-pill.selected > i { border-color: var(--blue); border-width: 4px; }
+
+.switch-field { display: flex; align-items: center; gap: 12px; }
+.switch {
+  width: 38px;
+  height: 21px;
+  padding: 2px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.switch > i { display: block; width: 17px; height: 17px; border-radius: 50%; background: var(--card-bg); transition: transform 0.18s ease; }
+.switch.on { background: var(--navy); }
+.switch.on > i { transform: translateX(17px); }
+
+/* Deadline popover: a month grid beside the quarter-hour list, because a
+   deadline is a day and a time and the office sets both in one visit. */
+/* Anchored to the right edge: the field sits in the right-hand column, so a
+   left-anchored popover of this width would run off the page. */
+.deadline-popover { display: flex; gap: 14px; max-height: none; padding: 14px; width: max-content; left: auto; right: 0; }
+.time-column { display: grid; gap: 8px; align-content: start; border-left: 1px solid var(--border-subtle); padding-left: 14px; }
+.time-list { display: grid; gap: 6px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
+.time-list button {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card-bg);
+  color: var(--ink);
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.time-list button:hover { border-color: var(--blue); }
+.time-list button.selected { border-color: var(--blue); background: var(--surface-highlight); }
+
+/* react-day-picker ships unstyled here on purpose: its own stylesheet carries
+   literal colours, and every surface in this portal reads a token. */
+.rdp-root { --rdp-day-size: 34px; }
+.rdp-month_caption { display: flex; align-items: center; justify-content: center; padding: 2px 0 10px; }
+.rdp-caption_label { font: 700 13px var(--font-jakarta); color: var(--ink); border: 0; padding: 0; }
+/* The nav is a sibling of the month, not of the caption, so it is overlaid on
+   the caption row rather than placed in it. */
+.rdp-months { position: relative; }
+.rdp-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* The overlay spans the caption row, so only its buttons take the pointer;
+     otherwise it would swallow clicks on the days beneath it. */
+  pointer-events: none;
+}
+.rdp-nav button { pointer-events: auto; }
+.rdp-nav button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+.rdp-nav button:disabled { opacity: 0.35; cursor: not-allowed; }
+.rdp-nav svg, .rdp-chevron { width: 13px; height: 13px; fill: currentColor; }
+.rdp-month_grid { border-collapse: collapse; }
+.rdp-weekday { font-size: 10px; font-weight: 700; color: var(--muted); padding-bottom: 4px; }
+.rdp-day { padding: 1px; }
+.rdp-day_button {
+  width: var(--rdp-day-size);
+  height: var(--rdp-day-size);
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.rdp-day_button:hover { background: var(--surface-alt); }
+.rdp-today .rdp-day_button { background: var(--surface-highlight); }
+.rdp-selected .rdp-day_button { background: var(--navy); color: #fff; }
+.rdp-outside .rdp-day_button { color: var(--muted); opacity: 0.6; }
+.rdp-disabled .rdp-day_button { color: var(--muted); opacity: 0.35; cursor: not-allowed; }
+
+/* Degree and branch dialogs: a checkbox list, grouped by degree for branches
+   because the same abbreviation means a different stream per degree. */
+.check-list { display: grid; gap: 8px; max-height: 400px; overflow-y: auto; }
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.check-row:hover { border-color: var(--blue); }
+.check-row.all { background: var(--surface-alt); border-style: dashed; }
+.check-row svg { width: 15px; color: var(--muted); }
+.check-row .box { width: 15px; height: 15px; border: 1px solid var(--border); border-radius: 4px; flex: none; }
+.check-row .box.checked { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 2px var(--card-bg); }
+
+.branch-search { display: flex; align-items: center; gap: 8px; }
+.branch-search .dropdown-search {
+  flex: 1;
+  border: 1px solid var(--blue);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 0;
+}
+.clear-branches {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--badge-red-text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.branch-group { display: grid; gap: 8px; }
+.branch-group header { display: flex; align-items: center; justify-content: space-between; }
+.branch-group header strong { font-size: 12px; font-weight: 800; color: var(--ink); }
+.branch-group header button { border: 0; background: transparent; color: var(--blue); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0; }
+.branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.event-form-actions { display: grid; gap: 8px; justify-items: end; margin-top: 6px; }
+.event-form-actions > div { display: flex; gap: 10px; }
+.event-form-actions button {
+  border: 0;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.event-form-actions button.ghost { background: var(--surface-alt); color: var(--ink); border: 1px solid var(--border); }
+.event-form-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.event-form-actions button:hover:not(:disabled) { transform: translateY(-1px); }
+
+@media (max-width: 720px) {
+  .event-form-row.two, .branch-grid { grid-template-columns: 1fr; }
+  .deadline-popover { flex-direction: column; width: auto; }
+  .time-column { border-left: 0; border-top: 1px solid var(--border-subtle); padding: 12px 0 0; }
+  .time-list { max-height: 180px; }
+}
 
 /* Section tabs. Used where one screen holds distinct jobs rather than one
    list under a filter, as on Announcements. */
@@ -1094,8 +1330,11 @@
 .row-actions { display: flex; gap: 6px; }
 .row-actions form { display: inline; }
 .row-actions button, .admin-heading button:disabled { cursor: not-allowed; opacity: .35; }
-.row-actions button { border: 0; background: var(--surface-alt); border-radius: 8px; color: var(--muted); padding: 6px; transition: all 0.15s; }
-.row-actions button:hover:not(:disabled) { background: var(--surface-highlight); color: var(--ink); }
+.row-actions button, .row-actions a { border: 0; background: var(--surface-alt); border-radius: 8px; color: var(--muted); padding: 6px; transition: all 0.15s; }
+/* An edit action is a link where it opens its own page, a button where it
+   opens a dialog; both read as the same control. */
+.row-actions a { display: grid; place-items: center; cursor: pointer; opacity: 1; }
+.row-actions button:hover:not(:disabled), .row-actions a:hover { background: var(--surface-highlight); color: var(--ink); }
 .row-actions button:last-child { color: var(--badge-red-text); }
 .row-actions button:last-child:hover:not(:disabled) { background: var(--badge-red-bg); }
 .row-actions svg { width: 14px; }

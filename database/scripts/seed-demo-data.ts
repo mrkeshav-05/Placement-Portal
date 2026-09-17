@@ -311,6 +311,8 @@ async function seedJobs(
       allowedGenders: record.allowedGenders,
       jobCategory: record.jobCategory ?? null,
       batch: currentYear + record.batchOffset,
+      // Demo drives recruit the batch whose season they run in.
+      placementYear: currentYear + record.batchOffset,
       registrationDeadline: offsetDays(record.deadlineInDays),
       status: record.status,
       openingOverview: record.openingOverview ?? null,

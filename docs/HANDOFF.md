@@ -7,15 +7,32 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-17, events pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 119 frontend unit tests, and 148 backend pytest tests in the running `backend` container.
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## Job profiles become Events, 2026-09-17
+
+`DECISIONS.md` carries the reasoning under today's date.
+
+1. **Three routes replace the modal.** `/admin/events` lists, `/admin/events/add` composes, `/admin/events/[id]/edit` edits, all through the one `frontend/src/components/admin/event-form.tsx`. `/admin/job-profiles` is a `permanentRedirect` and stays in `ROUTE_PERMISSIONS`. The table and the `jobs.*` permission family keep their names; only the screens moved.
+2. **The write actions now gate on `jobs.create`/`jobs.update` and, for an `ACTIVE` status, `jobs.publish`.** They previously asked only for an admin session.
+3. **Five new columns on `JobProfile`**: `placementYear` (required, backfilled from `batch`), `cap`, `companyBond`, `duration`, and `redirectUrl`. Migration `20260917220000_event_form_fields`, mirrored in `backend/app/models/db.py` and `backend/app/schemas/job.py`, and seeded.
+4. **Category is the closed list Tech/NonTech/Management/Marketing.** "Core" is refused by `jobProfileFormSchema`, not merely absent from the buttons. Rows seeded with other strings still list; editing one forces a choice.
+5. **Degrees and branches come from the roster** through `frontend/src/lib/event-options.ts`. An event being edited keeps values the roster no longer explains, grouped under *Other*.
+
+Deferred, and present in the reference design: the per-event **question builder**, the **attachment uploader** (`JobProfile.attachments` exists and nothing writes it), and a **point of contact** (the `Coordinator` table exists and nothing writes it) — the user asked for the POC to be left out of this pass. None of the three is rendered, because a control that stores nothing would be describing persistence the portal does not have. Questions in particular need answer storage on `Application` before the UI is worth building.
+
+**Exercised in a browser as far as one create.** All three routes were loaded against the seeded development database while signed in as a super admin: the list renders with its filters, the add form saved one event with every new field populated (verified in SQL, then deleted), and the edit route hydrates a seeded row including the company, batch, deadline, and the four selected branches. Not clicked: publishing to `ACTIVE` from the form, deleting from the list, and the screens under a non-super-admin account, so the `jobs.publish`/`jobs.delete` gates are covered by unit tests only.
+
+**The demo seed still writes legacy categories.** `database/seed-data/job-profiles.json` carries `Software`, `Hardware`, `Networking`, `Infrastructure`, and `Design`, none of which are among the four the form offers, so every seeded event opens its editor with no category selected. Mapping them onto Tech/NonTech means editing that file and running `npm run db:pack:demo` to rebuild the archive the seeder actually reads; it was left alone in this pass.
 
 ## One admin data table, 2026-09-17
 
 `DECISIONS.md` carries the reasoning under today's date.
 
-All eleven admin lists — companies, job profiles, students, applications, placement records, announcements, feedbacks, NOC requests, interview experiences, users, and team — now render through `frontend/src/components/common/data-table.tsx`. Each screen supplies columns, a search accessor, and filters; nothing about a page lives in the component. The pipeline is `frontend/src/lib/data-table.ts` and is covered by twelve tests in `frontend/src/lib/data-table.test.ts`.
+All eleven admin lists — companies, events, students, applications, placement records, announcements, feedbacks, NOC requests, interview experiences, users, and team — now render through `frontend/src/components/common/data-table.tsx`. Each screen supplies columns, a search accessor, and filters; nothing about a page lives in the component. The pipeline is `frontend/src/lib/data-table.ts` and is covered by twelve tests in `frontend/src/lib/data-table.test.ts`.
 
 - The old `.admin-row` CSS grid, `.admin-row-head`, and `.user-row-grid` rules are deleted; `.admin-toolbar` stays because the student interview-experiences view still uses it.
 - Server actions, modals, permission gating, the applications CSV export, bulk stage changes, and the team reorder arrows were carried over unchanged. The export now narrows on a filter only when exactly one option is selected, because the endpoint takes one value per filter and a file that disagrees with the screen is worse than a wider one.

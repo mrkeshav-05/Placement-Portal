@@ -54,7 +54,14 @@ const nav: NavItem[] = [
       { label: "View registrations", href: "/admin/applications" },
     ],
   },
-  { label: "Job profiles", href: "/admin/job-profiles", icon: BriefcaseBusiness },
+  {
+    label: "Events",
+    icon: BriefcaseBusiness,
+    children: [
+      { label: "All events", href: "/admin/events" },
+      { label: "Add event", href: "/admin/events/add" },
+    ],
+  },
   { label: "Placement records", href: "/admin/placement-records", icon: Award },
   { label: "Students", href: "/admin/students", icon: GraduationCap },
   { label: "Users & RBAC", href: "/admin/users", icon: ShieldCheck },

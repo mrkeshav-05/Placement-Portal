@@ -20,7 +20,7 @@ A responsive student and administration platform for the Training & Placement Ce
 
 The portal gives students a single place to discover opportunities, verify eligibility, manage their placement profile and resumes, apply to roles, track application progress, submit feedback, and request NOCs.
 
-Placement administrators receive a separate role-protected workspace for companies, job profiles, applications, students, announcements, feedback, NOCs, team members, administrators, and placement analytics.
+Placement administrators receive a separate role-protected workspace for companies, events, applications, students, announcements, feedback, NOCs, team members, administrators, and placement analytics.
 
 ```mermaid
 flowchart LR
@@ -48,7 +48,7 @@ flowchart LR
 ### Administration portal
 
 - Placement analytics and branch-level reporting UI
-- Management surfaces for announcements, companies, job profiles, and applications
+- Management surfaces for announcements, companies, events, and applications
 - Student, feedback, NOC, placement-team, and administrator management
 - Server-side role protection for all `/admin/*` routes
 
@@ -148,7 +148,7 @@ with realistic content instead of empty tables. Load it with one command:
 npm run db:seed:demo
 ```
 
-That adds 6 companies, 12 students, 8 job profiles across active, ended, and
+That adds 6 companies, 12 students, 8 events across active, ended, and
 draft states, 29 applications, 9 announcements, 7 NOC requests, feedback, and
 placement team members. Run `npm run db:remove-demo` to take it all out again.
 
@@ -252,19 +252,22 @@ Add the equivalent HTTPS callback before production deployment.
 1. Sign in with an administrator account and open `/admin/companies`.
 2. Select **Add company**.
 3. Enter the official company name. Website, logo URL, and description are optional but recommended.
-4. Select **Create company**. The record is written to PostgreSQL and becomes available for job-profile creation.
-5. Use **Edit** to correct the recruiter profile. Deletion is blocked while job profiles reference the company.
+4. Select **Create company**. The record is written to PostgreSQL and becomes available for event creation.
+5. Use **Edit** to correct the recruiter profile. Deletion is blocked while events reference the company.
 
-The company record is the parent recruiter entity. A separate job profile must be created for every internship or full-time role before students can see it under Company Events.
+The company record is the parent recruiter entity. A separate event must be created for every internship or full-time role before students can see it under Company Events.
 
-## Publishing a job profile
+## Publishing a company event
 
-1. Sign in with a real Google administrator account and open `/admin/job-profiles`.
-2. Select **Add job profile** and choose an existing company.
-3. Enter the role, location, batch, deadline, compensation, and eligibility values. Branches and degrees are comma-separated.
-4. Save as **Draft** while checking the details. Drafts are hidden from students.
-5. Change the status to **Active** with a future deadline to show the opportunity under Company Events and allow eligible students to apply.
-6. Change the status to **Ended** when applications should close. A job with applications cannot be deleted, preserving student records.
+1. Sign in with an administrator account and open **Events → Add event** (`/admin/events/add`).
+2. Choose the placement year — the season the drive runs in — and the company.
+3. Enter the job title, description, category, and employment type, then the batch it recruits and the last date to apply. The deadline is picked as a day plus a quarter-hour time.
+4. Pick the allowed degrees, then the branches, which are offered grouped under the degrees you picked. Both lists come from the student roster. Turn on **Enable optional eligibility criteria** to restrict by gender or placement bans.
+5. Leave the visibility on **Draft** while checking the details. Drafts are hidden from students.
+6. Set it to **Active** with a future deadline to show the opportunity under Company Events and allow eligible students to apply. Publishing needs the `jobs.publish` permission.
+7. Set it to **Ended** when applications should close. An event with applications cannot be deleted, preserving student records.
+
+**Events → All events** (`/admin/events`) lists every drive with status, placement-year, batch, and type filters; its edit action opens the same form.
 
 Student profiles appear under `/admin/students` after their first institute Google sign-in. Students maintain their own saved details from `/profile`; administrators receive a read-only view and sensitive identity numbers are never displayed.
 
