@@ -20,7 +20,12 @@ type BackendAdminAppItem = {
   rollNumber: string | null;
   branch: string | null;
   batch: number | null;
+  degree: string | null;
   cgpa: number | null;
+  class10Percent: number | null;
+  class12Percent: number | null;
+  personalEmail: string | null;
+  contactNumber: string | null;
   jobProfileId: string;
   jobTitle: string;
   companyId: string;
@@ -45,7 +50,9 @@ export default async function Page() {
   const jobOptions: JobOption[] = jobs.map((j) => ({
     id: j.id,
     title: j.title,
+    companyId: j.companyId,
     companyName: j.company.name,
+    batch: j.batch,
   }));
 
   let rows: AdminApplicationRow[] = [];
@@ -60,7 +67,12 @@ export default async function Page() {
       rollNumber: a.rollNumber,
       branch: a.branch,
       batch: a.batch,
+      degree: a.degree,
       cgpa: a.cgpa,
+      class10Percent: a.class10Percent,
+      class12Percent: a.class12Percent,
+      personalEmail: a.personalEmail,
+      contactNumber: a.contactNumber,
       jobProfileId: a.jobProfileId,
       jobTitle: a.jobTitle,
       companyId: a.companyId,
@@ -91,7 +103,12 @@ export default async function Page() {
       rollNumber: a.user.rollNumber,
       branch: a.user.branch,
       batch: a.user.batch,
+      degree: a.user.degree,
       cgpa: a.user.cgpa,
+      class10Percent: a.user.class10Percent,
+      class12Percent: a.user.class12Percent,
+      personalEmail: a.user.personalEmail,
+      contactNumber: a.user.contactNumber,
       jobProfileId: a.jobProfileId,
       jobTitle: a.jobProfile.title,
       companyId: a.jobProfile.companyId,

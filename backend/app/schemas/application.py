@@ -36,7 +36,12 @@ class AdminApplicationItem(BaseModel):
     rollNumber: Optional[str] = None
     branch: Optional[str] = None
     batch: Optional[int] = None
+    degree: Optional[str] = None
     cgpa: Optional[float] = None
+    class10Percent: Optional[float] = None
+    class12Percent: Optional[float] = None
+    personalEmail: Optional[str] = None
+    contactNumber: Optional[str] = None
     jobProfileId: str
     jobTitle: str
     companyId: str

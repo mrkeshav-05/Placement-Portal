@@ -9,6 +9,11 @@ import {
   Briefcase,
   FileText,
   ExternalLink,
+  CalendarRange,
+  Building2,
+  ClipboardList,
+  SlidersHorizontal,
+  FileSpreadsheet,
 } from "lucide-react";
 import type { ApplicationStatus } from "@prisma/client";
 import {
@@ -21,6 +26,11 @@ import {
   type DataTableFilter,
   type DataTableView,
 } from "@/components/common/data-table";
+import {
+  ExportColumnsDialog,
+  buildDefaultExportSelection,
+  type ExportColumnDef,
+} from "@/components/admin/export-columns-dialog";
 
 export type AdminApplicationRow = {
   id: string;
@@ -30,7 +40,12 @@ export type AdminApplicationRow = {
   rollNumber: string | null;
   branch: string | null;
   batch: number | null;
+  degree: string | null;
   cgpa: number | null;
+  class10Percent: number | null;
+  class12Percent: number | null;
+  personalEmail: string | null;
+  contactNumber: string | null;
   jobProfileId: string;
   jobTitle: string;
   companyId: string;
@@ -46,8 +61,30 @@ export type AdminApplicationRow = {
 export type JobOption = {
   id: string;
   title: string;
+  companyId: string;
   companyName: string;
+  batch: number;
 };
+
+const REGISTRATION_EXPORT_COLUMNS: ExportColumnDef<AdminApplicationRow>[] = [
+  { id: "sno", label: "S.No", group: "Basic", locked: true, value: (_row, index) => index + 1 },
+  { id: "rollNumber", label: "Roll Number", group: "Basic", locked: true, value: (row) => row.rollNumber ?? "" },
+  { id: "name", label: "Name", group: "Basic", locked: true, value: (row) => row.studentName },
+  { id: "instituteEmail", label: "Institute Mail ID", group: "Basic", locked: true, value: (row) => row.studentEmail },
+  { id: "contact", label: "Contact", group: "Basic", defaultSelected: true, value: (row) => row.contactNumber ?? "" },
+  { id: "personalEmail", label: "Personal Mail ID", group: "Basic", defaultSelected: true, value: (row) => row.personalEmail ?? "" },
+  { id: "resumeUrl", label: "Resume URL", group: "Basic", value: (row) => row.resumeUrl ?? "" },
+  { id: "appliedAt", label: "Applied At", group: "Basic", value: (row) => row.appliedAt },
+  { id: "batch", label: "Batch", group: "Academic", defaultSelected: true, value: (row) => row.batch ?? "" },
+  { id: "degree", label: "Degree", group: "Academic", defaultSelected: true, value: (row) => row.degree ?? "" },
+  { id: "branch", label: "Branch", group: "Academic", defaultSelected: true, value: (row) => row.branch ?? "" },
+  { id: "cgpa", label: "CGPA", group: "Academic", defaultSelected: true, value: (row) => row.cgpa ?? "" },
+  { id: "cgpa12", label: "CGPA 12th", group: "Academic", defaultSelected: true, value: (row) => row.class12Percent ?? "" },
+  { id: "cgpa10", label: "CGPA 10th", group: "Academic", defaultSelected: true, value: (row) => row.class10Percent ?? "" },
+  { id: "companyName", label: "Company", group: "Application", value: (row) => row.companyName },
+  { id: "jobTitle", label: "Role", group: "Application", value: (row) => row.jobTitle },
+  { id: "status", label: "Status", group: "Application", value: (row) => row.status },
+];
 
 const ALL_STATUSES: ApplicationStatus[] = [
   "APPLIED",
@@ -75,6 +112,121 @@ export function ApplicationsManager({
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [view, setView] = useState<DataTableView<AdminApplicationRow> | null>(null);
+
+  // --- View Registrations: season -> company -> company event ------------
+  const seasons = useMemo(
+    () => Array.from(new Set(jobs.map((job) => job.batch))).sort((a, b) => b - a),
+    [jobs],
+  );
+  const [season, setSeason] = useState<number | null>(seasons[0] ?? null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  const companiesForSeason = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const job of jobs) {
+      if (season !== null && job.batch !== season) continue;
+      map.set(job.companyId, job.companyName);
+    }
+    return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [jobs, season]);
+
+  const eventsForCompany = useMemo(
+    () => jobs.filter((job) => job.companyId === companyId && (season === null || job.batch === season)),
+    [jobs, companyId, season],
+  );
+
+  function handleSeasonChange(value: string) {
+    setSeason(value ? Number(value) : null);
+    setCompanyId(null);
+    setJobId(null);
+  }
+
+  function handleCompanyChange(value: string) {
+    setCompanyId(value || null);
+    setJobId(null);
+  }
+
+  const scopedApplications = useMemo(
+    () => (jobId ? applications.filter((app) => app.jobProfileId === jobId) : []),
+    [applications, jobId],
+  );
+
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportColumns, setExportColumns] = useState<Set<string>>(() =>
+    buildDefaultExportSelection(REGISTRATION_EXPORT_COLUMNS),
+  );
+  const [downloadingResumes, setDownloadingResumes] = useState(false);
+
+  const registrationsFileLabel = useMemo(() => {
+    const job = jobs.find((j) => j.id === jobId);
+    return job ? `${job.companyName}_${job.title}`.replace(/[^a-z0-9]+/gi, "_") : "registrations";
+  }, [jobs, jobId]);
+
+  function handleExportExcel() {
+    if (!scopedApplications.length) return;
+    const columns = REGISTRATION_EXPORT_COLUMNS.filter(
+      (col) => col.locked || exportColumns.has(col.id),
+    );
+    const rows = scopedApplications.map((app, index) => {
+      const row: Record<string, string | number> = {};
+      for (const col of columns) row[col.label] = col.value(app, index);
+      return row;
+    });
+
+    import("xlsx").then((XLSX) => {
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+      XLSX.writeFile(workbook, `${registrationsFileLabel}.xlsx`);
+    });
+  }
+
+  async function handleDownloadResumes() {
+    const withResumes = scopedApplications.filter((app) => app.resumeUrl);
+    if (!withResumes.length) {
+      setStatusMessage({ type: "error", text: "No resumes available for the current selection." });
+      return;
+    }
+
+    setDownloadingResumes(true);
+    setStatusMessage(null);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      let failed = 0;
+
+      await Promise.all(
+        withResumes.map(async (app) => {
+          try {
+            const res = await fetch(app.resumeUrl!);
+            if (!res.ok) throw new Error("fetch failed");
+            const blob = await res.blob();
+            const safeName = (app.rollNumber || app.studentName || app.id).replace(/[^a-z0-9-_]+/gi, "_");
+            zip.file(`${safeName}.pdf`, blob);
+          } catch {
+            failed += 1;
+          }
+        }),
+      );
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${registrationsFileLabel}_resumes.zip`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      setStatusMessage(
+        failed
+          ? { type: "error", text: `Downloaded ${withResumes.length - failed} resume(s); ${failed} failed.` }
+          : { type: "success", text: `Downloaded ${withResumes.length} resume(s).` },
+      );
+    } finally {
+      setDownloadingResumes(false);
+    }
+  }
 
   const branches = useMemo(() => {
     const set = new Set<string>();
@@ -328,8 +480,251 @@ export function ApplicationsManager({
     [jobs, branches],
   );
 
+  const registrationColumns = useMemo<DataTableColumn<AdminApplicationRow>[]>(() => {
+    const indexById = new Map(scopedApplications.map((app, index) => [app.id, index]));
+    return [
+      {
+        id: "sno",
+        header: "S.No",
+        width: "64px",
+        hideable: false,
+        cell: (app) => <span className="dt-numeric">{(indexById.get(app.id) ?? 0) + 1}</span>,
+      },
+      {
+        id: "rollNumber",
+        header: "Roll Number",
+        width: "minmax(120px, 1fr)",
+        hideable: false,
+        sortValue: (app) => app.rollNumber,
+        cell: (app) => app.rollNumber ?? <span className="dt-muted">—</span>,
+      },
+      {
+        id: "name",
+        header: "Name",
+        width: "minmax(160px, 1.2fr)",
+        hideable: false,
+        sortValue: (app) => app.studentName,
+        cell: (app) => <strong>{app.studentName}</strong>,
+      },
+      {
+        id: "contact",
+        header: "Contact",
+        width: "minmax(120px, 1fr)",
+        cell: (app) => app.contactNumber ?? <span className="dt-muted">—</span>,
+      },
+      {
+        id: "instituteEmail",
+        header: "Institute Mail ID",
+        width: "minmax(190px, 1.3fr)",
+        sortValue: (app) => app.studentEmail,
+        cell: (app) => app.studentEmail,
+      },
+      {
+        id: "personalEmail",
+        header: "Personal Mail ID",
+        width: "minmax(190px, 1.3fr)",
+        cell: (app) => app.personalEmail ?? <span className="dt-muted">—</span>,
+      },
+      {
+        id: "degree",
+        header: "Degree",
+        width: "minmax(90px, 0.8fr)",
+        sortValue: (app) => app.degree,
+        cell: (app) => app.degree ?? <span className="dt-muted">—</span>,
+      },
+      {
+        id: "branch",
+        header: "Branch",
+        width: "minmax(100px, 0.8fr)",
+        sortValue: (app) => app.branch,
+        cell: (app) => app.branch ?? <span className="dt-muted">—</span>,
+      },
+      {
+        id: "batch",
+        header: "Batch",
+        width: "90px",
+        sortValue: (app) => app.batch,
+        cell: (app) => <span className="dt-numeric">{app.batch ?? "—"}</span>,
+      },
+      {
+        id: "cgpa",
+        header: "CGPA",
+        width: "90px",
+        sortValue: (app) => app.cgpa,
+        cell: (app) => <span className="dt-numeric">{app.cgpa ?? "—"}</span>,
+      },
+      {
+        id: "cgpa12",
+        header: "CGPA 12th",
+        width: "100px",
+        sortValue: (app) => app.class12Percent,
+        cell: (app) => <span className="dt-numeric">{app.class12Percent ?? "—"}</span>,
+      },
+      {
+        id: "cgpa10",
+        header: "CGPA 10th",
+        width: "100px",
+        sortValue: (app) => app.class10Percent,
+        cell: (app) => <span className="dt-numeric">{app.class10Percent ?? "—"}</span>,
+      },
+      {
+        id: "resume",
+        header: "Resume",
+        width: "minmax(120px, 1fr)",
+        cell: (app) =>
+          app.resumeUrl ? (
+            <a
+              href={app.resumeUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="admin-external-link"
+              title="Open attached resume"
+            >
+              <FileText />
+              {app.resumeLabel || "Resume"}
+            </a>
+          ) : (
+            <span className="dt-muted">—</span>
+          ),
+      },
+    ];
+  }, [scopedApplications]);
+
   return (
     <div className="admin-page">
+      <section className="admin-heading">
+        <div>
+          <span className="eyebrow">Registrations</span>
+          <h1>View Registrations</h1>
+          <p>Browse and export student registrations by company event.</p>
+        </div>
+      </section>
+
+      {statusMessage ? (
+        <div className={statusMessage.type === "success" ? "admin-success" : "admin-error"}>
+          {statusMessage.text}
+        </div>
+      ) : null}
+
+      <div className="registrations-filters">
+        <label className="season-picker">
+          <CalendarRange />
+          <span>Select Season</span>
+          <select
+            value={season ?? ""}
+            onChange={(e) => handleSeasonChange(e.target.value)}
+            disabled={!seasons.length}
+            aria-label="Select season"
+          >
+            {seasons.length ? (
+              seasons.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))
+            ) : (
+              <option value="">No seasons yet</option>
+            )}
+          </select>
+        </label>
+
+        <label className="season-picker">
+          <Building2 />
+          <span>Select Company</span>
+          <select
+            value={companyId ?? ""}
+            onChange={(e) => handleCompanyChange(e.target.value)}
+            disabled={!companiesForSeason.length}
+            aria-label="Select company"
+          >
+            <option value="">--</option>
+            {companiesForSeason.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="season-picker">
+          <ClipboardList />
+          <span>Select Company Event</span>
+          <select
+            value={jobId ?? ""}
+            onChange={(e) => setJobId(e.target.value || null)}
+            disabled={!companyId}
+            aria-label="Select company event"
+          >
+            <option value="">{companyId ? "--" : "Select Company First"}</option>
+            {eventsForCompany.map((job) => (
+              <option key={job.id} value={job.id}>
+                {job.companyName} — {job.title}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <section className="admin-card registrations-card">
+        <div className="registrations-card-header">
+          <h2>Registered Students{jobId ? ` (${scopedApplications.length})` : ""}</h2>
+          <div className="registrations-actions">
+            <button type="button" className="dt-view-button" onClick={() => setExportDialogOpen(true)}>
+              <SlidersHorizontal />
+              Customize Export
+              <b>{exportColumns.size}</b>
+            </button>
+            <button
+              type="button"
+              className="dt-view-button"
+              onClick={handleDownloadResumes}
+              disabled={!jobId || !scopedApplications.length || downloadingResumes}
+            >
+              <Download />
+              {downloadingResumes ? "Preparing…" : "Download Resumes"}
+            </button>
+            <button
+              type="button"
+              className="primary"
+              onClick={handleExportExcel}
+              disabled={!jobId || !scopedApplications.length}
+            >
+              <FileSpreadsheet />
+              Export Excel
+            </button>
+          </div>
+        </div>
+
+        <DataTable
+          data={scopedApplications}
+          columns={registrationColumns}
+          getRowId={(app) => app.id}
+          searchText={(app) =>
+            `${app.studentName} ${app.studentEmail} ${app.personalEmail ?? ""} ${app.rollNumber ?? ""} ${app.contactNumber ?? ""} ${app.branch ?? ""}`
+          }
+          searchPlaceholder="Search..."
+          columnStorageKey="registrations"
+          minWidth={1500}
+          emptyIcon={<Users />}
+          emptyTitle={jobId ? "No matching registrations" : "Select a company event"}
+          emptyDescription={
+            jobId
+              ? "Try a different search."
+              : "Select a company event to view registrations."
+          }
+        />
+      </section>
+
+      {exportDialogOpen ? (
+        <ExportColumnsDialog
+          columns={REGISTRATION_EXPORT_COLUMNS}
+          selected={exportColumns}
+          onChange={setExportColumns}
+          onClose={() => setExportDialogOpen(false)}
+          onApply={() => setExportDialogOpen(false)}
+        />
+      ) : null}
+
       <section className="admin-heading">
         <div>
           <span className="eyebrow">Candidate Management</span>
@@ -340,12 +735,6 @@ export function ApplicationsManager({
           <Download /> Export CSV
         </a>
       </section>
-
-      {statusMessage ? (
-        <div className={statusMessage.type === "success" ? "admin-success" : "admin-error"}>
-          {statusMessage.text}
-        </div>
-      ) : null}
 
       <section className="admin-metrics">
         <article>
