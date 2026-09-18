@@ -1,0 +1,40 @@
+{# Gives the theme toggle a home.
+
+   sqladmin renders a top bar only when the language switcher is enabled, so
+   there is no persistent header to hang a global control on. This overrides
+   `topbar` to always render one. The switcher is reproduced rather than
+   inherited because `super()` would emit a second bar beside this one; if
+   sqladmin's switcher markup changes, this copy is what needs revisiting. #}
+{% extends "sqladmin_original/layout.html" %}
+
+{% block topbar %}
+{% set show_switcher = i18n_config.language_switcher and i18n_config.language_switcher | length > 1 %}
+<header class="navbar navbar-expand-md d-print-none sticky-top shadow-sm" data-bs-theme="dark">
+  <div class="container-fluid">
+    <div class="navbar-nav flex-row ms-auto align-items-center gap-2" id="topbar-end">
+      {% if show_switcher %}
+      <div class="nav-item dropdown">
+        <a href="#" class="btn btn-outline-light dropdown-toggle d-flex align-items-center px-3"
+          data-bs-toggle="dropdown" aria-expanded="false" title="{{ _('Language') }}">
+          <i class="fa fa-language me-2"></i>
+          <span>{{ get_locale_display_name(get_locale()) }}</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end">
+          {% for code in i18n_config.language_switcher %}
+          <a class="dropdown-item {% if code == get_locale() %}active{% endif %}"
+            href="{{ request.url.include_query_params(lang=code) }}">
+            {{ get_locale_display_name(code) }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {# The icon and the labels are set by the script in base.html, which is
+         the only thing that knows which of the three states is current. #}
+      <button type="button" id="theme-toggle" class="btn btn-outline-light btn-icon px-2">
+        <i class="fa fa-laptop"></i>
+      </button>
+    </div>
+  </div>
+</header>
+{% endblock %}

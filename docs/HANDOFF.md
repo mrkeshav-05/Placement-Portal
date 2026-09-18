@@ -7,6 +7,7 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-18, database table browser pass): `npm run lint`, `npm run type-check`, 130 frontend unit tests, and 174 backend pytest tests including 16 new ones over the password gate and the generated views. The browser itself was exercised against the running dev stack over HTTP: a wrong password rejected with 400, the right one setting a `tnp_db_admin` cookie, all 15 list pages answering 200, the `User` details page carrying all 41 columns, search matching one row out of the roster, and a throwaway `TeamMember` row created, edited, and deleted with the result read back through `psql`. Dark mode was checked in a browser: the real login page in both themes, and — because signing in needs the live `DB_ADMIN_PASSWORD`, which belongs to the repository owner rather than in an agent transcript — the list page and the `User` edit form were saved with `curl` and served from a scratch static server, which runs sqladmin's real markup against its real CSS and JavaScript. That confirmed the toggle cycling light/dark/system with its icon and label, the default following `prefers-color-scheme`, and the computed colours of the flatpickr calendar and the select2 tag field. The only thing that harness cannot show is the icon font, which is CORS-blocked from a foreign origin; on port 8000 it is same-origin. **The signed-in pages have still not been clicked through on the real origin.** `npm run build` was not re-run because no frontend file changed in this pass; the production backend image was not rebuilt either, but both Dockerfiles install from the one `requirements.txt` the dev image already built from, and nothing in `.dockerignore` excludes the Jinja templates.
 - Last verified (2026-09-18, bulk placement records pass): `npm run lint` (the same pre-existing `DATE_FMT` warning), `npm run type-check`, `npm run build` with `/admin/placement-records/add` registered, 126 frontend unit tests, and 158 backend pytest tests including 8 new ones covering the bulk endpoint's partial-result semantics. **Not walked in a signed-in browser**: the Cursor browser holds a redirect-looping cookie for `localhost:3000` that cannot be cleared through CDP, and nobody on this machine has an admin password to hand. `http://127.0.0.1:3000` is a clean cookie origin and renders the login page, so that is the way in.
 - Last verified (2026-09-18, Makefile/containerisation pass): `make up` from a stopped stack to all three services healthy, `make seed` loading 445 roster students plus the demonstration dataset, `make test-backend` (148 pytest tests in the container), `make db-dump`, the `db-remove-demo`/`db-seed-demo` round trip, `make db-studio` answering on port 5555, and the `.env` bootstrap and `make admin` allowlist edit exercised in a scratch directory so the real `.env` was untouched.
 - Last verified (2026-09-18, admin data grid pass): `npm run lint` (the same pre-existing warning), `npm run type-check`, `npm run build`, 122 frontend unit tests, and all 12 admin tables measured in a signed-in browser in both themes. No backend file changed, so pytest was not re-run.
@@ -16,6 +17,57 @@ This file carries short-lived working context between teammates and agents. Cano
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## A stale test fake and a column added upstream, 2026-09-18
+
+`make test-backend` had four failures in `tests/test_offers_bulk.py`, all of
+them a 500 the test reported only as `Internal Server Error` because the
+client is built with `raise_server_exceptions=False`. The merge from `origin`
+added `Offer.source`, `_to_response` now reads it, and the `SimpleNamespace`
+that stands in for a saved row predates the column, so the attribute lookup
+raised. Fixed by giving the fake a `source`.
+
+Worth knowing for the next one: a hand-built fake row goes stale silently
+every time a column is added, and the failure surfaces as a bare 500 several
+layers from the cause. Re-running the endpoint under
+`raise_server_exceptions=True` in a scratch script is what showed the
+`AttributeError`.
+
+## The database table browser, 2026-09-18
+
+`http://localhost:8000/admin` is new, and is not the admin portal. It is
+`sqladmin` over the SQLAlchemy models, reaching every column of all 15 tables
+with no reference to the RBAC catalog. `DB_ADMIN_PASSWORD` is the whole
+boundary; the reasoning, including why it is permitted in production, is in
+the 2026-09-18 entry in `DECISIONS.md`.
+
+Two things to know before touching it:
+
+- The views are generated from the mapper in `backend/app/admin/views.py`, so
+  a column added by a migration and mirrored into `app/models/db.py` shows up
+  with no edit here. The per-model dictionaries at the top of that file are
+  presentation only — sidebar grouping, default sort, and which columns the
+  wide tables preview in their list.
+- A row created here generates its own `id`, because Prisma's `cuid()` runs in
+  the Prisma client and the migrations give the column no database default.
+  That id is not a cuid and does not try to be.
+
+Not done: nobody can tell who changed a row. `sqladmin` emits audit events
+that `mount_admin` does not subscribe to, which is the obvious next step if
+this gets used on real data.
+
+### Adding a template override needs a backend restart
+
+The templates in `backend/app/admin/templates/sqladmin/` are found ahead of
+sqladmin's own copies, but only by an environment that has not already cached
+the name. Jinja caches a compiled template against the loader that resolved
+it, and `PackageLoader`'s freshness check looks at the installed file, which
+never changes — so a *newly added* override is ignored until the process
+restarts, while the pages keep returning 200 and quietly render the package
+version. `base.html` and `layout.html` both looked like no-ops for exactly
+this reason. Editing an override that is already in place is picked up
+normally, by mtime; uvicorn's reloader only watches `*.py`, so neither case
+reloads on its own under `make dev`.
 
 ## The table's view notification is guarded, 2026-09-18
 

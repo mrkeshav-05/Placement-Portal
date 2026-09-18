@@ -1,0 +1,27 @@
+{# Replaces sqladmin's stock login form, which asks for a username this
+   screen has no accounts to match. There is one password, in
+   DB_ADMIN_PASSWORD, and a box that accepts anything and is then ignored
+   invites someone to type a portal address into it. #}
+{% extends "sqladmin/base.html" %}
+{% block body %}
+<div class="d-flex align-items-center justify-content-center vh-100">
+  <form class="col-lg-6 col-md-6 card card-md" action="{{ url_for('admin:login') }}" method="POST" autocomplete="off">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-1">{{ admin.title }}</h2>
+      <p class="text-secondary text-center mb-4">Direct access to every table.</p>
+      <div class="mb-2">
+        <label class="form-label" for="db-admin-password">Password</label>
+        <div class="input-group input-group-flat">
+          <input id="db-admin-password" name="password" type="password" autocomplete="off"
+            class="form-control{% if error %} is-invalid{% endif %}" placeholder="DB_ADMIN_PASSWORD" autofocus>
+          {% if error %}<div class="invalid-feedback">{{ error }}</div>{% endif %}
+        </div>
+        <small class="form-hint">Set in the deployment's <code>.env</code>, not a portal account.</small>
+      </div>
+      <div class="form-footer">
+        <button type="submit" class="btn btn-primary w-100">Open</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

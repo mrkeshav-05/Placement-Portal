@@ -539,3 +539,61 @@ origin it was not told about, and the refusal is silent in the browser: the
 page server-renders and then never hydrates, so nothing on it responds to a
 click and the application looks broken rather than misconfigured. Both
 loopback spellings are listed so that failure mode cannot recur.
+
+## 2026-09-18 — A database table browser sits at `/admin` on the backend
+
+The placement office needed to correct a row the admin portal has no screen
+for, and the alternatives were a psql prompt or Prisma Studio on a second
+port. `sqladmin` mounts over the SQLAlchemy models already in
+`backend/app/models/db.py`, so this is a view of the existing data layer and
+not the third one `AGENTS.md` prohibits. A column added by a Prisma migration
+and mirrored into those models appears here without a third edit.
+
+Two `/admin` paths now exist and they are different things. The frontend's is
+the product surface and is bound by the RBAC catalog in
+`app/core/security.py`. The backend's reads and writes every column of every
+table, including `passwordHash` and the AES-256-GCM identity ciphertexts,
+consulting no role at all. It has no key, so it shows ciphertext and never
+plaintext; the rule about never returning a raw Aadhaar or PAN still holds.
+
+Because it goes around RBAC, the password is the whole boundary:
+
+- `DB_ADMIN_PASSWORD` empty is the off switch. A deployment that has not heard
+  of this feature is not serving it.
+- Under 16 characters, the mount is refused. Guessing rights over every row is
+  worth a long password.
+- In production it may not equal `AUTH_SECRET`, which would put the
+  session-signing token into a form field and a browser's history.
+- A refusal logs and leaves the API alone. A weak password should cost the
+  operator the screen, not the portal.
+
+It is allowed in production deliberately, so the office can fix live data. The
+operator's job is keeping port 8000 off the public internet. The session
+cookie is its own (`tnp_db_admin`), signed by a key derived from `AUTH_SECRET`
+rather than being it, expires in two hours, and is `Secure` in production.
+
+Portal accounts are deliberately not accepted. Their passwords are bcrypt
+hashes written by `frontend/src/lib/password.ts`, and checking one here would
+be a second implementation of that comparison on the service designed never to
+see a password.
+
+Two details follow from Prisma owning the schema. `cuid()` runs in the Prisma
+client and the migrations give `id` no database default, so a row created here
+generates its own key — ordered by time, random-tailed, opaque as every id in
+the portal already is. And a primary key that carries meaning, like
+`SystemSetting.key`, is asked for rather than invented.
+
+It has a dark mode, keyed on the `tnp-theme` value the portal's own theme
+provider already writes. The bundled Tabler 1.4 carries a full dark palette
+behind `[data-bs-theme]` but never sets it and does not read
+`prefers-color-scheme`, so the templates in `backend/app/admin/templates/`
+choose the value in an inline head script — before the first paint, because
+setting it later shows a white page that snaps to black. The two vendored
+widgets that are not Tabler's, select2 and flatpickr, ship light-only
+stylesheets and are restyled from Tabler's own variables rather than from a
+second palette. Those templates extend sqladmin's through its
+`sqladmin_original/` prefix instead of replacing them, so an upgrade that
+changes their markup still reaches us. The storage key is shared with the
+portal deliberately: the two are separate origins today and the value does not
+actually carry across, but one project should not hold two spellings of the
+same preference.

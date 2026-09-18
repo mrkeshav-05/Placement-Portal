@@ -1,6 +1,11 @@
 fastapi>=0.115
 uvicorn[standard]>=0.30
 sqlalchemy[asyncio]>=2.0
+# Database table browser mounted at /admin. Drives the existing SQLAlchemy
+# models, so it adds a view over the current data layer rather than a new one.
+sqladmin>=0.20
+# Signs the /admin session cookie (Starlette's SessionMiddleware needs it).
+itsdangerous>=2.2
 asyncpg>=0.30
 pydantic>=2.7
 pydantic-settings>=2.3

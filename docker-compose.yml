@@ -73,6 +73,9 @@ services:
       STUDENT_EMAIL_DOMAIN: ${STUDENT_EMAIL_DOMAIN:-iiitl.ac.in}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       ENVIRONMENT: ${ENVIRONMENT:-production}
+      # Empty keeps the table browser at /admin off; the backend refuses to
+      # mount it without a password. Only this service needs the value.
+      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:-}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}

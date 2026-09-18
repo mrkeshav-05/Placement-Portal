@@ -1,0 +1,214 @@
+{# Adds dark mode to sqladmin.
+
+   The bundled Tabler 1.4 already carries a full dark palette behind
+   `[data-bs-theme="dark"]` on the document, but nothing ever sets it and
+   Tabler does not read `prefers-color-scheme`. So the work here is choosing
+   the value, doing it before the first paint, and dressing the two bundled
+   widgets that are not Tabler's and stayed light.
+
+   Extends sqladmin's own base through the `sqladmin_original/` prefix rather
+   than replacing it, so an upgrade that changes their head or script tags
+   still reaches us. `layout.html` and our `login.html` both extend
+   "sqladmin/base.html", which resolves here first. #}
+{% extends "sqladmin_original/base.html" %}
+
+{% block head_meta %}
+{{ super() }}
+<script>
+  // Inline, and first thing in <head>, because this has to run before the
+  // stylesheets paint. Setting the attribute from a load handler instead
+  // shows a white page that snaps to black a moment later, which reads as a
+  // bug rather than as a theme.
+  (function () {
+    var choice = "system";
+    try {
+      // Same key and same vocabulary as the portal's own theme provider in
+      // frontend/src/components/shared/theme-provider.tsx. These are separate
+      // origins today, so the value does not actually carry across from
+      // :3000 — but there is no reason for one project to hold two
+      // spellings of the same preference, and behind a single reverse proxy
+      // it would carry.
+      var saved = localStorage.getItem("tnp-theme");
+      if (saved === "light" || saved === "dark") choice = saved;
+    } catch (e) {
+      // Throws when storage is blocked. "system" is the right fallback.
+    }
+    var dark = choice === "dark" || (choice === "system"
+      && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.setAttribute("data-bs-theme", dark ? "dark" : "light");
+  })();
+</script>
+{% endblock %}
+
+{% block head_css %}
+{{ super() }}
+<style>
+  /* select2 and flatpickr are vendored by sqladmin with their own light-only
+     stylesheets, so Tabler's dark palette never reaches them: a black form
+     would open a white tag list and a white calendar. Every colour below is
+     a Tabler variable, so these follow the theme rather than pinning a second
+     palette next to it.
+
+     Only the dark side is written. Light is already correct. */
+
+  [data-bs-theme="dark"] .select2-dropdown,
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--single,
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple {
+    background: var(--tblr-bg-surface);
+    border-color: var(--tblr-border-color);
+    color: var(--tblr-body-color);
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered,
+  [data-bs-theme="dark"] .select2-container--default .select2-results__option {
+    color: var(--tblr-body-color);
+  }
+
+  /* The tag pills on an array column, such as User.customPermissions. */
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: var(--tblr-bg-surface-secondary);
+    border-color: var(--tblr-border-color);
+    color: var(--tblr-body-color);
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove,
+  [data-bs-theme="dark"] .select2-container--default .select2-selection__placeholder {
+    color: var(--tblr-secondary);
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: var(--tblr-primary);
+    color: #fff;
+  }
+
+  [data-bs-theme="dark"] .select2-search--dropdown .select2-search__field,
+  [data-bs-theme="dark"] .select2-container--default .select2-search--inline .select2-search__field {
+    background: var(--tblr-bg-surface-secondary);
+    border-color: var(--tblr-border-color);
+    color: var(--tblr-body-color);
+  }
+
+  [data-bs-theme="dark"] .flatpickr-calendar,
+  [data-bs-theme="dark"] .flatpickr-months,
+  [data-bs-theme="dark"] .flatpickr-month,
+  [data-bs-theme="dark"] .flatpickr-weekdays,
+  [data-bs-theme="dark"] .flatpickr-weekdaycontainer,
+  [data-bs-theme="dark"] .flatpickr-time,
+  [data-bs-theme="dark"] .flatpickr-time input,
+  [data-bs-theme="dark"] .flatpickr-monthDropdown-months {
+    background: var(--tblr-bg-surface);
+    color: var(--tblr-body-color);
+  }
+
+  [data-bs-theme="dark"] .flatpickr-calendar {
+    border: 1px solid var(--tblr-border-color);
+    box-shadow: none;
+  }
+
+  /* The arrow that points at the input, which is drawn as a border triangle
+     and so has to be recoloured separately from the panel. */
+  [data-bs-theme="dark"] .flatpickr-calendar.arrowTop::after {
+    border-bottom-color: var(--tblr-bg-surface);
+  }
+
+  [data-bs-theme="dark"] .flatpickr-calendar.arrowBottom::after {
+    border-top-color: var(--tblr-bg-surface);
+  }
+
+  [data-bs-theme="dark"] span.flatpickr-weekday,
+  [data-bs-theme="dark"] .flatpickr-current-month input.cur-year,
+  [data-bs-theme="dark"] .numInputWrapper span {
+    color: var(--tblr-secondary);
+  }
+
+  [data-bs-theme="dark"] .flatpickr-day {
+    color: var(--tblr-body-color);
+  }
+
+  [data-bs-theme="dark"] .flatpickr-day:hover {
+    background: var(--tblr-bg-surface-secondary);
+    border-color: var(--tblr-bg-surface-secondary);
+  }
+
+  /* A day outside the month on show, and a day that cannot be picked, both
+     have to stay legible while still reading as inactive. */
+  [data-bs-theme="dark"] .flatpickr-day.prevMonthDay,
+  [data-bs-theme="dark"] .flatpickr-day.nextMonthDay,
+  [data-bs-theme="dark"] .flatpickr-day.flatpickr-disabled {
+    color: var(--tblr-tertiary-color);
+  }
+
+  [data-bs-theme="dark"] .flatpickr-day.selected,
+  [data-bs-theme="dark"] .flatpickr-day.selected:hover,
+  [data-bs-theme="dark"] .flatpickr-day.today {
+    background: var(--tblr-primary);
+    border-color: var(--tblr-primary);
+    color: #fff;
+  }
+
+  /* The month arrows are inline SVG with a hardcoded fill. */
+  [data-bs-theme="dark"] .flatpickr-months .flatpickr-prev-month svg,
+  [data-bs-theme="dark"] .flatpickr-months .flatpickr-next-month svg {
+    fill: var(--tblr-body-color);
+  }
+</style>
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script>
+  // Cycles light, dark, system, in that order and with that vocabulary, to
+  // match the portal's own toggle. "system" is a real third state rather than
+  // a default: choosing it is how someone hands the decision back to the
+  // operating system after having overridden it.
+  (function () {
+    var button = document.getElementById("theme-toggle");
+    if (!button) return;
+
+    var ORDER = ["light", "dark", "system"];
+    var ICONS = { light: "fa-sun", dark: "fa-moon", system: "fa-laptop" };
+
+    function read() {
+      try {
+        var saved = localStorage.getItem("tnp-theme");
+        if (saved === "light" || saved === "dark") return saved;
+      } catch (e) { /* storage blocked */ }
+      return "system";
+    }
+
+    function systemPrefersDark() {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+
+    function apply(choice) {
+      var dark = choice === "dark" || (choice === "system" && systemPrefersDark());
+      document.documentElement.setAttribute("data-bs-theme", dark ? "dark" : "light");
+      button.querySelector("i").className = "fa " + ICONS[choice];
+      button.title = choice === "system"
+        ? "Theme: System (" + (dark ? "dark" : "light") + ")"
+        : choice === "dark" ? "Theme: Dark" : "Theme: Light";
+      button.setAttribute("aria-label", button.title);
+    }
+
+    button.addEventListener("click", function () {
+      var next = ORDER[(ORDER.indexOf(read()) + 1) % ORDER.length];
+      try {
+        // "system" is stored as the absence of a choice, so a browser that
+        // has never been told anything and one that was handed back to the
+        // operating system read the same.
+        if (next === "system") localStorage.removeItem("tnp-theme");
+        else localStorage.setItem("tnp-theme", next);
+      } catch (e) { /* storage blocked; the change lasts this page only */ }
+      apply(next);
+    });
+
+    // While on "system", follow the operating system as it changes rather
+    // than waiting for a reload.
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+      if (read() === "system") apply("system");
+    });
+
+    apply(read());
+  })();
+</script>
+{% endblock %}

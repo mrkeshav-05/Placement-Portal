@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 
 from app.core.security import get_current_user
 from app.dependencies import get_db
-from app.models.db import OfferStatus, OfferType, Role
+from app.models.db import OfferSource, OfferStatus, OfferType, Role
 
 _RECORDER = {
     "sub": "usr_admin",
@@ -63,6 +63,7 @@ def _saved_offer(offer_id: str, student, *, job_title="Associate Engineer"):
         job_profile=None,
         type=OfferType.FTE,
         status=OfferStatus.OFFERED,
+        source=OfferSource.ON_CAMPUS,
         batch=2027,
         ctc=1_800_000.0,
         stipend=None,

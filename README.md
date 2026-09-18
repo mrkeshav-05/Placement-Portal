@@ -93,10 +93,14 @@ make password EMAIL=you@iiitl.ac.in  # set your password, then sign in
 ```
 
 `make up` writes a `.env` from `.env.example` on first run, generating
-`AUTH_SECRET` and `ENCRYPTION_KEY` for you. Compose refuses to start without
-those two, and there is no built-in administrator: `ADMIN_EMAILS` is the only
-source of one, which is why `make admin` comes before `make seed`. Never commit
-`.env` or real student data.
+`AUTH_SECRET`, `ENCRYPTION_KEY`, and `DB_ADMIN_PASSWORD` for you. Compose
+refuses to start without the first two, and there is no built-in
+administrator: `ADMIN_EMAILS` is the only source of one, which is why
+`make admin` comes before `make seed`. Never commit `.env` or real student
+data.
+
+An `.env` written before `DB_ADMIN_PASSWORD` existed has no line for it, which
+leaves the table browser below switched off. `make db-admin-password` adds one.
 
 Open [http://localhost:3000](http://localhost:3000). The API docs are at
 [http://localhost:8000/docs](http://localhost:8000/docs).
@@ -116,10 +120,30 @@ started by `up`; it is the one-shot container behind every `make db-*` command.
 | `make dev` | The same stack with hot reload on both apps |
 | `make seed` | Migrations, administrators, the student roster, and demonstration data |
 | `make down` / `make logs` / `make ps` | Stop, follow logs, list what is running |
+| `make db-admin` | Where to find the table browser on the backend |
 | `make db-psql` / `make db-studio` | A psql shell, or Prisma Studio on port 5555 |
 | `make db-reset` | Drop the volume and rebuild the database from scratch |
 | `make db-dump` / `make db-restore FILE=…` | Back up and restore |
 | `make check` | Lint, type-check, unit tests, and the production build |
+
+### Reading and editing the tables directly
+
+Three ways in, from most to least guarded:
+
+1. **The admin portal**, `http://localhost:3000/admin`. The product surface,
+   bound by role permissions. Use it for anything it has a screen for.
+2. **The table browser**, `http://localhost:8000/admin`. Every row of all 15
+   tables, listed, searchable, sortable, and editable, grouped in a sidebar.
+   It consults no role, so `make env` guards it with a generated
+   `DB_ADMIN_PASSWORD` and the backend refuses to mount it without one.
+   `make db-admin` prints the URL; the password is in `.env`.
+3. **`make db-psql`** for a SQL prompt, or **`make db-studio`** for Prisma
+   Studio on port 5555.
+
+The table browser reaches `passwordHash` and the encrypted Aadhaar and PAN
+columns, because a tool that cannot see a column cannot fix it. It holds no
+encryption key, so identity fields read as ciphertext. Keep port 8000 off the
+public internet, and rotate the password with `make db-admin-password`.
 
 ### Running the services outside Docker
 
@@ -296,6 +320,8 @@ Student profiles appear under `/admin/students` after their first institute Goog
 | `make db-pack-demo` | Rebuild `seed-data.zip` after editing `database/seed-data/` (host) |
 | `make db-reset` | Drop the volume and rebuild the database from scratch |
 | `make db-psql` / `make db-studio` | A psql shell, or Prisma Studio on port 5555 |
+| `make db-admin` | Where to find the table browser, and whether it is on |
+| `make db-admin-password` | Generate a new password for the table browser |
 | `make db-dump` / `make db-restore FILE=…` | Back up and restore |
 | `make admin EMAIL=…` / `make password EMAIL=…` | Grant administrator access, set a password |
 | `make db-sync-admins` | Promote listed admins and demote unlisted ones |

@@ -45,6 +45,14 @@ class Settings(BaseSettings):
     # Environment
     environment: str = "development"
 
+    # Database table browser at /admin. It reaches every row in every table,
+    # around the portal's RBAC, so it stays off until a password is set: an
+    # empty value is the "not enabled" state, not a blank password. The
+    # password is its own, because portal passwords are bcrypt-hashed in the
+    # frontend and that hashing must not be duplicated here.
+    db_admin_password: str = ""
+    db_admin_min_password_length: int = 16
+
     @field_validator("database_url", mode="before")
     @classmethod
     def fix_database_url(cls, v: Any) -> str:

@@ -45,6 +45,13 @@ app.include_router(students.router, prefix="/api/v1")
 app.include_router(offers.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
 
+# Database table browser at /admin, distinct from the frontend's admin portal.
+# Mounted last so its catch-all routes cannot shadow an API path, and silent
+# unless DB_ADMIN_PASSWORD is set — see app/admin/setup.py.
+from app.admin import mount_admin
+
+mount_admin(app)
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"}

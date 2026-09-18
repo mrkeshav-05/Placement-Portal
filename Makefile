@@ -27,7 +27,7 @@ APP_SERVICES := db backend frontend
         logs-frontend logs-backend logs-db seed env secrets admin password \
         db-migrate db-migrate-new db-seed-admins db-seed-students db-seed-demo \
         db-remove-demo db-pack-demo db-sync-admins db-reset db-studio db-psql \
-        db-dump db-restore check lint type-check test test-backend \
+        db-admin db-admin-password db-dump db-restore check lint type-check test test-backend \
         sh-frontend sh-backend sh-db sh-tools clean nuke doctor
 
 ##@ Help
@@ -93,8 +93,10 @@ urls: ## Print the published URLs
 	@front=$$($(COMPOSE) port frontend 3000 2>/dev/null | sed 's/.*://'); \
 		back=$$($(COMPOSE) port backend 8000 2>/dev/null | sed 's/.*://'); \
 		if [ -z "$$front" ]; then echo "Nothing is running. Start it with: make up"; exit 0; fi; \
-		printf "\n  Portal    http://localhost:%s\n  API       http://localhost:%s\n  API docs  http://localhost:%s/docs\n\n" \
-			"$$front" "$$back" "$$back"
+		printf "\n  Portal    http://localhost:%s\n  API       http://localhost:%s\n  API docs  http://localhost:%s/docs\n" \
+			"$$front" "$$back" "$$back"; \
+		if grep -Eq '^DB_ADMIN_PASSWORD=("")?$$' .env 2>/dev/null; then printf "\n"; \
+		else printf "  Tables    http://localhost:%s/admin\n\n" "$$back"; fi
 
 health: ## Report each service's health
 	@for id in $$($(COMPOSE) ps -q $(APP_SERVICES)); do \
@@ -162,9 +164,27 @@ db-reset: .env ## Drop the database volume and rebuild it from scratch (destruct
 	@$(MAKE) --no-print-directory up
 	@$(MAKE) --no-print-directory seed
 
-db-studio: .env ## Open Prisma Studio on http://localhost:5555
-	$(COMPOSE) run --rm -p 5555:5555 tools npx prisma studio \
-		--schema database/prisma/schema.prisma --hostname 0.0.0.0
+db-admin: .env ## Show the table browser at /admin on the backend
+	@# The password itself is not printed. It is a live credential for every
+	@# row in the database, and a terminal is a log, a scrollback, and often a
+	@# screen share.
+	@back=$$($(COMPOSE) port backend 8000 2>/dev/null | sed 's/.*://'); \
+		if [ -z "$$back" ]; then echo "The backend is not running. Start it with: make up"; exit 0; fi; \
+		if grep -Eq '^DB_ADMIN_PASSWORD=("")?$$' .env; then \
+			printf "\n  The table browser is off: DB_ADMIN_PASSWORD is empty in .env.\n  Turn it on with: make db-admin-password && make restart\n\n"; \
+		else \
+			printf "\n  Tables    http://localhost:%s/admin\n  Password  in .env, as DB_ADMIN_PASSWORD\n\n  It reaches every row in every table, around the portal's role\n  permissions. Prisma Studio (make db-studio) is the read-only-ish\n  alternative for a quick look.\n\n" "$$back"; \
+		fi
+
+db-admin-password: .env ## Generate a new password for the table browser
+	@command -v openssl >/dev/null || { echo "openssl is required to generate a password."; exit 1; }
+	@# An .env written before this variable existed has no line to substitute,
+	@# so append one rather than silently changing nothing.
+	@grep -q '^DB_ADMIN_PASSWORD=' .env || printf '\nDB_ADMIN_PASSWORD=""\n' >> .env
+	@pass=$$(openssl rand -base64 24); \
+		tmp=$$(mktemp); \
+		sed "s|^DB_ADMIN_PASSWORD=.*|DB_ADMIN_PASSWORD=\"$$pass\"|" .env > $$tmp && mv $$tmp .env
+	@printf "Wrote a new DB_ADMIN_PASSWORD to .env. Apply it with: make restart\n"
 
 db-psql: ## Open a psql shell on the database
 	$(COMPOSE) exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
@@ -212,11 +232,13 @@ env: .env ## Create .env from .env.example with generated secrets
 	@cp .env.example .env
 	@auth=$$(openssl rand -base64 32); \
 		enc=$$(openssl rand -hex 32); \
+		dbadmin=$$(openssl rand -base64 24); \
 		tmp=$$(mktemp); \
 		sed -e "s|^AUTH_SECRET=.*|AUTH_SECRET=\"$$auth\"|" \
-		    -e "s|^ENCRYPTION_KEY=.*|ENCRYPTION_KEY=\"$$enc\"|" .env > $$tmp \
+		    -e "s|^ENCRYPTION_KEY=.*|ENCRYPTION_KEY=\"$$enc\"|" \
+		    -e "s|^DB_ADMIN_PASSWORD=.*|DB_ADMIN_PASSWORD=\"$$dbadmin\"|" .env > $$tmp \
 		&& mv $$tmp .env
-	@printf "Created .env from .env.example with a fresh AUTH_SECRET and ENCRYPTION_KEY.\n"
+	@printf "Created .env from .env.example with a fresh AUTH_SECRET, ENCRYPTION_KEY,\nand DB_ADMIN_PASSWORD. See the last of those with: make db-admin\n"
 
 secrets: ## Regenerate AUTH_SECRET and ENCRYPTION_KEY in .env
 	@test -f .env || { echo "No .env yet. Run: make env"; exit 1; }

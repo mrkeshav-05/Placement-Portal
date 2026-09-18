@@ -50,6 +50,17 @@ Important invariants:
 - Sensitive Aadhaar, PAN, and college-ID fields contain encrypted payloads, not plaintext. Each number doubles as the challenge that unlocks its own uploaded scan, which is itself stored AES-256-GCM encrypted on disk.
 - Destructive administrative operations require server-side admin authorization.
 
+Two different screens answer to `/admin`, and confusing them is easy:
+
+| Path | What it is |
+| --- | --- |
+| `localhost:3000/admin` | The placement office's portal. Bound by the RBAC catalog, and where product work belongs. |
+| `localhost:8000/admin` | A raw table browser over the SQLAlchemy models, in `backend/app/admin/`. Reads and writes every column of all 15 tables, consulting no role. Off unless `DB_ADMIN_PASSWORD` is set. |
+
+The table browser is a correction tool, not a feature surface. A workflow the
+office performs regularly belongs in the portal, behind a permission. See the
+2026-09-18 entry in `docs/DECISIONS.md`.
+
 ## Authentication and roles
 
 Sign-in is an institute email address and a password. There is no OAuth provider, no Auth.js adapter, and no verification or reset email. See the 2026-09-17 entries in `docs/DECISIONS.md` for what that costs and why it was chosen.
@@ -133,6 +144,7 @@ frontend/src/components/layout/  Student navigation shell
 frontend/src/components/admin/   Admin shell and management surfaces
 frontend/src/components/common/  Shared UI, including the one admin data table
 frontend/src/lib/                Auth, backend client, encryption, eligibility, table pipeline
+backend/app/admin/               Database table browser mounted at /admin
 backend/app/core/                Config, database session, security, storage
 backend/app/routers/             HTTP endpoints
 backend/app/schemas/             Pydantic request/response models
@@ -147,7 +159,7 @@ docs/                            Shared project memory and decisions
 
 - The root `Makefile` is the operational entry point: `make up` runs the stack, `make seed` fills the database, and `make help` lists every subcommand from the `##` comment on each target. Targets wrap Compose, so Docker is the only prerequisite.
 - A `tools` service, behind the `tools` Compose profile so `up` never starts it, shares the `migrate` image and runs every database script (`make db-*`) as a one-shot container on the stack's network.
-- `.env` is a Make file target: anything that needs configuration depends on it, and it is written from `.env.example` with generated secrets on first run.
+- `.env` is a Make file target: anything that needs configuration depends on it, and it is written from `.env.example` with generated secrets on first run: `AUTH_SECRET`, `ENCRYPTION_KEY`, and `DB_ADMIN_PASSWORD`. An `.env` written before one of those existed has no line for it, so the feature it guards stays off until a target adds one.
 - One `.env` at the repository root serves every service. Compose reads it automatically.
 - Compose builds the in-cluster `DATABASE_URL` from `POSTGRES_*`; the `DATABASE_URL` in `.env` points at `localhost` and is only for host-side tooling such as the Prisma CLI.
 - `frontend/next.config.ts` loads the root `.env` because Next only looks inside its own directory.
