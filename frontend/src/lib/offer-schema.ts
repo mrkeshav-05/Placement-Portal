@@ -79,7 +79,13 @@ export const offerFormSchema = z
   .object({
     id: z.string().trim().optional(),
     userId: z.string().trim().min(1, "Select a student."),
-    companyId: z.string().trim().min(1, "Select a company."),
+    // Exactly one of these is set: an existing company by id, or a name with
+    // no Company row yet — an off-campus or hackathon recruiter the
+    // placement cell never opened a drive for. The action resolves the
+    // latter to a real company (finding or creating one by that name) before
+    // the backend ever sees it.
+    companyId: optionalText,
+    companyName: optionalText,
     jobProfileId: optionalText,
     /** Links a freshly-created offer back to the application it came from. */
     applicationId: optionalText,
@@ -99,6 +105,13 @@ export const offerFormSchema = z
   // rule lives here rather than on either field. The backend repeats it: this
   // check only exists to answer the administrator before the round trip.
   .superRefine((data, ctx) => {
+    if (!data.companyId && !data.companyName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["companyId"],
+        message: "Select or name a company.",
+      });
+    }
     if (isCtcType(data.type) && data.ctc === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -133,7 +146,9 @@ export const offerFormSchema = z
  */
 export const offerBulkFormSchema = z
   .object({
-    companyId: z.string().trim().min(1, "Select a company."),
+    // Same either/or as the single-record schema above.
+    companyId: optionalText,
+    companyName: optionalText,
     jobProfileId: optionalText,
     type: z.enum(OFFER_TYPES),
     status: z.enum(OFFER_STATUSES).default("OFFERED"),
@@ -150,6 +165,13 @@ export const offerBulkFormSchema = z
       .max(500, "Add at most 500 roll numbers at a time."),
   })
   .superRefine((data, ctx) => {
+    if (!data.companyId && !data.companyName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["companyId"],
+        message: "Select or name a company.",
+      });
+    }
     if (isCtcType(data.type) && data.ctc === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
