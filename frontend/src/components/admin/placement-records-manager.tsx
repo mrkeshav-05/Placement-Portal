@@ -21,6 +21,7 @@ import {
   type OfferType,
 } from "@/lib/offer-schema";
 import { CompanySelect } from "@/components/common/company-select";
+import { COMPANY_OPTIONS } from "@/lib/company-options";
 import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
@@ -409,6 +410,8 @@ export function PlacementRecordsManager({
     });
   }
 
+  const isExistingCompany = companies.some((company) => company.id === formCompanyId);
+
   return (
     <div className="admin-page">
       <section className="admin-heading">
@@ -485,7 +488,19 @@ export function PlacementRecordsManager({
             {/* The sentinel never leaves the browser: the action still reads an
                 empty string when the offer is not tied to a portal drive. */}
             <input type="hidden" name="jobProfileId" value={jobProfileId} />
-            <input type="hidden" name="companyId" value={formCompanyId} />
+            {/* `formCompanyId` holds either a real company's id or a plain
+                name with no Company row yet (an off-campus/hackathon
+                recruiter) — only one of these two fields is ever meaningful. */}
+            <input
+              type="hidden"
+              name="companyId"
+              value={isExistingCompany ? formCompanyId : ""}
+            />
+            <input
+              type="hidden"
+              name="companyName"
+              value={isExistingCompany ? "" : formCompanyId}
+            />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-2 sm:col-span-2">
                 <Label htmlFor="offer-student">Student</Label>
@@ -507,6 +522,7 @@ export function PlacementRecordsManager({
                 <CompanySelect
                   id="offer-company"
                   options={companies}
+                  suggestions={COMPANY_OPTIONS}
                   value={formCompanyId}
                   onChange={setFormCompanyId}
                 />

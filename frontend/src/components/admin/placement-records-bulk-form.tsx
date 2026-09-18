@@ -9,6 +9,7 @@ import {
 } from "@/app/admin/placement-records/actions";
 import type { CompanyOption, JobOption } from "@/components/admin/placement-records-manager";
 import { CompanySelect } from "@/components/common/company-select";
+import { COMPANY_OPTIONS } from "@/lib/company-options";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,7 +120,12 @@ export function PlacementRecordsBulkForm({
 
   async function submit() {
     const formData = new FormData();
-    formData.set("companyId", companyId);
+    // `companyId` holds either a real company's id (picked from the list) or
+    // a plain name with no Company row yet (an off-campus/hackathon
+    // recruiter) — only one of these two fields is ever meaningful.
+    const isExistingCompany = companies.some((company) => company.id === companyId);
+    formData.set("companyId", isExistingCompany ? companyId : "");
+    formData.set("companyName", isExistingCompany ? "" : companyId);
     formData.set("jobProfileId", jobProfileId);
     formData.set("source", source);
     formData.set("type", type);
@@ -219,7 +225,13 @@ export function PlacementRecordsBulkForm({
             <Label htmlFor="bulk-company">
               Company <span className="text-destructive">*</span>
             </Label>
-            <CompanySelect id="bulk-company" options={companies} value={companyId} onChange={selectCompany} />
+            <CompanySelect
+              id="bulk-company"
+              options={companies}
+              suggestions={COMPANY_OPTIONS}
+              value={companyId}
+              onChange={selectCompany}
+            />
           </div>
 
           <div className="grid gap-2">

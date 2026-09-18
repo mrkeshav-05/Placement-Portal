@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { backendFetch } from "@/lib/api-client";
 import { requirePermission } from "@/lib/admin-session";
+import { db } from "@/lib/db";
 import {
   offerBulkFormSchema,
   offerDeleteSchema,
@@ -32,6 +33,36 @@ function revalidateOfferPages() {
   // An offer created from an application (see RecordPlacementDialog) needs
   // that page's "already recorded" state to reflect the new link.
   revalidatePath("/admin/applications");
+  // An off-campus/hackathon offer can auto-create a Company row (see
+  // resolveCompanyId below); the companies list should pick it up too.
+  revalidatePath("/admin/companies");
+}
+
+/**
+ * An off-campus or hackathon offer routinely names a recruiter the placement
+ * cell never opened a drive for — the `Company` table has 7 rows against the
+ * ~1,000 names the interview-experience form already offers. Rather than
+ * blocking the office at "add the company first", this finds a case-
+ * insensitive match on the name or creates a minimal `Company` row for it,
+ * the same upsert `saveCompany` in `admin/companies/actions.ts` does for a
+ * duplicate name.
+ */
+async function resolveCompanyId(
+  companyId: string | null | undefined,
+  companyName: string | null | undefined,
+): Promise<string> {
+  if (companyId) return companyId;
+  const name = (companyName ?? "").trim();
+  if (!name) throw new Error("Select or name a company.");
+
+  const existing = await db.company.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+    select: { id: true },
+  });
+  if (existing) return existing.id;
+
+  const created = await db.company.create({ data: { name }, select: { id: true } });
+  return created.id;
 }
 
 function backendMessage(error: unknown, fallback: string): string {
@@ -53,7 +84,8 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
   const parsed = offerFormSchema.safeParse({
     id: formData.get("id") ?? undefined,
     userId: formData.get("userId"),
-    companyId: formData.get("companyId"),
+    companyId: formData.get("companyId") ?? "",
+    companyName: formData.get("companyName") ?? "",
     jobProfileId: formData.get("jobProfileId") ?? "",
     applicationId: formData.get("applicationId") ?? "",
     type: formData.get("type"),
@@ -74,9 +106,15 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
   }
 
   const { id, ...offer } = parsed.data;
+  let companyId: string;
+  try {
+    companyId = await resolveCompanyId(offer.companyId, offer.companyName);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Select or name a company." };
+  }
   const payload = {
     userId: offer.userId,
-    companyId: offer.companyId,
+    companyId,
     jobProfileId: offer.jobProfileId,
     type: offer.type,
     status: offer.status,
@@ -119,7 +157,8 @@ export async function saveOfferBulkAction(
   await requirePermission(PERM_PLACEMENT_RECORDS_CREATE);
 
   const parsed = offerBulkFormSchema.safeParse({
-    companyId: formData.get("companyId"),
+    companyId: formData.get("companyId") ?? "",
+    companyName: formData.get("companyName") ?? "",
     jobProfileId: formData.get("jobProfileId") ?? "",
     type: formData.get("type"),
     status: formData.get("status") || "OFFERED",
@@ -141,6 +180,13 @@ export async function saveOfferBulkAction(
 
   const bulk = parsed.data;
 
+  let companyId: string;
+  try {
+    companyId = await resolveCompanyId(bulk.companyId, bulk.companyName);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Select or name a company." };
+  }
+
   let result: { created: number; skipped?: { rollNumber: string; reason: string }[] };
   try {
     result = await backendFetch<{
@@ -149,7 +195,7 @@ export async function saveOfferBulkAction(
     }>("/api/v1/offers/bulk", {
       method: "POST",
       body: JSON.stringify({
-        companyId: bulk.companyId,
+        companyId,
         jobProfileId: bulk.jobProfileId,
         type: bulk.type,
         status: bulk.status,
