@@ -7,6 +7,10 @@ import { studentEmailDomain } from "@/lib/auth-access";
 import { MIN_PASSWORD_LENGTH } from "@/lib/credentials-schema";
 import { isElevatedRole } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { registerAction } from "./actions";
 
 function describeError(code: string | undefined, domain: string) {
@@ -88,52 +92,63 @@ export default async function RegisterPage({
             registering with the same address keeps your profile and applications.
           </p>
           {problem ? (
-            <div className="login-alert" role="alert">
+            <Alert variant="destructive" className="mb-5">
               <AlertCircle />
-              <span>
-                <strong>{problem.title}</strong>
-                {problem.body}
-              </span>
-            </div>
+              <AlertTitle className="line-clamp-none">{problem.title}</AlertTitle>
+              <AlertDescription>{problem.body}</AlertDescription>
+            </Alert>
           ) : null}
           <form action={registerAction} className="login-fields">
-            <label>
-              <span>Full name</span>
-              <input type="text" name="name" autoComplete="name" required />
-            </label>
-            <label>
-              <span>Institute email</span>
-              <input
+            <div className="grid gap-2">
+              <Label htmlFor="register-name">Full name</Label>
+              <Input
+                id="register-name"
+                className="h-11"
+                type="text"
+                name="name"
+                autoComplete="name"
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="register-email">Institute email</Label>
+              <Input
+                id="register-email"
+                className="h-11"
                 type="email"
                 name="email"
                 autoComplete="email"
                 placeholder={`you@${domain}`}
                 required
               />
-            </label>
-            <label>
-              <span>Password</span>
-              <input
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="register-password">Password</Label>
+              <Input
+                id="register-password"
+                className="h-11"
                 type="password"
                 name="password"
                 autoComplete="new-password"
                 minLength={MIN_PASSWORD_LENGTH}
                 required
               />
-            </label>
-            <label>
-              <span>Confirm password</span>
-              <input
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="register-confirm-password">Confirm password</Label>
+              <Input
+                id="register-confirm-password"
+                className="h-11"
                 type="password"
                 name="confirmPassword"
                 autoComplete="new-password"
                 minLength={MIN_PASSWORD_LENGTH}
                 required
               />
-            </label>
-            <button type="submit" className="login-submit">
+            </div>
+            <Button type="submit" className="h-11 w-full">
               Create account
-            </button>
+            </Button>
           </form>
           <p className="login-switch">
             Already registered? <Link href="/login">Sign in</Link>

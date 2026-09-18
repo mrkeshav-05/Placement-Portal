@@ -277,49 +277,6 @@
   font-size: 12px;
   outline: none;
 }
-
-.composer-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.composer-tags span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 9px;
-  border-radius: 9999px;
-  background: var(--badge-blue-bg);
-  color: var(--badge-blue-text);
-}
-.composer-tags button { border: 0; background: transparent; cursor: pointer; color: inherit; padding: 0; line-height: 1; }
-
-.composer-title {
-  width: 100%;
-  padding: 13px 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card-bg);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 600;
-}
-.composer-editor {
-  min-height: 220px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--card-bg);
-  padding: 14px 16px;
-  display: grid;
-}
-.composer-editor textarea {
-  width: 100%;
-  min-height: 200px;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  font: 400 13px/1.7 var(--font-inter, inherit);
-  resize: vertical;
-  outline: none;
-}
 .composer-editor.locked { background: var(--surface-alt); place-items: center; text-align: center; }
 .composer-editor.locked p { margin: 0; font-size: 12px; color: var(--muted); max-width: 420px; line-height: 1.7; }
 
@@ -416,22 +373,7 @@
 }
 .composer-note svg { width: 15px; color: var(--orange); flex-shrink: 0; margin-top: 1px; }
 .composer-note p { margin: 0; font-size: 11px; color: var(--muted); line-height: 1.6; }
-
-.composer-actions { display: flex; justify-content: flex-end; gap: 10px; }
-.composer-actions button {
-  border: 0;
-  background: var(--navy);
-  color: #fff;
-  border-radius: 10px;
-  padding: 11px 18px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
 .composer-actions button.ghost { background: var(--surface-alt); color: var(--ink); border: 1px solid var(--border); }
-.composer-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
-.composer-actions button:hover:not(:disabled) { transform: translateY(-1px); }
 
 .picker-body { display: grid; gap: 8px; padding: 6px 0 2px; }
 .picker-list { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; }
@@ -462,36 +404,14 @@
   cursor: pointer;
 }
 .picker-footer small { font-size: 10px; color: var(--muted); line-height: 1.6; }
-
-.event-form-row.two { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
-.field-label.required::after { content: " *"; color: var(--badge-red-text); }
-/* The picked year sits at the far end of the control, the label at the near
+  /* The picked year sits at the far end of the control, the label at the near
    end, matching the season pickers on the announcement composers. */
-.composer-field .field-value { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--ink); }
 .dropdown-option { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .dropdown-option svg { width: 13px; color: var(--green); }
-
-/* A year needs the width of a year, not of the card. */
-.event-field.narrow { max-width: 240px; }
-
-.confirm-row .box {
-  width: 15px;
-  height: 15px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  flex: none;
-  transition: all 0.18s ease;
-}
-.confirm-row .box.checked { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 2px var(--card-bg); }
-.confirm-row:hover .box { border-color: var(--blue); }
-
-.choice-pill.selected { border-color: var(--blue); background: var(--surface-highlight); }
-.choice-pill.selected > i { border-color: var(--blue); border-width: 4px; }
+  /* A year needs the width of a year, not of the card. */
 
 .switch.on { background: var(--navy); }
 .switch.on > i { transform: translateX(17px); }
-
-.time-list button.selected { border-color: var(--blue); background: var(--surface-highlight); }
 
 /* react-day-picker ships unstyled here on purpose: its own stylesheet carries
    literal colours, and every surface in this portal reads a token. */
@@ -548,22 +468,7 @@
 .rdp-outside .rdp-day_button { color: var(--muted); opacity: 0.6; }
 .rdp-disabled .rdp-day_button { color: var(--muted); opacity: 0.35; cursor: not-allowed; }
 
-.check-row.all { background: var(--surface-alt); border-style: dashed; }
-.check-row .box { width: 15px; height: 15px; border: 1px solid var(--border); border-radius: 4px; flex: none; }
-.check-row .box.checked { border-color: var(--blue); background: var(--blue); box-shadow: inset 0 0 0 2px var(--card-bg); }
-
-.branch-search .dropdown-search {
-  flex: 1;
-  border: 1px solid var(--blue);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 0;
-}
-
-.event-form-actions button.ghost { background: var(--surface-alt); color: var(--ink); border: 1px solid var(--border); }
-
 @media (max-width: 720px) {
-  .event-form-row.two, .branch-grid { grid-template-columns: 1fr; }
 }
 
 /* Section tabs. Used where one screen holds distinct jobs rather than one
@@ -855,48 +760,6 @@
 .recent-admin strong, .recent-admin small { display: block; }
 .recent-admin strong { font-size: 11px; color: var(--ink); font-weight: 700; }
 .recent-admin small { font-size: 9px; color: var(--muted); margin-top: 2px; }
-
-/* Admin Toolbar & Table */
-.admin-toolbar { display: flex; gap: 10px; margin: 24px 0 14px; }
-.admin-toolbar label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 0 12px;
-  box-shadow: var(--card-shadow);
-  transition: all 0.2s ease;
-}
-.admin-toolbar label:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.15); }
-.admin-toolbar label svg { width: 16px; color: var(--muted); }
-.admin-toolbar input { width: 100%; border: 0; outline: 0; padding: 11px 0; background: transparent; color: var(--ink); font-size: 12px; }
-.admin-toolbar > button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--ink);
-  border-radius: 11px;
-  padding: 0 14px;
-  font-size: 11px;
-  font-weight: 700;
-  transition: all 0.15s;
-}
-.admin-toolbar > button:hover:not(:disabled) { background: var(--surface-alt); border-color: var(--blue); }
-.admin-toolbar > button svg { width: 14px; }
-.admin-toolbar > select {
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  border-radius: 11px;
-  padding: 0 14px;
-  color: var(--ink);
-  font-size: 11px;
-  font-weight: 600;
-}
 
 /* ---------------------------------------------------------------------------
    Shared admin data table. One implementation drives every admin list, so
@@ -1446,15 +1309,6 @@
   overflow-y: auto;
 }
 
-.export-columns-modal {
-  width: min(760px, 100%);
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-}
-.export-columns-toolbar { display: flex; align-items: center; gap: 10px; margin: 4px 0 4px; flex-wrap: wrap; }
-.export-columns-count { font-size: 11px; color: var(--muted); font-weight: 600; margin-left: auto; }
-.export-columns-grid { margin-top: 10px; }
-
 /* Season/company/event pickers above the registrations table. Reuses the
    dashboard's season-picker look so every cascading filter in the admin
    portal reads the same way. */
@@ -1573,7 +1427,6 @@
   .admin-profile-banner { display: block; }
   .admin-profile-banner > strong { display: inline-block; margin-top: 14px; }
   .admin-profile-grid { grid-template-columns: 1fr; }
-  .admin-toolbar > select { padding: 10px; }
   .job-profile-modal, .permission-matrix-modal { max-height: calc(100vh - 20px); }
 }
 @media(max-width:480px){

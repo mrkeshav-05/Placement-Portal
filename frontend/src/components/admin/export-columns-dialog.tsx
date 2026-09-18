@@ -2,7 +2,7 @@
 
 import { Lock } from "lucide-react";
 
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -77,7 +77,7 @@ export function ExportColumnsDialog<T>({
   }
 
   return (
-    <AdminDialog
+    <PortalDialog
       onClose={onClose}
       title="Customize Export Columns"
       description="Select which columns to include in the Excel export."
@@ -162,6 +162,6 @@ export function ExportColumnsDialog<T>({
           Apply ({lockedCount + selectedOptionalCount} columns)
         </Button>
       </DialogFooter>
-    </AdminDialog>
+    </PortalDialog>
   );
 }

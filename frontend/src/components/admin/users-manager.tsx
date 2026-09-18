@@ -17,7 +17,7 @@ import {
   UserX,
 } from "lucide-react";
 import type { Role } from "@prisma/client";
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
   type DataTableColumn,
@@ -296,7 +296,7 @@ export function UsersManager({
                 <strong>
                   {u.name || "No name registered"}
                   {u.id === currentUserId && (
-                    <small className="inline ml-1 text-blue-600 font-bold">(You)</small>
+                    <small className="inline ml-1 text-[var(--blue)] font-bold">(You)</small>
                   )}
                 </strong>
                 <small>{u.email || "No email"}</small>
@@ -584,7 +584,7 @@ export function UsersManager({
       {/* MODAL: Add / Pre-provision User */}
       {/* ------------------------------------------------------------- */}
       {addingUser && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setAddingUser(false)}
           eyebrow="Directory Provisioning"
           title="Add / Provision User Account"
@@ -673,14 +673,14 @@ export function UsersManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Elevate / Change Role */}
       {/* ------------------------------------------------------------- */}
       {roleModalUser && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setRoleModalUser(null)}
           eyebrow="Role Elevation & Management"
           title="Elevate / Change Role"
@@ -770,14 +770,14 @@ export function UsersManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Custom Permissions Matrix Editor */}
       {/* ------------------------------------------------------------- */}
       {permModalUser && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setPermModalUser(null)}
           eyebrow="Granular RBAC"
           title="Custom Permissions Matrix"
@@ -862,14 +862,14 @@ export function UsersManager({
               {saving ? "Saving Matrix…" : "Save Permissions Matrix"}
             </Button>
           </DialogFooter>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Edit User Details */}
       {/* ------------------------------------------------------------- */}
       {editingUser && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setEditingUser(null)}
           eyebrow="User Details"
           title="Edit Account Info"
@@ -940,14 +940,14 @@ export function UsersManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Set Sign-in Password */}
       {/* ------------------------------------------------------------- */}
       {passwordModalUser && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setPasswordModalUser(null)}
           eyebrow="Sign-in password"
           title={passwordModalUser.name || passwordModalUser.email}
@@ -994,14 +994,14 @@ export function UsersManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Delete User Confirmation */}
       {/* ------------------------------------------------------------- */}
       {deletingUser && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setDeletingUser(null)}
           eyebrow={<span className="text-[var(--badge-red-text)]">Danger Zone</span>}
           title="Delete User Account"
@@ -1027,7 +1027,7 @@ export function UsersManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
     </div>
   );

@@ -35,6 +35,13 @@ import {
 } from "@/components/admin/export-columns-dialog";
 import { RecordPlacementDialog } from "@/components/admin/record-placement-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, isHiredStatus } from "@/lib/application-status";
 
 export type AdminApplicationRow = {
@@ -94,6 +101,14 @@ const REGISTRATION_EXPORT_COLUMNS: ExportColumnDef<AdminApplicationRow>[] = [
 ];
 
 const ALL_STATUSES: ApplicationStatus[] = [...APPLICATION_STATUSES];
+
+/** Radix has no empty option value, so "nothing chosen yet" is a sentinel. */
+const NO_SELECTION = "__none";
+
+/** The cascading pickers keep the `.season-picker` shell as the visible
+ *  control, so each trigger is transparent inside it. */
+const FILTER_TRIGGER =
+  "h-auto w-auto border-0 bg-transparent p-0 text-[13px] font-extrabold text-[var(--ink)] normal-case shadow-none focus-visible:ring-0 data-[size=default]:h-auto";
 
 /** The filter ids the backend export understands, matched one to one below. */
 const JOB_FILTER = "job";
@@ -648,62 +663,72 @@ export function ApplicationsManager({
       ) : null}
 
       <div className="registrations-filters">
-        <label className="season-picker">
+        <div className="season-picker">
           <CalendarRange />
           <span>Select Season</span>
-          <select
-            value={season ?? ""}
-            onChange={(e) => handleSeasonChange(e.target.value)}
+          <Select
+            value={season === null ? "" : String(season)}
+            onValueChange={handleSeasonChange}
             disabled={!seasons.length}
-            aria-label="Select season"
           >
-            {seasons.length ? (
-              seasons.map((s) => (
-                <option key={s} value={s}>
+            <SelectTrigger aria-label="Select season" className={FILTER_TRIGGER}>
+              <SelectValue placeholder="No seasons yet" />
+            </SelectTrigger>
+            <SelectContent>
+              {seasons.map((s) => (
+                <SelectItem key={s} value={String(s)}>
                   {s}
-                </option>
-              ))
-            ) : (
-              <option value="">No seasons yet</option>
-            )}
-          </select>
-        </label>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <label className="season-picker">
+        <div className="season-picker">
           <Building2 />
           <span>Select Company</span>
-          <select
-            value={companyId ?? ""}
-            onChange={(e) => handleCompanyChange(e.target.value)}
+          <Select
+            value={companyId ?? NO_SELECTION}
+            onValueChange={(value) => handleCompanyChange(value === NO_SELECTION ? "" : value)}
             disabled={!companiesForSeason.length}
-            aria-label="Select company"
           >
-            <option value="">--</option>
-            {companiesForSeason.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            <SelectTrigger aria-label="Select company" className={FILTER_TRIGGER}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_SELECTION}>--</SelectItem>
+              {companiesForSeason.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <label className="season-picker">
+        <div className="season-picker">
           <ClipboardList />
           <span>Select Company Event</span>
-          <select
-            value={jobId ?? ""}
-            onChange={(e) => setJobId(e.target.value || null)}
+          <Select
+            value={jobId ?? NO_SELECTION}
+            onValueChange={(value) => setJobId(value === NO_SELECTION ? null : value)}
             disabled={!companyId}
-            aria-label="Select company event"
           >
-            <option value="">{companyId ? "--" : "Select Company First"}</option>
-            {eventsForCompany.map((job) => (
-              <option key={job.id} value={job.id}>
-                {job.companyName} — {job.title}
-              </option>
-            ))}
-          </select>
-        </label>
+            <SelectTrigger aria-label="Select company event" className={FILTER_TRIGGER}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_SELECTION}>
+                {companyId ? "--" : "Select Company First"}
+              </SelectItem>
+              {eventsForCompany.map((job) => (
+                <SelectItem key={job.id} value={job.id}>
+                  {job.companyName} — {job.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <DataTable

@@ -12,6 +12,13 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatRupees, formatStipend } from "@/lib/offer-schema";
 
 export type AmountStats = {
@@ -187,26 +194,32 @@ export function AdminDashboard({
           <h1>Placement dashboard</h1>
           <p>Offers, packages, and pipeline for the selected placement season.</p>
         </div>
-        <label className="season-picker">
+        <div className="season-picker">
           <CalendarRange />
           <span>Season</span>
-          <select
-            value={overview.season ?? ""}
-            onChange={(event) => selectSeason(event.target.value)}
+          <Select
+            value={overview.season === null ? "" : String(overview.season)}
+            onValueChange={selectSeason}
             disabled={!overview.seasons.length}
-            aria-label="Placement season"
           >
-            {overview.seasons.length ? (
-              overview.seasons.map((season) => (
-                <option key={season} value={season}>
+            <SelectTrigger
+              aria-label="Placement season"
+              // `.admin-heading button` paints every button in a page heading
+              // as a filled navy pill. The trigger opts out of it so the
+              // surrounding picker stays the visible control.
+              className="h-auto rounded-none bg-transparent p-0 text-[13px] font-extrabold text-[var(--ink)] normal-case shadow-none hover:transform-none focus-visible:ring-0"
+            >
+              <SelectValue placeholder="No seasons yet" />
+            </SelectTrigger>
+            <SelectContent>
+              {overview.seasons.map((season) => (
+                <SelectItem key={season} value={String(season)}>
                   {season}
-                </option>
-              ))
-            ) : (
-              <option value="">No seasons yet</option>
-            )}
-          </select>
-        </label>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </section>
 
       {overview.season === null ? (

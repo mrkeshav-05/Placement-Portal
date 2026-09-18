@@ -9,14 +9,15 @@ import {
 } from "@/components/ui/dialog";
 
 /**
- * The shell every admin dialog sits in.
+ * The shell every dialog in the portal sits in, on both sides.
  *
- * The managers each hand-rolled a `.modal-backdrop` wrapper with its own close
- * button and its own outside-click handler, and none of them trapped focus or
- * closed on Escape. Radix does all of that, so the call sites now pass only
- * what differs: the eyebrow, the title, and the body.
+ * The admin managers and the student views each hand-rolled a
+ * `.modal-backdrop` wrapper with its own close button and its own outside-click
+ * handler, and none of them trapped focus or closed on Escape. Radix does all
+ * of that, so the call sites now pass only what differs: the eyebrow, the
+ * title, and the body.
  */
-export function AdminDialog({
+export function PortalDialog({
   onClose,
   eyebrow,
   title,

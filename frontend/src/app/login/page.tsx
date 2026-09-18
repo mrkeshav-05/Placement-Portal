@@ -6,6 +6,10 @@ import { auth } from "@/lib/auth";
 import { studentEmailDomain } from "@/lib/auth-access";
 import { isElevatedRole } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { passwordSignInAction } from "./actions";
 
 function describeError(code: string | undefined, domain: string) {
@@ -69,32 +73,39 @@ export default async function LoginPage({
           <h2>Welcome back</h2>
           <p>Sign in with your institute email address and password.</p>
           {problem ? (
-            <div className="login-alert" role="alert">
+            <Alert variant="destructive" className="mb-5">
               <AlertCircle />
-              <span>
-                <strong>{problem.title}</strong>
-                {problem.body}
-              </span>
-            </div>
+              <AlertTitle className="line-clamp-none">{problem.title}</AlertTitle>
+              <AlertDescription>{problem.body}</AlertDescription>
+            </Alert>
           ) : null}
           <form action={passwordSignInAction} className="login-fields">
-            <label>
-              <span>Institute email</span>
-              <input
+            <div className="grid gap-2">
+              <Label htmlFor="login-email">Institute email</Label>
+              <Input
+                id="login-email"
+                className="h-11"
                 type="email"
                 name="email"
                 autoComplete="email"
                 placeholder={`you@${domain}`}
                 required
               />
-            </label>
-            <label>
-              <span>Password</span>
-              <input type="password" name="password" autoComplete="current-password" required />
-            </label>
-            <button type="submit" className="login-submit">
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="login-password">Password</Label>
+              <Input
+                id="login-password"
+                className="h-11"
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            <Button type="submit" className="h-11 w-full">
               Sign in
-            </button>
+            </Button>
           </form>
           <p className="login-switch">
             No password account yet? <Link href="/register">Create one</Link>

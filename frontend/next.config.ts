@@ -15,6 +15,13 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   typedRoutes: false,
+  // The dev server runs in a container published on 0.0.0.0, so it is reached
+  // by whichever host name the developer types. Next refuses to serve its dev
+  // chunks to an origin it was not told about, and the refusal is silent in
+  // the browser: the page renders from the server and then never hydrates, so
+  // nothing on it responds to a click. Listing both loopback spellings keeps
+  // that from looking like an application bug. Dev-only; ignored in a build.
+  allowedDevOrigins: ["localhost", "127.0.0.1"],
   async headers() {
     return [{
       source: "/(.*)",

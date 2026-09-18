@@ -28,6 +28,11 @@ import {
   type AnnouncementStatus,
 } from "@/lib/announcement-schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type StagedAttachment = {
   fileName: string;
@@ -358,25 +363,32 @@ export function AnnouncementComposer({
         </div>
 
         {tags.length ? (
-          <div className="composer-tags">
+          <div className="flex flex-wrap gap-1.5">
             {tags.map((tag) => (
-              <span key={tag}>
+              <Badge
+                key={tag}
+                className="gap-1.5 bg-[var(--badge-blue-bg)] text-[var(--badge-blue-text)]"
+              >
                 {tag}
                 <button
                   type="button"
                   onClick={() => setTags((previous) => previous.filter((t) => t !== tag))}
                   aria-label={`Remove the ${tag} tag`}
+                  className="cursor-pointer leading-none"
                 >
                   ×
                 </button>
-              </span>
+              </Badge>
             ))}
           </div>
         ) : null}
 
         <div className="composer-row">
-          <input
-            className="composer-title"
+          <Label htmlFor="announcement-title">
+            {isCompanyEvent ? "Announcement title" : "Notice title"}
+          </Label>
+          <Input
+            id="announcement-title"
             value={title}
             maxLength={200}
             onChange={(event) => setTitle(event.target.value)}
@@ -384,18 +396,26 @@ export function AnnouncementComposer({
           />
         </div>
 
-        <div className={`composer-editor${editorReady ? "" : " locked"}`}>
-          {editorReady ? (
-            <textarea
+        {editorReady ? (
+          <div className="grid gap-2">
+            <Label htmlFor="announcement-content">Announcement</Label>
+            <Textarea
+              id="announcement-content"
               value={content}
               maxLength={10000}
+              rows={9}
               onChange={(event) => setContent(event.target.value)}
               placeholder="Write the announcement. Students see this text exactly as typed."
+              className="min-h-[200px] resize-y"
             />
-          ) : (
-            <p>Fill the fields above to start writing. Missing: {missing.join(", ")}.</p>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="bg-muted grid min-h-[220px] place-items-center rounded-xl border px-4 py-3.5 text-center">
+            <p className="text-muted-foreground max-w-[420px] text-xs leading-relaxed">
+              Fill the fields above to start writing. Missing: {missing.join(", ")}.
+            </p>
+          </div>
+        )}
 
         <div className="composer-attachments">
           <span className="attachments-label">Attachments</span>
@@ -471,22 +491,22 @@ export function AnnouncementComposer({
           </p>
         </div>
 
-        <div className="composer-actions">
-          <button
+        <div className="flex justify-end gap-2.5">
+          <Button
             type="button"
-            className="ghost"
+            variant="outline"
             disabled={saving || !editorReady || !content.trim()}
             onClick={() => submit("DRAFT")}
           >
             {saving ? "Saving…" : "Save as draft"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             disabled={saving || !editorReady || !content.trim()}
             onClick={() => submit("PUBLISHED")}
           >
             {saving ? "Publishing…" : "Publish to students"}
-          </button>
+          </Button>
         </div>
       </div>
 

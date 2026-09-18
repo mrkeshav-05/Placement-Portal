@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { KeyRound, Shield, ShieldCheck, UserCheck, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ROLE_METADATA } from "@/lib/permissions";
 
 export function SettingsManager({
@@ -28,14 +29,18 @@ export function SettingsManager({
           <p>Review system security status, role configurations, and access policies.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/admin/team" className="admin-icon-link !w-auto !h-auto px-3 py-2 text-xs font-bold gap-2 text-white bg-[var(--surface-alt)] hover:bg-[var(--surface-highlight)] border border-[var(--border)] rounded-xl flex items-center shadow-sm">
-            <Shield size={15} className="text-[var(--orange)]" />
-            Placement Team &amp; Permissions
-          </Link>
-          <Link href="/admin/users" className="admin-icon-link !w-auto !h-auto px-3 py-2 text-xs font-bold gap-2 text-white bg-[var(--navy)] rounded-xl flex items-center">
-            <Users size={15} />
-            Manage Users &amp; RBAC
-          </Link>
+          <Button asChild variant="outline">
+            <Link href="/admin/team">
+              <Shield className="text-[var(--orange)]" />
+              Placement Team &amp; Permissions
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/users">
+              <Users />
+              Manage Users &amp; RBAC
+            </Link>
+          </Button>
         </div>
       </section>
 

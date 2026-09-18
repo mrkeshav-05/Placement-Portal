@@ -12,6 +12,16 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { withdrawApplication } from "@/app/applications/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type StudentApplicationItem = {
   id: string;
@@ -80,25 +90,39 @@ export function ApplicationsView({ applications }: { applications: StudentApplic
         </article>
       </section>
 
-      <section className="compact-filters">
-        <label>
-          <Search size={18} />
-          <input
+      <section className="mb-3.5 flex flex-wrap gap-3">
+        <div className="relative min-w-0 flex-[1_1_240px]">
+          <Label htmlFor="applications-search" className="sr-only">
+            Search applications
+          </Label>
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-[17px] -translate-y-1/2" />
+          <Input
+            id="applications-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by company or role..."
+            className="h-11 rounded-xl bg-[var(--card-bg)] pl-11 text-[13px] shadow-[var(--card-shadow)]"
           />
-        </label>
-        <select value={filter} onChange={(event) => setFilter(event.target.value)}>
-          <option value="ALL">All statuses</option>
-          {["APPLIED", "SHORTLISTED", "INTERVIEW", "SELECTED", "REJECTED", "WITHDRAWN"].map(
-            (status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ),
-          )}
-        </select>
+        </div>
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger
+            id="applications-status-filter"
+            aria-label="Filter by status"
+            className="h-11 rounded-xl bg-[var(--card-bg)] text-xs font-semibold"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All statuses</SelectItem>
+            {["APPLIED", "SHORTLISTED", "INTERVIEW", "SELECTED", "REJECTED", "WITHDRAWN"].map(
+              (status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ),
+            )}
+          </SelectContent>
+        </Select>
       </section>
 
       <section className="application-list">
@@ -147,7 +171,14 @@ export function ApplicationsView({ applications }: { applications: StudentApplic
                 {["APPLIED", "SHORTLISTED"].includes(item.status) && (
                   <form action={withdrawApplication}>
                     <input type="hidden" name="applicationId" value={item.id} />
-                    <button type="submit">Withdraw application</button>
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="xs"
+                      className="text-destructive hover:text-destructive text-[10px] font-bold"
+                    >
+                      Withdraw application
+                    </Button>
                   </form>
                 )}
               </div>

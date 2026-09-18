@@ -32,6 +32,14 @@ import {
   updateTeamMemberAction,
   type TeamActionResult,
 } from "@/app/admin/team/actions";
+import { PortalDialog } from "@/components/common/portal-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   DEFAULT_PLACEMENT_TEAM_PERMISSIONS,
   PERMISSION_DEFINITIONS,
@@ -387,8 +395,8 @@ export function TeamManager({
             <span
               className={`inline-block px-2.5 py-1 rounded-lg text-xs font-semibold ${
                 isCoordinator
-                  ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20"
-                  : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                  ? "bg-[var(--badge-blue-bg)] text-[var(--badge-blue-text)]"
+                  : "bg-[var(--badge-orange-bg)] text-[var(--badge-orange-text)]"
               }`}
             >
               {member.role}
@@ -441,7 +449,7 @@ export function TeamManager({
                   {member.userRole || "STUDENT"}
                 </span>
                 {member.userActive === false && (
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-500/15 text-red-600">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[var(--badge-red-bg)] text-[var(--badge-red-text)]">
                     Suspended
                   </span>
                 )}
@@ -492,7 +500,7 @@ export function TeamManager({
                 setDeletingMember(member);
                 setResult({});
               }}
-              className="p-1.5 rounded-lg text-[var(--muted)] hover:text-red-600 hover:bg-red-500/10 transition-colors"
+              className="p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--badge-red-text)] hover:bg-[var(--badge-red-bg)] transition-colors"
               title="Remove Member"
               aria-label={`Remove ${member.name}`}
             >
@@ -518,44 +526,50 @@ export function TeamManager({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={openPermissionsModal}
-            className="admin-icon-link !w-auto !h-auto px-3.5 py-2 text-xs font-bold gap-2 text-white bg-[var(--surface-alt)] hover:bg-[var(--surface-highlight)] border border-[var(--border)] rounded-xl flex items-center shadow-sm"
-          >
-            <ShieldCheck size={16} className="text-[var(--orange)]" />
-            <span>Default Permissions</span>
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-[var(--surface)] text-[var(--ink)] font-extrabold border border-[var(--border)]">
-              {defaultPermissions.length}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={openAddModal}
-            className="admin-icon-link !w-auto !h-auto px-4 py-2 text-xs font-bold gap-2 text-white bg-[var(--blue)] hover:bg-[var(--navy)] rounded-xl flex items-center shadow-sm"
-          >
-            <Plus size={16} />
-            <span>Add Team Member</span>
-          </button>
+          <Button type="button" variant="outline" onClick={openPermissionsModal}>
+            <ShieldCheck className="text-[var(--orange)]" />
+            Default Permissions
+            <Badge variant="secondary">{defaultPermissions.length}</Badge>
+          </Button>
+          <Button type="button" onClick={openAddModal}>
+            <Plus />
+            Add Team Member
+          </Button>
         </div>
       </section>
 
       {/* Action status message */}
       {result.error && (
-        <div className="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-medium flex items-center justify-between">
-          <span>{result.error}</span>
-          <button onClick={() => setResult({})} className="text-red-600 hover:text-red-800">
-            <X size={14} />
-          </button>
-        </div>
+        <Alert variant="destructive" className="mt-4 mb-4">
+          <AlertDescription className="flex w-full items-center justify-between text-current">
+            <span>{result.error}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Dismiss this message"
+              onClick={() => setResult({})}
+            >
+              <X />
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
       {result.success && (
-        <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium flex items-center justify-between">
-          <span>{result.success}</span>
-          <button onClick={() => setResult({})} className="text-emerald-700 hover:text-emerald-900">
-            <X size={14} />
-          </button>
-        </div>
+        <Alert variant="success" className="mt-4 mb-4">
+          <AlertDescription className="flex w-full items-center justify-between text-current">
+            <span>{result.success}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Dismiss this message"
+              onClick={() => setResult({})}
+            >
+              <X />
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Metrics Banner */}
@@ -678,390 +692,352 @@ export function TeamManager({
       {/* MODAL: Configure Default Placement Team Permissions          */}
       {/* ------------------------------------------------------------- */}
       {configuringPermissions && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            {/* Header */}
-            <div className="p-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-alt)]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[var(--blue)]/15 text-[var(--blue)] flex items-center justify-center">
-                  <ShieldCheck size={18} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-[var(--ink)]">
-                    Default Placement Team Permissions
-                  </h3>
-                  <p className="text-[11px] text-[var(--muted)]">
-                    Set permissions automatically granted when a user is added to the placement team.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setConfiguringPermissions(false)}
-                className="p-1 rounded-lg text-[var(--muted)] hover:text-[var(--ink)]"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Content / Permissions Matrix */}
-            <div className="p-4 overflow-y-auto space-y-4 text-xs">
-              {/* Informational Callout */}
-              <div className="p-3 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] flex gap-2.5 items-start">
-                <Info size={16} className="text-[var(--blue)] shrink-0 mt-0.5" />
-                <p className="text-[11px] text-[var(--muted)] leading-relaxed">
+        <PortalDialog
+          onClose={() => setConfiguringPermissions(false)}
+          eyebrow={
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck size={13} /> Role-based access
+            </span>
+          }
+          title="Default Placement Team Permissions"
+          description="Set permissions automatically granted when a user is added to the placement team."
+          className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
+        >
+          <div className="grid gap-4 text-xs">
+            {/* Informational Callout */}
+            <Alert variant="info">
+              <Info />
+              <AlertDescription className="text-current">
+                <p className="text-[11px] leading-relaxed">
                   When a user is added to the Placement Team, these default permissions are automatically granted to their account.
                   If removed, these permissions are automatically revoked. An administrator can still adjust or override any user&apos;s
-                  permissions manually in <strong className="text-[var(--ink)]">User Management</strong>.
+                  permissions manually in <strong>User Management</strong>.
                 </p>
-              </div>
+              </AlertDescription>
+            </Alert>
 
-              {/* Quick Preset Buttons */}
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
-                <span className="text-[11px] font-bold text-[var(--muted)] uppercase tracking-wider">
-                  Presets:
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedDefaultPerms([...DEFAULT_PLACEMENT_TEAM_PERMISSIONS])
-                    }
-                    className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[var(--surface-alt)] hover:bg-[var(--surface)] text-[var(--ink)] border border-[var(--border)]"
-                  >
-                    Coordinator Defaults
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedDefaultPerms(
-                        PERMISSION_DEFINITIONS.map((p) => p.key)
-                      )
-                    }
-                    className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[var(--surface-alt)] hover:bg-[var(--surface)] text-[var(--ink)] border border-[var(--border)]"
-                  >
-                    Select All
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDefaultPerms([])}
-                    className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[var(--surface-alt)] hover:bg-[var(--surface)] text-[var(--muted)] hover:text-red-500 border border-[var(--border)]"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-
-              {/* Permissions Categories */}
-              <div className="space-y-4">
-                {permissionsByCategory.map(([category, perms]) => (
-                  <div key={category} className="space-y-2">
-                    <h4 className="font-bold text-[11px] text-[var(--ink)] uppercase tracking-wider">
-                      {category}
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {perms.map((perm) => {
-                        const isChecked = selectedDefaultPerms.includes(perm.key);
-                        return (
-                          <label
-                            key={perm.key}
-                            className={`p-2.5 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
-                              isChecked
-                                ? "bg-[var(--blue)]/10 border-[var(--blue)]/40 text-[var(--ink)]"
-                                : "bg-[var(--surface-alt)] border-[var(--border)] text-[var(--muted)] hover:border-[var(--border)] hover:bg-[var(--surface)]"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedDefaultPerms([...selectedDefaultPerms, perm.key]);
-                                } else {
-                                  setSelectedDefaultPerms(
-                                    selectedDefaultPerms.filter((k) => k !== perm.key)
-                                  );
-                                }
-                              }}
-                              className="mt-0.5 rounded text-[var(--blue)] focus:ring-0"
-                            />
-                            <div className="space-y-0.5">
-                              <strong className="block text-xs font-semibold text-[var(--ink)]">
-                                {perm.label}
-                              </strong>
-                              <p className="text-[10px] text-[var(--muted)] leading-tight">
-                                {perm.description}
-                              </p>
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Batch sync toggle */}
-              <div className="pt-3 border-t border-[var(--border)]">
-                <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={syncExisting}
-                    onChange={(e) => setSyncExisting(e.target.checked)}
-                    className="rounded text-[var(--blue)] focus:ring-0"
-                  />
-                  <div>
-                    <span className="font-bold text-xs text-[var(--ink)] block">
-                      Apply and synchronize to all current placement team members now
-                    </span>
-                    <span className="text-[10px] text-[var(--muted)]">
-                      Updates the user accounts of all existing team members with this permission set.
-                    </span>
-                  </div>
-                </label>
+            {/* Quick Preset Buttons */}
+            <div className="flex items-center justify-between gap-2 border-b pb-2">
+              <span className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
+                Presets:
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() =>
+                    setSelectedDefaultPerms([...DEFAULT_PLACEMENT_TEAM_PERMISSIONS])
+                  }
+                >
+                  Coordinator Defaults
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() =>
+                    setSelectedDefaultPerms(PERMISSION_DEFINITIONS.map((p) => p.key))
+                  }
+                >
+                  Select All
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  onClick={() => setSelectedDefaultPerms([])}
+                >
+                  Clear All
+                </Button>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-[var(--border)] bg-[var(--surface-alt)] flex items-center justify-between">
-              <span className="text-xs text-[var(--muted)] font-medium">
-                {selectedDefaultPerms.length} permissions selected
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setConfiguringPermissions(false)}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[var(--surface)] text-[var(--ink)] border border-[var(--border)] hover:bg-[var(--surface-highlight)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={handleSaveDefaultPermissions}
-                  className="px-4 py-1.5 text-xs font-bold rounded-xl bg-[var(--blue)] text-white hover:bg-[var(--navy)] disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
-                >
-                  {saving ? "Saving..." : "Save Default Permissions"}
-                </button>
-              </div>
+            {/* Permissions Categories */}
+            <div className="space-y-4">
+              {permissionsByCategory.map(([category, perms]) => (
+                <div key={category} className="space-y-2">
+                  <h4 className="text-[11px] font-bold tracking-wider uppercase">
+                    {category}
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {perms.map((perm) => {
+                      const isChecked = selectedDefaultPerms.includes(perm.key);
+                      return (
+                        <Label
+                          key={perm.key}
+                          htmlFor={`default-perm-${perm.key}`}
+                          className={`items-start gap-2.5 rounded-xl border p-2.5 font-normal transition-all ${
+                            isChecked
+                              ? "border-[var(--blue)] bg-[var(--badge-blue-bg)]"
+                              : "bg-muted hover:bg-accent"
+                          }`}
+                        >
+                          <Checkbox
+                            id={`default-perm-${perm.key}`}
+                            checked={isChecked}
+                            onCheckedChange={(checked) =>
+                              setSelectedDefaultPerms(
+                                checked === true
+                                  ? [...selectedDefaultPerms, perm.key]
+                                  : selectedDefaultPerms.filter((k) => k !== perm.key),
+                              )
+                            }
+                            className="mt-0.5"
+                          />
+                          <span className="grid gap-0.5">
+                            <strong className="text-xs font-semibold">{perm.label}</strong>
+                            <span className="text-muted-foreground text-[10px] leading-tight">
+                              {perm.description}
+                            </span>
+                          </span>
+                        </Label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Batch sync toggle */}
+            <div className="border-t pt-3">
+              <Label htmlFor="sync-existing" className="items-start gap-2.5 font-normal">
+                <Checkbox
+                  id="sync-existing"
+                  checked={syncExisting}
+                  onCheckedChange={(checked) => setSyncExisting(checked === true)}
+                  className="mt-0.5"
+                />
+                <span className="grid gap-0.5">
+                  <strong className="text-xs">
+                    Apply and synchronize to all current placement team members now
+                  </strong>
+                  <span className="text-muted-foreground text-[10px]">
+                    Updates the user accounts of all existing team members with this permission set.
+                  </span>
+                </span>
+              </Label>
             </div>
           </div>
-        </div>
+
+          <DialogFooter className="items-center sm:justify-between">
+            <span className="text-muted-foreground text-xs font-medium">
+              {selectedDefaultPerms.length} permissions selected
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfiguringPermissions(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="button" disabled={saving} onClick={handleSaveDefaultPermissions}>
+                {saving ? "Saving..." : "Save Default Permissions"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Add / Edit Team Member                                */}
       {/* ------------------------------------------------------------- */}
       {(addingMember || editingMember) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="p-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-alt)]">
-              <h3 className="font-bold text-sm text-[var(--ink)] flex items-center gap-2">
-                {addingMember ? <UserPlus size={16} /> : <Edit3 size={16} />}
-                <span>{addingMember ? "Add Placement Team Member" : "Edit Team Member"}</span>
-              </h3>
-              <button
+        <PortalDialog
+          onClose={() => {
+            setAddingMember(false);
+            setEditingMember(null);
+          }}
+          title={
+            <span className="flex items-center gap-2">
+              {addingMember ? <UserPlus size={16} /> : <Edit3 size={16} />}
+              {addingMember ? "Add Placement Team Member" : "Edit Team Member"}
+            </span>
+          }
+          className="max-h-[90vh] overflow-y-auto"
+        >
+          <form
+            onSubmit={addingMember ? handleAddSubmit : handleEditSubmit}
+            className="grid gap-3.5"
+          >
+            {/* Name */}
+            <div className="grid gap-2">
+              <Label htmlFor="team-name">
+                Full Name <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="team-name"
+                type="text"
+                required
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="e.g. Dr. Rajesh Kumar or Aarav Sharma"
+              />
+            </div>
+
+            {/* Role / Designation */}
+            <div className="grid gap-2">
+              <Label htmlFor="team-role">
+                Role / Designation <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="team-role"
+                type="text"
+                required
+                value={formRole}
+                onChange={(e) => setFormRole(e.target.value)}
+                placeholder="e.g. Student Placement Coordinator (Lead) or Faculty In-charge"
+              />
+              <div className="flex flex-wrap gap-1">
+                {[
+                  "Faculty In-charge, Training & Placement",
+                  "Placement Officer",
+                  "Student Placement Coordinator (Lead)",
+                  "Student Placement Coordinator (Internships)",
+                  "Student Placement Coordinator",
+                ].map((preset) => (
+                  <Button
+                    key={preset}
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    className="text-[10px]"
+                    onClick={() => setFormRole(preset)}
+                  >
+                    {preset}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="grid gap-2">
+              <Label htmlFor="team-email">Institute Email Address</Label>
+              <Input
+                id="team-email"
+                type="email"
+                list="registered-users-list"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                placeholder="e.g. student@iiitl.ac.in or officer@iiitl.ac.in"
+              />
+              <datalist id="registered-users-list">
+                {allUsers.map((u) => (
+                  <option key={u.id} value={u.email || ""}>
+                    {u.name ? `${u.name} (${u.role})` : u.role}
+                  </option>
+                ))}
+              </datalist>
+              <p className="text-muted-foreground flex items-center gap-1 text-[10px]">
+                <Shield size={11} className="text-[var(--blue)]" />
+                Linking a user email will automatically assign the default placement team permissions to their account.
+              </p>
+            </div>
+
+            {/* Phone */}
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="team-phone">Contact Phone</Label>
+                <Input
+                  id="team-phone"
+                  type="tel"
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  placeholder="e.g. +91 98765 43210"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="team-display-order">Display Order</Label>
+                <Input
+                  id="team-display-order"
+                  type="number"
+                  min={0}
+                  value={formDisplayOrder}
+                  onChange={(e) => setFormDisplayOrder(Number(e.target.value))}
+                />
+              </div>
+            </div>
+
+            {/* Photo URL */}
+            <div className="grid gap-2">
+              <Label htmlFor="team-photo-url">Photo URL (Optional)</Label>
+              <Input
+                id="team-photo-url"
+                type="url"
+                value={formPhotoUrl}
+                onChange={(e) => setFormPhotoUrl(e.target.value)}
+                placeholder="https://... (Leave blank for automatic initials avatar)"
+              />
+            </div>
+
+            <DialogFooter className="border-t pt-3">
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => {
                   setAddingMember(false);
                   setEditingMember(null);
                 }}
-                className="p-1 rounded-lg text-[var(--muted)] hover:text-[var(--ink)]"
               >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={addingMember ? handleAddSubmit : handleEditSubmit} className="p-4 space-y-3.5 text-xs">
-              {/* Name */}
-              <div>
-                <label className="block font-bold text-[var(--ink)] mb-1">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="e.g. Dr. Rajesh Kumar or Aarav Sharma"
-                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--ink)] focus:outline-none focus:border-[var(--blue)]"
-                />
-              </div>
-
-              {/* Role / Designation */}
-              <div>
-                <label className="block font-bold text-[var(--ink)] mb-1">
-                  Role / Designation <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formRole}
-                  onChange={(e) => setFormRole(e.target.value)}
-                  placeholder="e.g. Student Placement Coordinator (Lead) or Faculty In-charge"
-                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--ink)] focus:outline-none focus:border-[var(--blue)]"
-                />
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {[
-                    "Faculty In-charge, Training & Placement",
-                    "Placement Officer",
-                    "Student Placement Coordinator (Lead)",
-                    "Student Placement Coordinator (Internships)",
-                    "Student Placement Coordinator",
-                  ].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setFormRole(preset)}
-                      className="px-2 py-0.5 text-[10px] rounded-md bg-[var(--surface-alt)] text-[var(--muted)] hover:text-[var(--ink)] border border-[var(--border)]"
-                    >
-                      {preset}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block font-bold text-[var(--ink)] mb-1">
-                  Institute Email Address
-                </label>
-                <input
-                  type="email"
-                  list="registered-users-list"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  placeholder="e.g. student@iiitl.ac.in or officer@iiitl.ac.in"
-                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--ink)] focus:outline-none focus:border-[var(--blue)]"
-                />
-                <datalist id="registered-users-list">
-                  {allUsers.map((u) => (
-                    <option key={u.id} value={u.email || ""}>
-                      {u.name ? `${u.name} (${u.role})` : u.role}
-                    </option>
-                  ))}
-                </datalist>
-                <p className="text-[10px] text-[var(--muted)] mt-1 flex items-center gap-1">
-                  <Shield size={11} className="text-[var(--blue)]" />
-                  Linking a user email will automatically assign the default placement team permissions to their account.
-                </p>
-              </div>
-
-              {/* Phone */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-[var(--ink)] mb-1">
-                    Contact Phone
-                  </label>
-                  <input
-                    type="tel"
-                    value={formPhone}
-                    onChange={(e) => setFormPhone(e.target.value)}
-                    placeholder="e.g. +91 98765 43210"
-                    className="w-full px-3 py-2 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--ink)] focus:outline-none focus:border-[var(--blue)]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[var(--ink)] mb-1">
-                    Display Order
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={formDisplayOrder}
-                    onChange={(e) => setFormDisplayOrder(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--ink)] focus:outline-none focus:border-[var(--blue)]"
-                  />
-                </div>
-              </div>
-
-              {/* Photo URL */}
-              <div>
-                <label className="block font-bold text-[var(--ink)] mb-1">
-                  Photo URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  value={formPhotoUrl}
-                  onChange={(e) => setFormPhotoUrl(e.target.value)}
-                  placeholder="https://... (Leave blank for automatic initials avatar)"
-                  className="w-full px-3 py-2 rounded-xl bg-[var(--surface-alt)] border border-[var(--border)] text-[var(--ink)] focus:outline-none focus:border-[var(--blue)]"
-                />
-              </div>
-
-              {/* Footer Buttons */}
-              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAddingMember(false);
-                    setEditingMember(null);
-                  }}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-[var(--surface-alt)] text-[var(--ink)] border border-[var(--border)] hover:bg-[var(--surface)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-[var(--blue)] text-white hover:bg-[var(--navy)] disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
-                >
-                  {saving ? "Saving..." : addingMember ? "Add Team Member" : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving..." : addingMember ? "Add Team Member" : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </PortalDialog>
       )}
 
       {/* ------------------------------------------------------------- */}
       {/* MODAL: Delete Confirmation                                   */}
       {/* ------------------------------------------------------------- */}
       {deletingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl w-full max-w-md shadow-2xl p-5 space-y-4 text-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-500/15 text-red-600 flex items-center justify-center shrink-0">
-                <Trash2 size={20} />
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-[var(--ink)]">Remove Team Member?</h3>
-                <p className="text-[11px] text-[var(--muted)]">
-                  Are you sure you want to remove <strong>{deletingMember.name}</strong> from the placement team?
-                </p>
-              </div>
-            </div>
-
-            {deletingMember.email && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-[11px] flex gap-2 items-start">
-                <ShieldAlert size={15} className="shrink-0 mt-0.5" />
-                <p>
+        <PortalDialog
+          onClose={() => setDeletingMember(null)}
+          eyebrow={<span className="text-[var(--badge-red-text)]">Remove</span>}
+          title={
+            <span className="flex items-center gap-2">
+              <Trash2 size={16} /> Remove Team Member?
+            </span>
+          }
+          description={
+            <>
+              Are you sure you want to remove <strong>{deletingMember.name}</strong> from the
+              placement team?
+            </>
+          }
+          className="sm:max-w-md"
+        >
+          {deletingMember.email && (
+            <Alert className="border-[var(--badge-orange-text)] bg-[var(--badge-orange-bg)] text-[var(--badge-orange-text)]">
+              <ShieldAlert />
+              <AlertDescription className="text-current">
+                <p className="text-[11px]">
                   Removing this member will also automatically revoke the placement team&apos;s default permissions from their user account (
                   <code>{deletingMember.email}</code>).
                 </p>
-              </div>
-            )}
+              </AlertDescription>
+            </Alert>
+          )}
 
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setDeletingMember(null)}
-                className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-[var(--surface-alt)] text-[var(--ink)] border border-[var(--border)] hover:bg-[var(--surface)]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={handleDeleteSubmit}
-                className="px-4 py-2 text-xs font-bold rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 shadow-sm"
-              >
-                {saving ? "Removing..." : "Confirm Removal"}
-              </button>
-            </div>
-          </div>
-        </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeletingMember(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={saving}
+              onClick={handleDeleteSubmit}
+            >
+              <Trash2 />
+              {saving ? "Removing..." : "Confirm Removal"}
+            </Button>
+          </DialogFooter>
+        </PortalDialog>
       )}
     </div>
   );

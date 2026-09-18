@@ -11,6 +11,17 @@ import {
   Search,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type StudentFeedbackItem = {
   id: string;
@@ -22,10 +33,12 @@ export type StudentFeedbackItem = {
   response: string | null;
 };
 
+type StatusFilter = "ALL" | "PENDING" | "RESOLVED";
+
 export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "RESOLVED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
   const visible = useMemo(() => {
     return items.filter((item) => {
@@ -48,58 +61,22 @@ export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
     const norm = type.toUpperCase();
     if (norm === "QUERY") {
       return (
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "3px",
-            background: "var(--badge-blue-bg)",
-            color: "var(--badge-blue-text)",
-            padding: "2px 8px",
-            borderRadius: "6px",
-            fontSize: "10px",
-            fontWeight: 700,
-          }}
-        >
-          <HelpCircle size={11} /> Query
-        </span>
+        <Badge className="bg-[var(--badge-blue-bg)] text-[10px] font-bold text-[var(--badge-blue-text)]">
+          <HelpCircle /> Query
+        </Badge>
       );
     }
     if (norm === "COMPLAINT") {
       return (
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "3px",
-            background: "var(--badge-red-bg)",
-            color: "var(--badge-red-text)",
-            padding: "2px 8px",
-            borderRadius: "6px",
-            fontSize: "10px",
-            fontWeight: 700,
-          }}
-        >
-          <AlertCircle size={11} /> Complaint
-        </span>
+        <Badge className="bg-[var(--badge-red-bg)] text-[10px] font-bold text-[var(--badge-red-text)]">
+          <AlertCircle /> Complaint
+        </Badge>
       );
     }
     return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "3px",
-          background: "var(--badge-green-bg)",
-          color: "var(--badge-green-text)",
-          padding: "2px 8px",
-          borderRadius: "6px",
-          fontSize: "10px",
-          fontWeight: 700,
-        }}
-      >
-        <MessageSquare size={11} /> Feedback
-      </span>
+      <Badge className="bg-[var(--badge-green-bg)] text-[10px] font-bold text-[var(--badge-green-text)]">
+        <MessageSquare /> Feedback
+      </Badge>
     );
   }
 
@@ -118,154 +95,104 @@ export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
       </section>
 
       {/* Filter toolbar */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "12px",
-          alignItems: "center",
-          justifyContent: "space-between",
-          margin: "24px 0 16px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            background: "var(--card-bg)",
-            border: "1px solid var(--border)",
-            borderRadius: "12px",
-            padding: "0 14px",
-            flex: "1 1 260px",
-          }}
-        >
-          <Search size={16} style={{ color: "var(--muted)" }} />
-          <input
+      <div className="mt-6 mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="relative min-w-0 flex-[1_1_260px]">
+          <Label htmlFor="feedback-search" className="sr-only">
+            Search your messages or replies
+          </Label>
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
+          <Input
+            id="feedback-search"
             type="search"
-            placeholder="Search your messages or replies..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              width: "100%",
-              border: 0,
-              outline: 0,
-              padding: "10px 0",
-              background: "transparent",
-              color: "var(--ink)",
-              fontSize: "12px",
-            }}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search your messages or replies..."
+            className="h-11 rounded-xl bg-[var(--card-bg)] pl-10 text-xs"
           />
         </div>
 
-        <div style={{ display: "flex", gap: "8px" }}>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            aria-label="Filter by type"
-            style={{
-              border: "1px solid var(--border)",
-              borderRadius: "12px",
-              padding: "8px 12px",
-              background: "var(--card-bg)",
-              color: "var(--ink)",
-              fontSize: "11px",
-              fontWeight: 600,
-            }}
-          >
-            <option value="ALL">All Message Types</option>
-            <option value="QUERY">Queries</option>
-            <option value="FEEDBACK">Feedback</option>
-            <option value="COMPLAINT">Complaints</option>
-          </select>
+        <div className="flex flex-wrap gap-2">
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger
+              id="feedback-type-filter"
+              aria-label="Filter by type"
+              className="h-11 rounded-xl bg-[var(--card-bg)] text-[11px] font-semibold"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Message Types</SelectItem>
+              <SelectItem value="QUERY">Queries</SelectItem>
+              <SelectItem value="FEEDBACK">Feedback</SelectItem>
+              <SelectItem value="COMPLAINT">Complaints</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <select
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as "ALL" | "PENDING" | "RESOLVED")}
-            aria-label="Filter by status"
-            style={{
-              border: "1px solid var(--border)",
-              borderRadius: "12px",
-              padding: "8px 12px",
-              background: "var(--card-bg)",
-              color: "var(--ink)",
-              fontSize: "11px",
-              fontWeight: 600,
-            }}
+            onValueChange={(value) => setStatusFilter(value as StatusFilter)}
           >
-            <option value="ALL">All Statuses</option>
-            <option value="PENDING">Awaiting Response</option>
-            <option value="RESOLVED">Resolved</option>
-          </select>
+            <SelectTrigger
+              id="feedback-status-filter"
+              aria-label="Filter by status"
+              className="h-11 rounded-xl bg-[var(--card-bg)] text-[11px] font-semibold"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Statuses</SelectItem>
+              <SelectItem value="PENDING">Awaiting Response</SelectItem>
+              <SelectItem value="RESOLVED">Resolved</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <section className="feedback-list">
+      <section className="grid gap-3">
         {visible.map((item) => (
-          <article key={item.id} style={{ display: "flex", gap: "16px", padding: "20px" }}>
+          <Card key={item.id} className="flex-row gap-4 p-5">
             <div className={`feedback-state ${item.resolved ? "resolved" : "pending"}`}>
               {item.resolved ? <CheckCircle2 /> : <Clock3 />}
             </div>
 
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "8px",
-                  marginBottom: "4px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <CardContent className="min-w-0 flex-1 px-0">
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
                   {getTypeBadge(item.type)}
-                  <span style={{ fontSize: "10px", color: "var(--muted)", fontWeight: 700 }}>
+                  <span className="text-muted-foreground text-[10px] font-bold">
                     {item.id} · {item.date}
                   </span>
                 </div>
 
                 <span
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    color: item.resolved ? "var(--green)" : "var(--orange)",
-                  }}
+                  className={`text-[10px] font-bold ${
+                    item.resolved ? "text-[var(--green)]" : "text-[var(--orange)]"
+                  }`}
                 >
                   {item.resolved ? "Resolved" : "Awaiting response"}
                 </span>
               </div>
 
-              <h2 style={{ fontSize: "15px", margin: "6px 0 4px", color: "var(--ink)" }}>
+              <h2 className="mt-1.5 mb-1 text-[15px] font-extrabold text-[var(--ink)]">
                 {item.subject}
               </h2>
 
               {item.message && (
-                <p style={{ margin: "4px 0 8px", fontSize: "12px", color: "var(--muted)", lineHeight: "1.5" }}>
+                <p className="text-muted-foreground mt-1 mb-2 text-xs leading-normal">
                   {item.message}
                 </p>
               )}
 
               {item.response && (
-                <blockquote
-                  style={{
-                    margin: "12px 0 0",
-                    background: "var(--surface-alt)",
-                    borderLeft: "3px solid var(--green)",
-                    padding: "12px 14px",
-                    borderRadius: "0 10px 10px 0",
-                    fontSize: "12px",
-                    lineHeight: "1.6",
-                    color: "var(--ink)",
-                  }}
-                >
-                  <strong style={{ color: "var(--green)", display: "block", marginBottom: "2px" }}>
+                <blockquote className="mt-3 rounded-r-[10px] border-l-[3px] border-[var(--green)] bg-[var(--surface-alt)] px-3.5 py-3 text-xs leading-relaxed text-[var(--ink)]">
+                  <strong className="mb-0.5 block text-[var(--green)]">
                     Placement Team Response
                   </strong>
                   {item.response}
                 </blockquote>
               )}
-            </div>
-          </article>
+            </CardContent>
+          </Card>
         ))}
 
         {!visible.length && (
@@ -283,4 +210,3 @@ export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
     </div>
   );
 }
-

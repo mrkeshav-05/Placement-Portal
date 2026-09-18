@@ -22,7 +22,7 @@ import {
   uploadNocDocumentAction,
   type NocActionResult,
 } from "@/app/admin/noc-requests/actions";
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
   type DataTableColumn,
@@ -550,7 +550,7 @@ export function NocRequestsManager({
 
       {/* Details Modal */}
       {detailItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setDetailItem(null)}
           eyebrow="Inspection"
           title="NOC Request Details"
@@ -659,12 +659,12 @@ export function NocRequestsManager({
               Close
             </Button>
           </DialogFooter>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* Approve Modal */}
       {approvingItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setApprovingItem(null)}
           eyebrow={<span className="text-[var(--green)]">Decision</span>}
           title="Approve NOC Request"
@@ -716,12 +716,12 @@ export function NocRequestsManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* Reject Modal */}
       {rejectingItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setRejectingItem(null)}
           eyebrow={<span className="text-[var(--badge-red-text)]">Decision</span>}
           title="Reject NOC Request"
@@ -759,12 +759,12 @@ export function NocRequestsManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* Direct Upload Document Modal */}
       {uploadingItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setUploadingItem(null)}
           eyebrow="Certificate"
           title="Upload Signed NOC PDF"
@@ -801,14 +801,14 @@ export function NocRequestsManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* PDF Document Preview Modal */}
       {previewDoc && (
         // The `.modal.doc-preview-modal` rules were scoped to the hand-rolled
         // `.modal` wrapper, so the frame's height has to be stated here.
-        <AdminDialog
+        <PortalDialog
           onClose={() => setPreviewDoc(null)}
           title={previewDoc.title}
           className="flex h-[88vh] flex-col sm:max-w-[min(1100px,96vw)]"
@@ -831,7 +831,7 @@ export function NocRequestsManager({
               </a>
             </Button>
           </DialogFooter>
-        </AdminDialog>
+        </PortalDialog>
       )}
     </div>
   );

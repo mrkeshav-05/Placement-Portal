@@ -19,7 +19,7 @@ import {
   respondFeedbackAction,
   type FeedbackActionResult,
 } from "@/app/admin/feedbacks/actions";
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
   type DataTableColumn,
@@ -352,7 +352,7 @@ export function FeedbacksManager({
         </article>
 
         <article>
-          <div className="metric-icon" style={{ background: "var(--badge-orange-bg)", color: "var(--badge-orange-text)" }}>
+          <div className="metric-icon bg-[var(--badge-orange-bg)] text-[var(--badge-orange-text)]">
             <Clock3 size={20} />
           </div>
           <div>
@@ -363,7 +363,7 @@ export function FeedbacksManager({
         </article>
 
         <article>
-          <div className="metric-icon" style={{ background: "var(--badge-green-bg)", color: "var(--badge-green-text)" }}>
+          <div className="metric-icon bg-[var(--badge-green-bg)] text-[var(--badge-green-text)]">
             <CheckCircle2 size={20} />
           </div>
           <div>
@@ -374,7 +374,7 @@ export function FeedbacksManager({
         </article>
 
         <article>
-          <div className="metric-icon" style={{ background: "var(--badge-blue-bg)", color: "var(--badge-blue-text)" }}>
+          <div className="metric-icon bg-[var(--badge-blue-bg)] text-[var(--badge-blue-text)]">
             <HelpCircle size={20} />
           </div>
           <div>
@@ -412,7 +412,7 @@ export function FeedbacksManager({
 
       {/* Response & Detail Modal */}
       {activeItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setActiveItem(null)}
           eyebrow={activeItem.resolved ? "Support History" : "Support Response"}
           title={activeItem.subject}
@@ -491,12 +491,12 @@ export function FeedbacksManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* Delete Confirmation Modal */}
       {deletingItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setDeletingItem(null)}
           eyebrow={<span className="text-[var(--badge-red-text)]">Delete</span>}
           title="Delete Feedback?"
@@ -522,7 +522,7 @@ export function FeedbacksManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
     </div>
   );

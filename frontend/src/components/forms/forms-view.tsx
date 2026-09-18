@@ -13,11 +13,19 @@ import {
   Plus,
   ShieldAlert,
   Trash2,
-  X,
   XCircle,
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { cancelNocRequestAction, submitNocRequest } from "@/app/forms/actions";
+import { PortalDialog } from "@/components/common/portal-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const downloads = [
   {
@@ -39,6 +47,31 @@ const downloads = [
     filename: "internship-undertaking-form.pdf",
   },
 ];
+
+/**
+ * Sizing shared by the three NOC row actions. Their colours are marked
+ * important at each call site because `.simple-table button` in globals.css is
+ * unlayered, so it outranks every utility class regardless of specificity.
+ */
+const ROW_ACTION = "h-auto px-2 py-1 text-[11px]";
+
+/** One labelled panel in the NOC detail dialog. */
+function DetailBox({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="bg-muted gap-1 rounded-[10px] px-3.5 py-3 shadow-none">
+      <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-bold uppercase">
+        {label}
+      </span>
+      {children}
+    </Card>
+  );
+}
 
 export type LocalNoc = {
   id: string;
@@ -108,6 +141,13 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
     setModal(false);
   }
 
+  // The new-request dialog and the cancel confirmation share `formError`, so
+  // opening one has to clear what the other left behind.
+  function openCancel(noc: LocalNoc) {
+    setFormError(null);
+    setCancellingNoc(noc);
+  }
+
   return (
     <div className="module-page">
       <section className="page-heading">
@@ -119,10 +159,10 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
       </section>
 
       {actionSuccess && (
-        <div className="save-message" style={{ marginBottom: "16px" }}>
-          <CheckCircle2 size={16} />
-          {actionSuccess}
-        </div>
+        <Alert variant="success" className="mt-3.5 mb-4">
+          <CheckCircle2 />
+          <AlertDescription>{actionSuccess}</AlertDescription>
+        </Alert>
       )}
 
       <div className="tabs">
@@ -131,13 +171,15 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
           ["noc", `NOC requests (${initialNocs.length})`],
           ["downloads", "Downloads"],
         ].map(([id, label]) => (
-          <button
-            className={tab === id ? "active" : ""}
+          <Button
+            type="button"
+            variant="ghost"
+            className={`h-auto ${tab === id ? "active" : ""}`}
             onClick={() => setTab(id)}
             key={id}
           >
             {label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -178,14 +220,14 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
             <div>
               <h2>Your NOC requests</h2>
             </div>
-            <button onClick={openModal}>
+            <Button type="button" className="h-auto" onClick={openModal}>
               <Plus />
               Request NOC
-            </button>
+            </Button>
           </div>
 
           {initialNocs.length ? (
-            <div className="simple-table" style={{ marginTop: "14px" }}>
+            <div className="simple-table mt-3.5">
               <div>
                 <b>Company & location</b>
                 <b>Training period</b>
@@ -198,16 +240,18 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                 const isRejected = noc.status === "REJECTED";
 
                 return (
-                  <div key={noc.id} style={{ gridTemplateColumns: "1.4fr 1.1fr 0.8fr 1.1fr" }}>
+                  // `.simple-table > div` is unlayered and states its own
+                  // column track, so the row's wider one has to be important.
+                  <div key={noc.id} className="grid-cols-[1.4fr_1.1fr_0.8fr_1.1fr]!">
                     <div>
-                      <strong style={{ color: "var(--ink)", display: "block" }}>{noc.company}</strong>
-                      <small style={{ color: "var(--muted)", fontSize: "10px" }}>
+                      <strong className="text-foreground block">{noc.company}</strong>
+                      <small className="text-muted-foreground text-[10px]">
                         {[noc.city, noc.state].filter(Boolean).join(", ") || "Location specified in request"}
                       </small>
                     </div>
 
                     <div>
-                      <span style={{ display: "block", fontWeight: 600 }}>
+                      <span className="block font-semibold">
                         {new Date(noc.startDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} –{" "}
                         {new Date(noc.endDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
@@ -215,118 +259,58 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
 
                     <div>
                       {isPendingReview && (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            padding: "3px 8px",
-                            borderRadius: "9999px",
-                            fontSize: "9px",
-                            fontWeight: 800,
-                            background: "var(--badge-orange-bg)",
-                            color: "var(--badge-orange-text)",
-                          }}
-                        >
-                          <Clock3 size={11} /> Pending
-                        </span>
+                        <Badge className="gap-1 bg-[var(--badge-orange-bg)] text-[9px] font-extrabold text-[var(--badge-orange-text)]">
+                          <Clock3 /> Pending
+                        </Badge>
                       )}
                       {isApproved && (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            padding: "3px 8px",
-                            borderRadius: "9999px",
-                            fontSize: "9px",
-                            fontWeight: 800,
-                            background: "var(--badge-green-bg)",
-                            color: "var(--badge-green-text)",
-                          }}
-                        >
-                          <CheckCircle2 size={11} /> Approved
-                        </span>
+                        <Badge className="gap-1 bg-[var(--badge-green-bg)] text-[9px] font-extrabold text-[var(--badge-green-text)]">
+                          <CheckCircle2 /> Approved
+                        </Badge>
                       )}
                       {isRejected && (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            padding: "3px 8px",
-                            borderRadius: "9999px",
-                            fontSize: "9px",
-                            fontWeight: 800,
-                            background: "var(--badge-red-bg)",
-                            color: "var(--badge-red-text)",
-                          }}
-                        >
-                          <XCircle size={11} /> Rejected
-                        </span>
+                        <Badge className="gap-1 bg-[var(--badge-red-bg)] text-[9px] font-extrabold text-[var(--badge-red-text)]">
+                          <XCircle /> Rejected
+                        </Badge>
                       )}
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <button
+                    <div className="flex items-center gap-2">
+                      <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => setViewingNoc(noc)}
                         title="View request details"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          color: "var(--blue)",
-                          padding: "4px 8px",
-                          borderRadius: "6px",
-                          background: "var(--surface-alt)",
-                          fontSize: "11px",
-                        }}
+                        className={`${ROW_ACTION} bg-[var(--surface-alt)]! text-[var(--blue)]!`}
                       >
-                        <Eye size={13} />
+                        <Eye />
                         Details
-                      </button>
+                      </Button>
 
                       {isApproved && noc.documentUrl && (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
                           onClick={() => setPreviewDocUrl({ url: `/api/noc-documents/${noc.id}`, title: `NOC - ${noc.company}` })}
                           title="View certificate"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            color: "var(--green)",
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            background: "var(--badge-green-bg)",
-                            fontSize: "11px",
-                          }}
+                          className={`${ROW_ACTION} bg-[var(--badge-green-bg)]! text-[var(--green)]!`}
                         >
-                          <FileCheck2 size={13} />
+                          <FileCheck2 />
                           Certificate
-                        </button>
+                        </Button>
                       )}
 
                       {isPendingReview && (
-                        <button
+                        <Button
                           type="button"
-                          onClick={() => setCancellingNoc(noc)}
+                          variant="ghost"
+                          onClick={() => openCancel(noc)}
                           title="Cancel request"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            color: "var(--badge-red-text)",
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            background: "var(--badge-red-bg)",
-                            fontSize: "11px",
-                          }}
+                          className={`${ROW_ACTION} bg-[var(--badge-red-bg)]! text-[var(--badge-red-text)]!`}
                         >
-                          <Trash2 size={13} />
+                          <Trash2 />
                           Cancel
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -369,287 +353,291 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
 
       {/* New NOC Modal */}
       {modal && (
-        <div className="modal-backdrop">
-          <form className="modal" action={handleAction}>
-            <header>
-              <div>
-                <span className="eyebrow">New request</span>
-                <h2>Request an NOC</h2>
+        <PortalDialog
+          onClose={closeModal}
+          eyebrow="New request"
+          title="Request an NOC"
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[650px]"
+        >
+          <form className="grid gap-4" action={handleAction}>
+            {formError && (
+              <Alert variant="destructive">
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="noc-company">
+                  Company name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="noc-company"
+                  name="company"
+                  required
+                  minLength={2}
+                  placeholder="e.g. Google India"
+                />
               </div>
-              <button
-                type="button"
-                onClick={closeModal}
-                aria-label="Close modal"
-              >
-                <X />
-              </button>
-            </header>
-            <div className="form-grid">
-              {formError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    gridColumn: "1 / -1",
-                  }}
-                >
-                  {formError}
-                </div>
-              )}
-              <label>
-                Company name
-                <input name="company" required minLength={2} placeholder="e.g. Google India" />
-              </label>
-              <label>
-                City
-                <input name="city" required minLength={2} placeholder="e.g. Bengaluru" />
-              </label>
-              <label className="wide">
-                Company address
-                <input name="address" required minLength={2} placeholder="Complete office / facility address" />
-              </label>
-              <label>
-                Start date
-                <input name="startDate" required type="date" />
-              </label>
-              <label>
-                End date
-                <input name="endDate" required type="date" />
-              </label>
-              <label>
-                State
-                <input name="state" required minLength={2} placeholder="e.g. Karnataka" />
-              </label>
-              <label>
-                Pincode
-                <input name="pincode" required pattern="[0-9]{6}" title="6-digit pincode" placeholder="6-digit postal code" />
-              </label>
-              <label className="wide">
-                Remarks / Purpose (optional)
-                <textarea
+
+              <div className="grid gap-2">
+                <Label htmlFor="noc-city">
+                  City <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="noc-city"
+                  name="city"
+                  required
+                  minLength={2}
+                  placeholder="e.g. Bengaluru"
+                />
+              </div>
+
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="noc-address">
+                  Company address <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="noc-address"
+                  name="address"
+                  required
+                  minLength={2}
+                  placeholder="Complete office / facility address"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="noc-start-date">
+                  Start date <span className="text-destructive">*</span>
+                </Label>
+                <Input id="noc-start-date" name="startDate" required type="date" />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="noc-end-date">
+                  End date <span className="text-destructive">*</span>
+                </Label>
+                <Input id="noc-end-date" name="endDate" required type="date" />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="noc-state">
+                  State <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="noc-state"
+                  name="state"
+                  required
+                  minLength={2}
+                  placeholder="e.g. Karnataka"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="noc-pincode">
+                  Pincode <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="noc-pincode"
+                  name="pincode"
+                  required
+                  pattern="[0-9]{6}"
+                  title="6-digit pincode"
+                  placeholder="6-digit postal code"
+                />
+              </div>
+
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="noc-message">Remarks / Purpose (optional)</Label>
+                <Textarea
+                  id="noc-message"
                   name="message"
                   rows={3}
                   placeholder="Provide context on the training offer, department, or special schedule requirements..."
                 />
-              </label>
+              </div>
             </div>
-            <footer>
-              <button type="button" onClick={closeModal}>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeModal}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending}>
+              </Button>
+              <Button type="submit" disabled={isPending}>
                 <FileBadge />
                 {isPending ? "Submitting..." : "Submit request"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* View NOC Details Modal */}
       {viewingNoc && (
-        <div className="modal-backdrop">
-          <div className="modal" style={{ maxWidth: "600px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">NOC Details</span>
-                <h2>{viewingNoc.company}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setViewingNoc(null)}
-                aria-label="Close details"
-              >
-                <X />
-              </button>
-            </header>
+        <PortalDialog
+          onClose={() => setViewingNoc(null)}
+          eyebrow="NOC Details"
+          title={viewingNoc.company}
+          className="max-h-[88vh] overflow-y-auto sm:max-w-[600px]"
+        >
+          <div className="grid gap-3.5 text-xs">
+            <Card className="bg-muted flex-row items-center justify-between rounded-[10px] px-3.5 py-3 shadow-none">
+              <span className="text-muted-foreground font-semibold">Status</span>
+              <Badge variant="outline" className="font-extrabold">
+                {viewingNoc.status}
+              </Badge>
+            </Card>
 
-            <div style={{ display: "grid", gap: "14px", fontSize: "12px", color: "var(--ink)", margin: "16px 0" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "var(--surface-alt)", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                <span style={{ fontWeight: 600, color: "var(--muted)" }}>Status</span>
-                <span style={{ fontWeight: 800 }}>{viewingNoc.status}</span>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div style={{ background: "var(--surface-alt)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--muted)", fontSize: "10px", textTransform: "uppercase", fontWeight: 700 }}>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <DetailBox
+                label={
+                  <>
                     <Calendar size={12} /> Start date
-                  </span>
-                  <strong style={{ display: "block", marginTop: "4px" }}>
-                    {new Date(viewingNoc.startDate).toLocaleDateString("en-IN", { month: "long", day: "numeric", year: "numeric" })}
-                  </strong>
-                </div>
+                  </>
+                }
+              >
+                <strong className="block">
+                  {new Date(viewingNoc.startDate).toLocaleDateString("en-IN", { month: "long", day: "numeric", year: "numeric" })}
+                </strong>
+              </DetailBox>
 
-                <div style={{ background: "var(--surface-alt)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--muted)", fontSize: "10px", textTransform: "uppercase", fontWeight: 700 }}>
+              <DetailBox
+                label={
+                  <>
                     <Calendar size={12} /> End date
-                  </span>
-                  <strong style={{ display: "block", marginTop: "4px" }}>
-                    {new Date(viewingNoc.endDate).toLocaleDateString("en-IN", { month: "long", day: "numeric", year: "numeric" })}
-                  </strong>
-                </div>
-              </div>
-
-              <div style={{ background: "var(--surface-alt)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--muted)", fontSize: "10px", textTransform: "uppercase", fontWeight: 700 }}>
-                  <MapPin size={12} /> Company Address
-                </span>
-                <p style={{ margin: "4px 0 0", lineHeight: "1.5" }}>
-                  {viewingNoc.address || "Address not provided"}<br />
-                  {[viewingNoc.city, viewingNoc.state, viewingNoc.pincode].filter(Boolean).join(", ")}
-                </p>
-              </div>
-
-              {viewingNoc.message && (
-                <div style={{ background: "var(--surface-alt)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                  <span style={{ color: "var(--muted)", fontSize: "10px", textTransform: "uppercase", fontWeight: 700 }}>
-                    Student remarks / notes
-                  </span>
-                  <p style={{ margin: "4px 0 0", fontStyle: "italic", lineHeight: "1.5" }}>
-                    &ldquo;{viewingNoc.message}&rdquo;
-                  </p>
-                </div>
-              )}
-
-              {viewingNoc.adminRemarks && (
-                <div style={{ background: "var(--surface-alt)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                  <span style={{ color: "var(--muted)", fontSize: "10px", textTransform: "uppercase", fontWeight: 700 }}>
-                    {viewingNoc.status === "REJECTED" ? "Reason for rejection" : "Placement cell remarks"}
-                  </span>
-                  <p style={{ margin: "4px 0 0", lineHeight: "1.5" }}>{viewingNoc.adminRemarks}</p>
-                </div>
-              )}
-
-              {viewingNoc.documentUrl && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--badge-green-bg)", border: "1px solid var(--green)", padding: "12px 14px", borderRadius: "10px" }}>
-                  <div>
-                    <strong style={{ color: "var(--badge-green-text)", fontSize: "12px", display: "block" }}>Signed NOC Certificate Available</strong>
-                    <small style={{ color: "var(--muted)", fontSize: "10px" }}>Approved by Placement Cell</small>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewDocUrl({ url: `/api/noc-documents/${viewingNoc.id}`, title: `NOC - ${viewingNoc.company}` });
-                    }}
-                    style={{
-                      background: "var(--green)",
-                      color: "#fff",
-                      border: 0,
-                      padding: "7px 12px",
-                      borderRadius: "8px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Eye size={13} /> View Certificate
-                  </button>
-                </div>
-              )}
+                  </>
+                }
+              >
+                <strong className="block">
+                  {new Date(viewingNoc.endDate).toLocaleDateString("en-IN", { month: "long", day: "numeric", year: "numeric" })}
+                </strong>
+              </DetailBox>
             </div>
 
-            <footer>
-              <button type="button" onClick={() => setViewingNoc(null)}>
-                Close
-              </button>
-            </footer>
+            <DetailBox
+              label={
+                <>
+                  <MapPin size={12} /> Company Address
+                </>
+              }
+            >
+              <p className="leading-relaxed">
+                {viewingNoc.address || "Address not provided"}<br />
+                {[viewingNoc.city, viewingNoc.state, viewingNoc.pincode].filter(Boolean).join(", ")}
+              </p>
+            </DetailBox>
+
+            {viewingNoc.message && (
+              <DetailBox label="Student remarks / notes">
+                <p className="leading-relaxed italic">
+                  &ldquo;{viewingNoc.message}&rdquo;
+                </p>
+              </DetailBox>
+            )}
+
+            {viewingNoc.adminRemarks && (
+              <DetailBox
+                label={viewingNoc.status === "REJECTED" ? "Reason for rejection" : "Placement cell remarks"}
+              >
+                <p className="leading-relaxed">{viewingNoc.adminRemarks}</p>
+              </DetailBox>
+            )}
+
+            {viewingNoc.documentUrl && (
+              <Card className="flex-row items-center justify-between gap-3 rounded-[10px] border-[var(--green)] bg-[var(--badge-green-bg)] px-3.5 py-3 shadow-none">
+                <div>
+                  <strong className="block text-xs text-[var(--badge-green-text)]">Signed NOC Certificate Available</strong>
+                  <small className="text-muted-foreground text-[10px]">Approved by Placement Cell</small>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="bg-[var(--green)] hover:bg-[var(--green)]/90"
+                  onClick={() => {
+                    setPreviewDocUrl({ url: `/api/noc-documents/${viewingNoc.id}`, title: `NOC - ${viewingNoc.company}` });
+                  }}
+                >
+                  <Eye /> View Certificate
+                </Button>
+              </Card>
+            )}
           </div>
-        </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setViewingNoc(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </PortalDialog>
       )}
 
       {/* Cancel Request Dialog */}
       {cancellingNoc && (
-        <div className="modal-backdrop">
-          <form className="modal" style={{ maxWidth: "460px" }} action={handleCancelSubmit}>
+        <PortalDialog
+          onClose={() => setCancellingNoc(null)}
+          eyebrow={<span className="text-destructive">Cancel request</span>}
+          title="Cancel NOC Request?"
+          className="sm:max-w-[460px]"
+        >
+          <form className="grid gap-3" action={handleCancelSubmit}>
             <input type="hidden" name="nocId" value={cancellingNoc.id} />
-            <header>
-              <div>
-                <span className="eyebrow" style={{ color: "var(--badge-red-text)" }}>Cancel request</span>
-                <h2>Cancel NOC Request?</h2>
-              </div>
-              <button type="button" onClick={() => setCancellingNoc(null)} aria-label="Close">
-                <X />
-              </button>
-            </header>
-            <p style={{ fontSize: "12px", color: "var(--muted)", lineHeight: "1.6", margin: "14px 0" }}>
+
+            <p className="text-muted-foreground text-xs leading-relaxed">
               Are you sure you want to cancel your NOC request for <strong>{cancellingNoc.company}</strong>? This action cannot be undone.
             </p>
+
             {formError && (
-              <div style={{ color: "var(--badge-red-text)", background: "var(--badge-red-bg)", border: "1px solid var(--badge-red-text)", padding: "8px 12px", borderRadius: "8px", fontSize: "11px", marginBottom: "12px" }}>
-                {formError}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
             )}
-            <footer>
-              <button type="button" onClick={() => setCancellingNoc(null)}>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCancellingNoc(null)}>
                 Keep request
-              </button>
-              <button type="submit" disabled={isPending} style={{ background: "var(--badge-red-text)", color: "#fff" }}>
-                <Trash2 size={13} />
+              </Button>
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                <Trash2 />
                 {isPending ? "Cancelling..." : "Yes, cancel request"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* PDF Document Preview Modal */}
       {previewDocUrl && (
-        <div className="modal-backdrop">
-          <div className="modal doc-preview-modal">
-            <div className="preview-header">
-              <h2>{previewDocUrl.title}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <a
-                  href={previewDocUrl.url}
-                  download="noc-certificate.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="primary-link"
-                  style={{ padding: "6px 12px", fontSize: "11px", borderRadius: "8px" }}
-                >
-                  <Download size={13} /> Download
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setPreviewDocUrl(null)}
-                  style={{
-                    border: 0,
-                    background: "var(--surface-alt)",
-                    color: "var(--muted)",
-                    borderRadius: "8px",
-                    padding: "6px",
-                    cursor: "pointer",
-                  }}
-                  aria-label="Close preview"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-            <div className="preview-frame-container">
-              <iframe
-                src={previewDocUrl.url}
-                title={previewDocUrl.title}
-                style={{ width: "100%", height: "100%", border: "none" }}
-              />
-            </div>
-            <footer>
-              <button type="button" onClick={() => setPreviewDocUrl(null)}>
-                Close preview
-              </button>
-            </footer>
+        // The `.modal.doc-preview-modal` rules were scoped to the hand-rolled
+        // `.modal` wrapper, so the frame's height has to be stated here.
+        <PortalDialog
+          onClose={() => setPreviewDocUrl(null)}
+          title={previewDocUrl.title}
+          className="flex h-[88vh] flex-col sm:max-w-[min(1100px,96vw)]"
+        >
+          <div className="bg-muted min-h-0 flex-1 overflow-hidden rounded-[10px] border">
+            <iframe
+              src={previewDocUrl.url}
+              title={previewDocUrl.title}
+              className="h-full w-full border-0"
+            />
           </div>
-        </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setPreviewDocUrl(null)}>
+              Close preview
+            </Button>
+            <Button asChild>
+              <a
+                href={previewDocUrl.url}
+                download="noc-certificate.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download /> Download
+              </a>
+            </Button>
+          </DialogFooter>
+        </PortalDialog>
       )}
     </div>
   );
 }
-

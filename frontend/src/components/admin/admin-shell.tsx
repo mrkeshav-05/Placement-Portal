@@ -235,7 +235,7 @@ export function AdminShell({
                     <form action={handleSignOut}>
                       <button
                         type="submit"
-                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-[var(--badge-red-bg)] font-semibold bg-transparent border-none cursor-pointer text-left transition-colors"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-[var(--badge-red-text)] hover:bg-[var(--badge-red-bg)] font-semibold bg-transparent border-none cursor-pointer text-left transition-colors"
                       >
                         <LogOut size={16} />
                         Sign out

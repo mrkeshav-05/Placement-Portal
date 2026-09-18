@@ -150,7 +150,7 @@ export function PortalShell({
                     <form action={handleSignOut}>
                       <button
                         type="submit"
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-500 hover:bg-[var(--badge-red-bg)] font-semibold rounded-xl bg-transparent border-none cursor-pointer text-left transition-colors"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[var(--badge-red-text)] hover:bg-[var(--badge-red-bg)] font-semibold rounded-xl bg-transparent border-none cursor-pointer text-left transition-colors"
                       >
                         <LogOut size={15} />
                         Sign out

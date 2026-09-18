@@ -18,10 +18,9 @@ import {
   Trash2,
   UploadCloud,
   UserRound,
-  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 import {
   deleteAadhaarDocAction,
   deletePanDocAction,
@@ -38,7 +37,28 @@ import {
   type ProfileUpdateResult,
 } from "@/app/profile/actions";
 import { uploadResume } from "@/app/profile/upload-action";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import { IdentityDocumentRow } from "@/components/profile/identity-document-row";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { BACKLOG_OPTIONS, BLOOD_GROUPS, GENDERS } from "@/lib/profile-schema";
 
 type ProfileValues = {
@@ -99,10 +119,12 @@ const LOCKED_FIELDS = new Set<keyof ProfileValues>([
   "batch",
 ]);
 
+/** Radix has no empty option value, so "not provided" rides a sentinel. */
+const NOT_PROVIDED = "__none";
+
 /**
- * A field descriptor. Supplying `options` renders the shared `.form-grid`
- * select instead of an input, so a new closed-list field is one entry here
- * rather than new markup.
+ * A field descriptor. Supplying `options` renders a `Select` instead of an
+ * `Input`, so a new closed-list field is one entry here rather than new markup.
  */
 type ProfileField = {
   key: keyof ProfileValues;
@@ -143,6 +165,15 @@ const DATE_FMT = new Intl.DateTimeFormat("en-IN", {
   month: "short",
   year: "numeric",
 });
+
+/** The tinted chip each profile card leads with, matching the admin cards. */
+function SectionIcon({ children }: { children: ReactNode }) {
+  return (
+    <span className="grid size-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--badge-blue-bg)] text-[color:var(--blue)]">
+      {children}
+    </span>
+  );
+}
 
 export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
   const router = useRouter();
@@ -198,6 +229,22 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
 
   const [previewModal, setPreviewModal] = useState<{ label: string; url: string; filename: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  /**
+   * Closes the preview and, for a decrypted identity document, drops the blob.
+   *
+   * An unlocked Aadhaar, PAN, or college ID arrives as a blob held by the tab,
+   * and the object URL keeps that plaintext alive and fetchable until the tab
+   * is closed. Revoking on close is what makes the dialog's "decrypted in
+   * memory, on demand" claim true. A resume preview points at a server URL
+   * instead, which is why the scheme is checked rather than revoked blindly.
+   */
+  function closePreview() {
+    setPreviewModal((current) => {
+      if (current?.url.startsWith("blob:")) URL.revokeObjectURL(current.url);
+      return null;
+    });
+  }
 
   function update(key: keyof ProfileValues, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -422,46 +469,65 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
   function renderFields(fields: ProfileField[]) {
     return fields.map(({ key, label, type, options, step, min, max }) => {
       const locked = LOCKED_FIELDS.has(key);
+      const disabled = locked || !editing;
       const error = result.fieldErrors?.[key]?.[0];
+      const fieldId = `profile-${key}`;
       const shared = {
-        name: key,
-        disabled: locked || !editing,
-        value: form[key],
         title: locked ? "Set by the placement office from the official roster" : undefined,
         "aria-invalid": error ? (true as const) : undefined,
         "aria-errormessage": error ? `${key}-error` : undefined,
-        onChange: (event: { target: { value: string } }) => update(key, event.target.value),
       };
 
       return (
-        <label className={key === "currentAddress" ? "wide" : ""} key={key}>
-          {label}
+        <div className={key === "currentAddress" ? "grid gap-2 sm:col-span-2" : "grid gap-2"} key={key}>
+          <Label className="text-xs text-muted-foreground" htmlFor={fieldId}>
+            {label}
+          </Label>
           {options ? (
-            <select {...shared}>
-              {/* Every one of these fields is optional, so clearing stays possible. */}
-              <option value="">Not provided</option>
-              {options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            <>
+              {/* A Radix trigger is a button, so the value rides a hidden input
+                  to reach FormData exactly as the native select used to. */}
+              <input type="hidden" name={key} value={form[key]} disabled={disabled} />
+              <Select
+                disabled={disabled}
+                value={form[key] || NOT_PROVIDED}
+                onValueChange={(value) => update(key, value === NOT_PROVIDED ? "" : value)}
+              >
+                <SelectTrigger {...shared} className="w-full" id={fieldId}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* Every one of these fields is optional, so clearing stays possible. */}
+                  <SelectItem value={NOT_PROVIDED}>Not provided</SelectItem>
+                  {options.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </>
           ) : (
-            <input
+            <Input
               {...shared}
-              type={type}
-              step={type === "number" ? (step ?? "any") : undefined}
-              min={min}
+              disabled={disabled}
+              id={fieldId}
               max={max}
+              min={min}
+              name={key}
               placeholder="Not provided"
+              step={type === "number" ? (step ?? "any") : undefined}
+              type={type}
+              value={form[key]}
+              onChange={(event) => update(key, event.target.value)}
             />
           )}
           {error ? (
-            <small className="field-error" id={`${key}-error`}>
+            <small className="text-xs text-destructive" id={`${key}-error`}>
               {error}
             </small>
           ) : null}
-        </label>
+        </div>
       );
     });
   }
@@ -483,18 +549,20 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
             <strong>{profile.completion}%</strong>
             <span>Profile complete</span>
             <i>
+              {/* The only inline style left: the fill tracks a runtime figure. */}
               <b style={{ width: `${profile.completion}%` }} />
             </i>
           </div>
           {profile.canPersist ? (
             editing ? (
-              <button type="submit" disabled={saving || !dirty}>
+              <Button type="submit" variant="secondary" disabled={saving || !dirty}>
                 <Save />
                 {saving ? "Saving…" : dirty ? "Save changes" : "Change a field"}
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => {
                   setResult({});
                   setDirty(false);
@@ -503,74 +571,110 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
               >
                 <Pencil />
                 Edit profile
-              </button>
+              </Button>
             )
           ) : null}
         </section>
 
         {!profile.canPersist ? (
-          <div className="profile-notice">
-            Development credential data is intentionally not stored. Sign in with Google to maintain a real profile.
-          </div>
+          <Alert variant="info" className="mt-3.5">
+            <AlertDescription>
+              Development credential data is intentionally not stored. Sign in with Google to maintain a real profile.
+            </AlertDescription>
+          </Alert>
         ) : null}
         {result.success ? (
-          <div className="save-message">
+          <Alert variant="success" className="mt-3.5">
             <Check />
-            {result.success}
-          </div>
+            <AlertDescription>{result.success}</AlertDescription>
+          </Alert>
         ) : null}
-        {result.error ? <div className="profile-error">{result.error}</div> : null}
+        {result.error ? (
+          <Alert variant="destructive" className="mt-3.5">
+            <AlertDescription>{result.error}</AlertDescription>
+          </Alert>
+        ) : null}
 
         <section className="profile-grid">
-          <article>
-            <header>
-              <UserRound />
-              <div>
-                <h2>Personal details</h2>
-                <p>Your identity and contact information</p>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <SectionIcon>
+                  <UserRound className="size-[18px]" />
+                </SectionIcon>
+                <div>
+                  <CardTitle>Personal details</CardTitle>
+                  <CardDescription className="mt-0.5 text-xs">
+                    Your identity and contact information
+                  </CardDescription>
+                </div>
               </div>
-            </header>
-            <div className="form-grid">{renderFields(personalFields)}</div>
-          </article>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              {renderFields(personalFields)}
+            </CardContent>
+          </Card>
 
-          <article>
-            <header>
-              <GraduationCap />
-              <div>
-                <h2>Academic details</h2>
-                <p>Current program and performance</p>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <SectionIcon>
+                  <GraduationCap className="size-[18px]" />
+                </SectionIcon>
+                <div>
+                  <CardTitle>Academic details</CardTitle>
+                  <CardDescription className="mt-0.5 text-xs">
+                    Current program and performance
+                  </CardDescription>
+                </div>
               </div>
-            </header>
-            <div className="form-grid">{renderFields(academicFields)}</div>
-          </article>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              {renderFields(academicFields)}
+            </CardContent>
+          </Card>
 
-          <article>
-            <header>
-              <Mail />
-              <div>
-                <h2>Contact information</h2>
-                <p>How the placement team reaches you</p>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <SectionIcon>
+                  <Mail className="size-[18px]" />
+                </SectionIcon>
+                <div>
+                  <CardTitle>Contact information</CardTitle>
+                  <CardDescription className="mt-0.5 text-xs">
+                    How the placement team reaches you
+                  </CardDescription>
+                </div>
               </div>
-            </header>
-            <div className="form-grid">
-              <label>
-                Institute email
-                <input disabled value={profile.email} />
-              </label>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label className="text-xs text-muted-foreground" htmlFor="profile-institute-email">
+                  Institute email
+                </Label>
+                <Input disabled id="profile-institute-email" value={profile.email} />
+              </div>
               {renderFields(contactFields)}
-            </div>
-          </article>
+            </CardContent>
+          </Card>
 
           {/* Identity Documents Section */}
-          <article className="documents-card">
-            <header>
-              <IdCard />
-              <div>
-                <h2>Identity documents</h2>
-                <p>Numbers and document files are encrypted at rest with AES-256-GCM</p>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <SectionIcon>
+                  <IdCard className="size-[18px]" />
+                </SectionIcon>
+                <div>
+                  <CardTitle>Identity documents</CardTitle>
+                  <CardDescription className="mt-0.5 text-xs">
+                    Numbers and document files are encrypted at rest with AES-256-GCM
+                  </CardDescription>
+                </div>
               </div>
-            </header>
-            <div className="grid gap-3">
+            </CardHeader>
+            <CardContent className="grid gap-3">
               <IdentityDocumentRow
                 title="Aadhaar card"
                 icon={<IdCard className="size-4.5 shrink-0 text-[color:var(--blue)]" />}
@@ -657,92 +761,65 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
                   setCollegeIdDocModal(true);
                 }}
               />
-            </div>
-          </article>
+            </CardContent>
+          </Card>
 
           {/* Resumes Section */}
-          <article className="resumes-card" style={{ gridColumn: "1 / -1" }}>
-            <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FileText />
+          <Card className="col-span-full">
+            <CardHeader className="items-center">
+              <div className="flex items-center gap-3">
+                <SectionIcon>
+                  <FileText className="size-[18px]" />
+                </SectionIcon>
                 <div>
-                  <h2>Resumes</h2>
-                  <p>Upload, manage, and preview your PDF resumes for applications</p>
+                  <CardTitle>Resumes</CardTitle>
+                  <CardDescription className="mt-0.5 text-xs">
+                    Upload, manage, and preview your PDF resumes for applications
+                  </CardDescription>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setUploadError(null);
-                  setResumeLabel("");
-                  setUploadModal(true);
-                }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "var(--navy)",
-                  color: "#fff",
-                  border: 0,
-                  borderRadius: "8px",
-                  padding: "8px 14px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                <FilePlus style={{ width: "14px", height: "14px" }} />
-                Upload Resume
-              </button>
-            </header>
+              <CardAction>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setUploadError(null);
+                    setResumeLabel("");
+                    setUploadModal(true);
+                  }}
+                >
+                  <FilePlus />
+                  Upload Resume
+                </Button>
+              </CardAction>
+            </CardHeader>
 
-            <div style={{ display: "grid", gap: "10px", marginTop: "12px" }}>
+            <CardContent className="grid gap-2.5">
               {profile.resumes.length ? (
                 profile.resumes.map((resume) => (
                   <div
                     key={resume.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "12px 16px",
-                      background: "var(--surface-alt)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "10px",
-                    }}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted p-3"
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div
-                        style={{
-                          padding: "8px",
-                          borderRadius: "8px",
-                          background: "var(--badge-blue-bg)",
-                          color: "var(--blue)",
-                          display: "grid",
-                          placeItems: "center",
-                        }}
-                      >
-                        <FileText style={{ width: "16px", height: "16px" }} />
-                      </div>
-                      <div>
-                        <strong style={{ fontSize: "12px", display: "block", color: "var(--ink)" }}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="grid shrink-0 place-items-center rounded-lg bg-[var(--badge-blue-bg)] p-2 text-[color:var(--blue)]">
+                        <FileText className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <strong className="block truncate text-xs text-foreground">
                           {resume.label}
                         </strong>
-                        <small style={{ fontSize: "10px", color: "var(--muted)" }}>
-                          {resume.name} · Uploaded{" "}
-                          {new Intl.DateTimeFormat("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          }).format(new Date(resume.uploadedAt))}
+                        <small className="text-[10px] text-muted-foreground">
+                          {resume.name} · Uploaded {DATE_FMT.format(new Date(resume.uploadedAt))}
                         </small>
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      {/* Preview Button */}
-                      <button
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
+                        title="Preview PDF"
                         onClick={() =>
                           setPreviewModal({
                             label: resume.label,
@@ -750,658 +827,391 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
                             filename: resume.name,
                           })
                         }
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          background: "var(--badge-blue-bg)",
-                          color: "var(--badge-blue-text)",
-                          border: "1px solid var(--blue)",
-                          borderRadius: "6px",
-                          padding: "6px 10px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                        title="Preview PDF"
                       >
-                        <Eye style={{ width: "13px", height: "13px" }} />
+                        <Eye />
                         Preview
-                      </button>
+                      </Button>
 
-                      {/* Rename Button */}
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
+                        title="Rename resume"
                         onClick={() => {
                           setRenameError(null);
                           setRenameInput(resume.label);
                           setRenameModal({ id: resume.id, currentLabel: resume.label });
                         }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          background: "var(--card-bg)",
-                          color: "var(--ink)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "6px",
-                          padding: "6px 10px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                        title="Rename resume"
                       >
-                        <Pencil style={{ width: "13px", height: "13px" }} />
+                        <Pencil />
                         Rename
-                      </button>
+                      </Button>
 
-                      {/* Delete Button */}
-                      <button
+                      <Button
                         type="button"
-                        onClick={() => handleDeleteResume(resume.id)}
-                        disabled={isPending}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          background: "var(--badge-red-bg)",
-                          color: "var(--badge-red-text)",
-                          border: "1px solid var(--badge-red-text)",
-                          borderRadius: "6px",
-                          padding: "6px 10px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
+                        variant="destructive"
+                        size="sm"
                         title="Delete resume"
+                        disabled={isPending}
+                        onClick={() => handleDeleteResume(resume.id)}
                       >
-                        <Trash2 style={{ width: "13px", height: "13px" }} />
+                        <Trash2 />
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="empty" style={{ padding: "30px 15px", textAlign: "center" }}>
-                  <FileText style={{ margin: "0 auto 8px", color: "var(--muted)", width: "24px" }} />
-                  <h3 style={{ fontSize: "13px", color: "var(--ink)", margin: 0 }}>No resumes uploaded yet</h3>
-                  <p style={{ fontSize: "11px", color: "var(--muted)", margin: "4px 0 12px" }}>
+                <div className="empty">
+                  <FileText className="mx-auto mb-2 size-6 text-muted-foreground" />
+                  <h3>No resumes uploaded yet</h3>
+                  <p>
                     Upload your customized PDF resumes to easily apply to campus recruitment drives.
                   </p>
-                  <button
+                  <Button
                     type="button"
+                    className="mt-3"
                     onClick={() => {
                       setUploadError(null);
                       setResumeLabel("");
                       setUploadModal(true);
                     }}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      background: "var(--navy)",
-                      color: "#fff",
-                      border: 0,
-                      borderRadius: "8px",
-                      padding: "8px 14px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
                   >
-                    <Plus style={{ width: "13px", height: "13px" }} />
+                    <Plus />
                     Upload First Resume
-                  </button>
+                  </Button>
                 </div>
               )}
-            </div>
-          </article>
+            </CardContent>
+          </Card>
         </section>
       </form>
 
       {/* Aadhaar Number Update Modal */}
       {aadhaarModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleAadhaarSubmit} style={{ maxWidth: "420px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Identity Document</span>
-                <h2>Update Aadhaar Card Number</h2>
-              </div>
-              <button type="button" onClick={() => setAadhaarModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "12px" }}>
-              {aadhaarError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {aadhaarError}
-                </div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                12-digit Aadhaar Number
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  maxLength={12}
-                  value={aadhaarInput}
-                  placeholder=""
-                  onChange={(e) => setAadhaarInput(e.target.value.replace(/[^0-9]/g, ""))}
-                  required
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "1px",
-                  }}
-                />
-              </label>
-              <p style={{ fontSize: "10px", color: "var(--muted)", margin: 0 }}>
-                Aadhaar is encrypted using AES-256-GCM and never shared in plaintext.
-              </p>
+        <PortalDialog
+          onClose={() => setAadhaarModal(false)}
+          eyebrow="Identity Document"
+          title="Update Aadhaar Card Number"
+          className="sm:max-w-md"
+        >
+          <form className="grid gap-3" onSubmit={handleAadhaarSubmit}>
+            {aadhaarError && (
+              <Alert variant="destructive">
+                <AlertDescription>{aadhaarError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="aadhaar-number">12-digit Aadhaar Number</Label>
+              <Input
+                id="aadhaar-number"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={12}
+                value={aadhaarInput}
+                required
+                className="tracking-widest"
+                onChange={(e) => setAadhaarInput(e.target.value.replace(/[^0-9]/g, ""))}
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setAadhaarModal(false)}>
+            <p className="text-xs text-muted-foreground">
+              Aadhaar is encrypted using AES-256-GCM and never shared in plaintext.
+            </p>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAadhaarModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending || aadhaarInput.length !== 12}>
+              </Button>
+              <Button type="submit" disabled={isPending || aadhaarInput.length !== 12}>
                 <Save />
                 {isPending ? "Saving..." : "Save Aadhaar"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* PAN Number Update Modal */}
       {panModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handlePanSubmit} style={{ maxWidth: "420px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Identity Document</span>
-                <h2>Update PAN Card Number</h2>
-              </div>
-              <button type="button" onClick={() => setPanModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "12px" }}>
-              {panError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {panError}
-                </div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                10-character PAN
-                <input
-                  type="text"
-                  maxLength={10}
-                  value={panInput}
-                  placeholder=""
-                  onChange={(e) => setPanInput(e.target.value.toUpperCase())}
-                  required
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                  }}
-                />
-              </label>
-              <p style={{ fontSize: "10px", color: "var(--muted)", margin: 0 }}>
-                PAN is encrypted using AES-256-GCM and stored securely.
-              </p>
+        <PortalDialog
+          onClose={() => setPanModal(false)}
+          eyebrow="Identity Document"
+          title="Update PAN Card Number"
+          className="sm:max-w-md"
+        >
+          <form className="grid gap-3" onSubmit={handlePanSubmit}>
+            {panError && (
+              <Alert variant="destructive">
+                <AlertDescription>{panError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="pan-number">10-character PAN</Label>
+              <Input
+                id="pan-number"
+                type="text"
+                maxLength={10}
+                value={panInput}
+                required
+                className="tracking-widest uppercase"
+                onChange={(e) => setPanInput(e.target.value.toUpperCase())}
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setPanModal(false)}>
+            <p className="text-xs text-muted-foreground">
+              PAN is encrypted using AES-256-GCM and stored securely.
+            </p>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPanModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending || panInput.length !== 10}>
+              </Button>
+              <Button type="submit" disabled={isPending || panInput.length !== 10}>
                 <Save />
                 {isPending ? "Saving..." : "Save PAN"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* Upload Aadhaar Document File Modal */}
       {aadhaarDocModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleUploadAadhaarDocSubmit} style={{ maxWidth: "460px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Encrypted Document Upload</span>
-                <h2>Upload Aadhaar Card Document</h2>
-              </div>
-              <button type="button" onClick={() => setAadhaarDocModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "14px" }}>
-              {aadhaarDocError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {aadhaarDocError}
-                </div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                Confirm 12-digit Aadhaar Number
-                <input
-                  name="aadhaar"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  maxLength={12}
-                  placeholder=""
-                  required
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "1px",
-                  }}
-                />
-              </label>
-
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                Aadhaar PDF Document (Max 5MB)
-                <input
-                  name="file"
-                  type="file"
-                  accept="application/pdf"
-                  required
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "11px",
-                  }}
-                />
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "8px",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "var(--badge-blue-bg)",
-                  color: "var(--badge-blue-text)",
-                  fontSize: "10px",
-                }}
-              >
-                <ShieldCheck style={{ width: "16px", height: "16px", flexShrink: 0, marginTop: "2px" }} />
-                <span>
-                  The document file is encrypted with AES-256-GCM before saving and can only be unlocked by entering your full 12-digit Aadhaar number.
-                </span>
-              </div>
+        <PortalDialog
+          onClose={() => setAadhaarDocModal(false)}
+          eyebrow="Encrypted Document Upload"
+          title="Upload Aadhaar Card Document"
+        >
+          <form className="grid gap-3.5" onSubmit={handleUploadAadhaarDocSubmit}>
+            {aadhaarDocError && (
+              <Alert variant="destructive">
+                <AlertDescription>{aadhaarDocError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="aadhaar-doc-number">Confirm 12-digit Aadhaar Number</Label>
+              <Input
+                id="aadhaar-doc-number"
+                name="aadhaar"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={12}
+                required
+                className="tracking-widest"
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setAadhaarDocModal(false)}>
+
+            <div className="grid gap-2">
+              <Label htmlFor="aadhaar-doc-file">Aadhaar PDF Document (Max 5MB)</Label>
+              <Input
+                id="aadhaar-doc-file"
+                name="file"
+                type="file"
+                accept="application/pdf"
+                required
+              />
+            </div>
+
+            <Alert variant="info">
+              <ShieldCheck />
+              <AlertDescription>
+                The document file is encrypted with AES-256-GCM before saving and can only be unlocked by entering your full 12-digit Aadhaar number.
+              </AlertDescription>
+            </Alert>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAadhaarDocModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending}>
+              </Button>
+              <Button type="submit" disabled={isPending}>
                 <UploadCloud />
                 {isPending ? "Encrypting & Uploading..." : "Upload & Encrypt"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* Upload PAN Document File Modal */}
       {panDocModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleUploadPanDocSubmit} style={{ maxWidth: "460px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Encrypted Document Upload</span>
-                <h2>Upload PAN Card Document</h2>
-              </div>
-              <button type="button" onClick={() => setPanDocModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "14px" }}>
-              {panDocError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {panDocError}
-                </div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                Confirm 10-character PAN
-                <input
-                  name="pan"
-                  type="text"
-                  maxLength={10}
-                  placeholder=""
-                  required
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                  }}
-                />
-              </label>
-
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                PAN PDF Document (Max 5MB)
-                <input
-                  name="file"
-                  type="file"
-                  accept="application/pdf"
-                  required
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "11px",
-                  }}
-                />
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "8px",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "var(--badge-blue-bg)",
-                  color: "var(--badge-blue-text)",
-                  fontSize: "10px",
-                }}
-              >
-                <ShieldCheck style={{ width: "16px", height: "16px", flexShrink: 0, marginTop: "2px" }} />
-                <span>
-                  The document file is encrypted with AES-256-GCM before saving and can only be unlocked by entering your full 10-character PAN.
-                </span>
-              </div>
+        <PortalDialog
+          onClose={() => setPanDocModal(false)}
+          eyebrow="Encrypted Document Upload"
+          title="Upload PAN Card Document"
+        >
+          <form className="grid gap-3.5" onSubmit={handleUploadPanDocSubmit}>
+            {panDocError && (
+              <Alert variant="destructive">
+                <AlertDescription>{panDocError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="pan-doc-number">Confirm 10-character PAN</Label>
+              <Input
+                id="pan-doc-number"
+                name="pan"
+                type="text"
+                maxLength={10}
+                required
+                className="tracking-widest uppercase"
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setPanDocModal(false)}>
+
+            <div className="grid gap-2">
+              <Label htmlFor="pan-doc-file">PAN PDF Document (Max 5MB)</Label>
+              <Input id="pan-doc-file" name="file" type="file" accept="application/pdf" required />
+            </div>
+
+            <Alert variant="info">
+              <ShieldCheck />
+              <AlertDescription>
+                The document file is encrypted with AES-256-GCM before saving and can only be unlocked by entering your full 10-character PAN.
+              </AlertDescription>
+            </Alert>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPanDocModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending}>
+              </Button>
+              <Button type="submit" disabled={isPending}>
                 <UploadCloud />
                 {isPending ? "Encrypting & Uploading..." : "Upload & Encrypt"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* College ID number */}
       {collegeIdModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleCollegeIdSubmit} style={{ maxWidth: "420px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Identity Document</span>
-                <h2>Update College ID Number</h2>
-              </div>
-              <button type="button" onClick={() => setCollegeIdModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "12px" }}>
-              {collegeIdError && (
-                <div style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}>{collegeIdError}</div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                College ID number
-                <input
-                  type="text"
-                  maxLength={20}
-                  value={collegeIdInput}
-                  onChange={(e) => setCollegeIdInput(e.target.value.toUpperCase())}
-                  required
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                  }}
-                />
-              </label>
-              <p style={{ fontSize: "10px", color: "var(--muted)", margin: 0 }}>
-                Usually your roll number as printed on the card. It is encrypted using
-                AES-256-GCM and doubles as the challenge that unlocks the scan.
-              </p>
+        <PortalDialog
+          onClose={() => setCollegeIdModal(false)}
+          eyebrow="Identity Document"
+          title="Update College ID Number"
+          className="sm:max-w-md"
+        >
+          <form className="grid gap-3" onSubmit={handleCollegeIdSubmit}>
+            {collegeIdError && (
+              <Alert variant="destructive">
+                <AlertDescription>{collegeIdError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="college-id-number">College ID number</Label>
+              <Input
+                id="college-id-number"
+                type="text"
+                maxLength={20}
+                value={collegeIdInput}
+                required
+                className="tracking-widest uppercase"
+                onChange={(e) => setCollegeIdInput(e.target.value.toUpperCase())}
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setCollegeIdModal(false)}>
+            <p className="text-xs text-muted-foreground">
+              Usually your roll number as printed on the card. It is encrypted using AES-256-GCM and
+              doubles as the challenge that unlocks the scan.
+            </p>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCollegeIdModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending || collegeIdInput.trim().length < 4}>
+              </Button>
+              <Button type="submit" disabled={isPending || collegeIdInput.trim().length < 4}>
                 <Save />
                 {isPending ? "Saving..." : "Save College ID"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* Upload College ID Document File Modal */}
       {collegeIdDocModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleUploadCollegeIdDocSubmit} style={{ maxWidth: "460px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Encrypted Document Upload</span>
-                <h2>Upload College ID Card</h2>
-              </div>
-              <button type="button" onClick={() => setCollegeIdDocModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "14px" }}>
-              {collegeIdDocError && (
-                <div style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}>{collegeIdDocError}</div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                Confirm College ID number
-                <input
-                  name="collegeId"
-                  type="text"
-                  maxLength={20}
-                  required
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                  }}
-                />
-              </label>
-
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                College ID PDF Document (Max 5MB)
-                <input
-                  name="file"
-                  type="file"
-                  accept="application/pdf"
-                  required
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "11px",
-                  }}
-                />
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "8px",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: "var(--badge-blue-bg)",
-                  color: "var(--badge-blue-text)",
-                  fontSize: "10px",
-                }}
-              >
-                <ShieldCheck style={{ width: "16px", height: "16px", flexShrink: 0, marginTop: "2px" }} />
-                <span>
-                  The document file is encrypted with AES-256-GCM before saving and can only be
-                  unlocked by entering your College ID number.
-                </span>
-              </div>
+        <PortalDialog
+          onClose={() => setCollegeIdDocModal(false)}
+          eyebrow="Encrypted Document Upload"
+          title="Upload College ID Card"
+        >
+          <form className="grid gap-3.5" onSubmit={handleUploadCollegeIdDocSubmit}>
+            {collegeIdDocError && (
+              <Alert variant="destructive">
+                <AlertDescription>{collegeIdDocError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="college-id-doc-number">Confirm College ID number</Label>
+              <Input
+                id="college-id-doc-number"
+                name="collegeId"
+                type="text"
+                maxLength={20}
+                required
+                className="tracking-widest uppercase"
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setCollegeIdDocModal(false)}>
+
+            <div className="grid gap-2">
+              <Label htmlFor="college-id-doc-file">College ID PDF Document (Max 5MB)</Label>
+              <Input
+                id="college-id-doc-file"
+                name="file"
+                type="file"
+                accept="application/pdf"
+                required
+              />
+            </div>
+
+            <Alert variant="info">
+              <ShieldCheck />
+              <AlertDescription>
+                The document file is encrypted with AES-256-GCM before saving and can only be
+                unlocked by entering your College ID number.
+              </AlertDescription>
+            </Alert>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCollegeIdDocModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending}>
+              </Button>
+              <Button type="submit" disabled={isPending}>
                 <UploadCloud />
                 {isPending ? "Encrypting & Uploading..." : "Upload & Encrypt"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* Security Unlock Challenge Modal */}
       {unlockDocModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleUnlockSubmit} style={{ maxWidth: "440px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Security Challenge</span>
-                <h2>Unlock {unlockDocModal.label}</h2>
-              </div>
-              <button type="button" onClick={() => setUnlockDocModal(null)} aria-label="Close challenge">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "12px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "12px",
-                  background: "var(--surface-alt)",
-                  borderRadius: "8px",
-                  border: "1px solid var(--border)",
-                }}
-              >
-                <Lock style={{ width: "20px", height: "20px", color: "var(--navy)" }} />
-                <div>
-                  <strong style={{ fontSize: "11px", display: "block", color: "var(--ink)" }}>
+        <PortalDialog
+          onClose={() => setUnlockDocModal(null)}
+          eyebrow="Security Challenge"
+          title={`Unlock ${unlockDocModal.label}`}
+          className="sm:max-w-md"
+        >
+          <form className="grid gap-3" onSubmit={handleUnlockSubmit}>
+            <Card className="py-3">
+              <CardContent className="flex items-center gap-2.5 px-3">
+                <Lock className="size-5 shrink-0 text-[color:var(--navy)]" />
+                <div className="min-w-0">
+                  <strong className="block text-[11px] text-foreground">
                     End-to-End Encrypted File
                   </strong>
-                  <span style={{ fontSize: "10px", color: "var(--muted)" }}>
+                  <span className="block truncate text-[10px] text-muted-foreground">
                     {unlockDocModal.fileName}
                   </span>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              {unlockError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {unlockError}
-                </div>
-              )}
+            {unlockError && (
+              <Alert variant="destructive">
+                <AlertDescription>{unlockError}</AlertDescription>
+              </Alert>
+            )}
 
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
+            <div className="grid gap-2">
+              <Label htmlFor="unlock-number">
                 Enter the full{" "}
                 {unlockDocModal.type === "aadhaar"
                   ? "12-digit Aadhaar number"
@@ -1409,270 +1219,174 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
                     ? "10-character PAN"
                     : "College ID number"}{" "}
                 to decrypt
-                <input
-                  type="text"
-                  inputMode={unlockDocModal.type === "aadhaar" ? "numeric" : "text"}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  maxLength={
-                    unlockDocModal.type === "aadhaar" ? 12 : unlockDocModal.type === "pan" ? 10 : 20
-                  }
-                  value={unlockInput}
-                  placeholder=""
-                  onChange={(e) =>
-                    setUnlockInput(
-                      unlockDocModal.type === "aadhaar"
-                        ? e.target.value.replace(/[^0-9]/g, "")
-                        : e.target.value.toUpperCase()
-                    )
-                  }
-                  required
-                  autoFocus
-                  style={{
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "13px",
-                    letterSpacing: "2px",
-                  }}
-                />
-              </label>
-              <p style={{ fontSize: "10px", color: "var(--muted)", margin: 0 }}>
-                This security verification prevents unauthorized viewing and decrypts the document on-demand in memory.
-              </p>
+              </Label>
+              <Input
+                id="unlock-number"
+                type="text"
+                inputMode={unlockDocModal.type === "aadhaar" ? "numeric" : "text"}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                maxLength={
+                  unlockDocModal.type === "aadhaar" ? 12 : unlockDocModal.type === "pan" ? 10 : 20
+                }
+                value={unlockInput}
+                required
+                autoFocus
+                className="tracking-[2px]"
+                onChange={(e) =>
+                  setUnlockInput(
+                    unlockDocModal.type === "aadhaar"
+                      ? e.target.value.replace(/[^0-9]/g, "")
+                      : e.target.value.toUpperCase()
+                  )
+                }
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setUnlockDocModal(null)}>
+            <p className="text-xs text-muted-foreground">
+              This security verification prevents unauthorized viewing and decrypts the document
+              on-demand in memory.
+            </p>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setUnlockDocModal(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={unlocking || !unlockInput.trim()}>
+              </Button>
+              <Button type="submit" disabled={unlocking || !unlockInput.trim()}>
                 <ShieldCheck />
                 {unlocking ? "Decrypting..." : "Decrypt & Preview"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* Upload Resume Modal */}
       {uploadModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleUploadResumeSubmit} style={{ maxWidth: "460px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Career Documents</span>
-                <h2>Upload Resume</h2>
-              </div>
-              <button type="button" onClick={() => setUploadModal(false)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "14px" }}>
-              {uploadError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {uploadError}
-                </div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                Resume Label
-                <input
-                  name="label"
-                  type="text"
-                  placeholder="e.g. SDE Resume / Backend Profile"
-                  value={resumeLabel}
-                  onChange={(e) => setResumeLabel(e.target.value)}
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "12px",
-                  }}
-                />
-              </label>
-
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                PDF File (Max 5MB)
-                <input
-                  name="file"
-                  type="file"
-                  accept="application/pdf"
-                  required
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "11px",
-                  }}
-                />
-              </label>
+        <PortalDialog
+          onClose={() => setUploadModal(false)}
+          eyebrow="Career Documents"
+          title="Upload Resume"
+        >
+          <form className="grid gap-3.5" onSubmit={handleUploadResumeSubmit}>
+            {uploadError && (
+              <Alert variant="destructive">
+                <AlertDescription>{uploadError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="resume-label">Resume Label</Label>
+              <Input
+                id="resume-label"
+                name="label"
+                type="text"
+                placeholder="e.g. SDE Resume / Backend Profile"
+                value={resumeLabel}
+                onChange={(e) => setResumeLabel(e.target.value)}
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setUploadModal(false)}>
+
+            <div className="grid gap-2">
+              <Label htmlFor="resume-file">PDF File (Max 5MB)</Label>
+              <Input id="resume-file" name="file" type="file" accept="application/pdf" required />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setUploadModal(false)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending}>
+              </Button>
+              <Button type="submit" disabled={isPending}>
                 <UploadCloud />
                 {isPending ? "Uploading..." : "Upload"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* Rename Resume Modal */}
       {renameModal && (
-        <div className="modal-backdrop">
-          <form className="modal" onSubmit={handleRenameSubmit} style={{ maxWidth: "420px" }}>
-            <header>
-              <div>
-                <span className="eyebrow">Manage Resume</span>
-                <h2>Rename Resume Label</h2>
-              </div>
-              <button type="button" onClick={() => setRenameModal(null)} aria-label="Close modal">
-                <X />
-              </button>
-            </header>
-            <div style={{ padding: "16px 0", display: "grid", gap: "12px" }}>
-              {renameError && (
-                <div
-                  style={{
-                    color: "var(--badge-red-text)",
-                    background: "var(--badge-red-bg)",
-                    border: "1px solid var(--badge-red-text)",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {renameError}
-                </div>
-              )}
-              <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--muted)", display: "grid", gap: "6px" }}>
-                New Label
-                <input
-                  type="text"
-                  value={renameInput}
-                  onChange={(e) => setRenameInput(e.target.value)}
-                  required
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: "8px",
-                    border: "1px solid var(--border)",
-                    background: "var(--card-bg)",
-                    color: "var(--ink)",
-                    fontSize: "12px",
-                  }}
-                />
-              </label>
+        <PortalDialog
+          onClose={() => setRenameModal(null)}
+          eyebrow="Manage Resume"
+          title="Rename Resume Label"
+          className="sm:max-w-md"
+        >
+          <form className="grid gap-3" onSubmit={handleRenameSubmit}>
+            {renameError && (
+              <Alert variant="destructive">
+                <AlertDescription>{renameError}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-2">
+              <Label htmlFor="rename-label">New Label</Label>
+              <Input
+                id="rename-label"
+                type="text"
+                value={renameInput}
+                required
+                onChange={(e) => setRenameInput(e.target.value)}
+              />
             </div>
-            <footer>
-              <button type="button" onClick={() => setRenameModal(null)}>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setRenameModal(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isPending || !renameInput.trim()}>
+              </Button>
+              <Button type="submit" disabled={isPending || !renameInput.trim()}>
                 <Save />
                 {isPending ? "Saving..." : "Update Label"}
-              </button>
-            </footer>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
+        </PortalDialog>
       )}
 
       {/* PDF Preview Modal */}
       {previewModal && (
-        <div className="modal-backdrop">
-          <div className="modal doc-preview-modal">
-            <header className="preview-header">
-              <div>
-                <span className="eyebrow">Document Preview</span>
-                <h2>{previewModal.label}</h2>
-                <small style={{ color: "var(--muted)", fontSize: "11px", display: "block", marginTop: "2px" }}>
-                  {previewModal.filename}
-                </small>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <PortalDialog
+          onClose={closePreview}
+          eyebrow="Document Preview"
+          title={previewModal.label}
+          description={previewModal.filename}
+          className="flex h-[88vh] max-h-[88vh] flex-col sm:max-w-[1100px]"
+        >
+          <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-muted">
+            <iframe
+              className="size-full border-0"
+              src={`${previewModal.url}#toolbar=1&navpanes=0`}
+              title="Document PDF Preview"
+            />
+          </div>
+
+          <DialogFooter className="sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="sm">
                 <a
                   href={previewModal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: "var(--blue)",
-                    textDecoration: "none",
-                  }}
                   title="Open in new window"
                 >
-                  <ExternalLink style={{ width: "13px", height: "13px" }} />
+                  <ExternalLink />
                   New Tab
                 </a>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
                 <a
                   href={previewModal.url}
                   download={previewModal.filename}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    color: "var(--navy)",
-                    textDecoration: "none",
-                  }}
                   title="Download PDF"
                 >
-                  <Download style={{ width: "13px", height: "13px" }} />
+                  <Download />
                   Download
                 </a>
-                <button
-                  type="button"
-                  onClick={() => setPreviewModal(null)}
-                  aria-label="Close preview"
-                  style={{ border: 0, background: "transparent", cursor: "pointer" }}
-                >
-                  <X />
-                </button>
-              </div>
-            </header>
-
-            <div className="preview-frame-container">
-              <iframe
-                src={`${previewModal.url}#toolbar=1&navpanes=0`}
-                title="Document PDF Preview"
-              />
+              </Button>
             </div>
-
-            <footer>
-              <button type="button" onClick={() => setPreviewModal(null)}>
-                Close Preview
-              </button>
-            </footer>
-          </div>
-        </div>
+            <Button type="button" variant="outline" onClick={closePreview}>
+              Close Preview
+            </Button>
+          </DialogFooter>
+        </PortalDialog>
       )}
     </>
   );
 }
-
-
-

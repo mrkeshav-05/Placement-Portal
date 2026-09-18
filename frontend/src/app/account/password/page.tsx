@@ -6,6 +6,10 @@ import { canUsePasswordAccount, studentEmailDomain } from "@/lib/auth-access";
 import { MIN_PASSWORD_LENGTH } from "@/lib/credentials-schema";
 import { db } from "@/lib/db";
 import { isElevatedRole } from "@/lib/permissions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { setPasswordAction } from "./actions";
 
 function describeError(code: string | undefined, domain: string) {
@@ -63,59 +67,63 @@ export default async function AccountPasswordPage({
             : `Sign-in is limited to @${domain} addresses and to addresses the placement office has allowlisted, so this account cannot hold a password.`}
         </p>
         {status === "saved" ? (
-          <div className="login-alert is-success" role="status">
+          <Alert variant="success" role="status" className="mb-5">
             <CheckCircle2 />
-            <span>
-              <strong>Password saved</strong>
+            <AlertTitle className="line-clamp-none">Password saved</AlertTitle>
+            <AlertDescription>
               You can now sign in with {user.email} and this password.
-            </span>
-          </div>
+            </AlertDescription>
+          </Alert>
         ) : null}
         {problem ? (
-          <div className="login-alert" role="alert">
+          <Alert variant="destructive" className="mb-5">
             <AlertCircle />
-            <span>
-              <strong>{problem.title}</strong>
-              {problem.body}
-            </span>
-          </div>
+            <AlertTitle className="line-clamp-none">{problem.title}</AlertTitle>
+            <AlertDescription>{problem.body}</AlertDescription>
+          </Alert>
         ) : null}
         {eligible ? (
           <form action={setPasswordAction} className="login-fields">
             {hasPassword ? (
-              <label>
-                <span>Current password</span>
-                <input
+              <div className="grid gap-2">
+                <Label htmlFor="current-password">Current password</Label>
+                <Input
+                  id="current-password"
+                  className="h-11"
                   type="password"
                   name="currentPassword"
                   autoComplete="current-password"
                   required
                 />
-              </label>
+              </div>
             ) : null}
-            <label>
-              <span>New password</span>
-              <input
+            <div className="grid gap-2">
+              <Label htmlFor="new-password">New password</Label>
+              <Input
+                id="new-password"
+                className="h-11"
                 type="password"
                 name="password"
                 autoComplete="new-password"
                 minLength={MIN_PASSWORD_LENGTH}
                 required
               />
-            </label>
-            <label>
-              <span>Confirm new password</span>
-              <input
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-new-password">Confirm new password</Label>
+              <Input
+                id="confirm-new-password"
+                className="h-11"
                 type="password"
                 name="confirmPassword"
                 autoComplete="new-password"
                 minLength={MIN_PASSWORD_LENGTH}
                 required
               />
-            </label>
-            <button type="submit" className="login-submit">
+            </div>
+            <Button type="submit" className="h-11 w-full">
               {hasPassword ? "Update password" : "Set password"}
-            </button>
+            </Button>
           </form>
         ) : null}
         <p className="login-switch">

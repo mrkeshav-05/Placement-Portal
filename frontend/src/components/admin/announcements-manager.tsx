@@ -24,7 +24,7 @@ import {
   setAnnouncementStatusAction,
   type AnnouncementActionResult,
 } from "@/app/admin/announcements/actions";
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
   type DataTableColumn,
@@ -576,7 +576,7 @@ export function AnnouncementsManager({
 
       {/* CREATE / EDIT MODAL */}
       {editing !== undefined ? (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setEditing(undefined)}
           eyebrow="Announcement Record"
           title={editing ? "Edit announcement" : "Create announcement"}
@@ -765,12 +765,12 @@ export function AnnouncementsManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       ) : null}
 
       {/* DETAIL PREVIEW MODAL */}
       {previewing ? (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setPreviewing(null)}
           eyebrow={
             previewing.category === "COMPANY_EVENT"
@@ -863,12 +863,12 @@ export function AnnouncementsManager({
               Done
             </Button>
           </DialogFooter>
-        </AdminDialog>
+        </PortalDialog>
       ) : null}
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleting ? (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setDeleting(null)}
           eyebrow={<span className="text-[var(--badge-red-text)]">Confirm Deletion</span>}
           title="Delete Announcement"
@@ -893,7 +893,7 @@ export function AnnouncementsManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       ) : null}
     </div>
   );

@@ -18,7 +18,7 @@ import {
   rejectInterviewExperienceAction,
   type InterviewExperienceActionResult,
 } from "@/app/admin/interview-experiences/actions";
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
   type DataTableColumn,
@@ -357,7 +357,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
           </div>
         </article>
         <article>
-          <div className="metric-icon" style={{ background: "var(--badge-orange-bg)", color: "var(--badge-orange-text)" }}>
+          <div className="metric-icon bg-[var(--badge-orange-bg)] text-[var(--badge-orange-text)]">
             <Clock3 size={20} />
           </div>
           <div>
@@ -367,7 +367,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
           </div>
         </article>
         <article>
-          <div className="metric-icon" style={{ background: "var(--badge-green-bg)", color: "var(--badge-green-text)" }}>
+          <div className="metric-icon bg-[var(--badge-green-bg)] text-[var(--badge-green-text)]">
             <CheckCircle2 size={20} />
           </div>
           <div>
@@ -377,7 +377,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
           </div>
         </article>
         <article>
-          <div className="metric-icon" style={{ background: "var(--badge-red-bg)", color: "var(--badge-red-text)" }}>
+          <div className="metric-icon bg-[var(--badge-red-bg)] text-[var(--badge-red-text)]">
             <XCircle size={20} />
           </div>
           <div>
@@ -416,7 +416,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
 
       {/* Details modal */}
       {detailItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setDetailItem(null)}
           eyebrow="Inspection"
           title={detailItem.companyName}
@@ -480,12 +480,12 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
               Close
             </Button>
           </DialogFooter>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* Reject modal */}
       {rejectingItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setRejectingItem(null)}
           eyebrow={<span className="text-[var(--badge-red-text)]">Decision</span>}
           title="Reject submission"
@@ -524,12 +524,12 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
 
       {/* Delete confirmation */}
       {deletingItem && (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setDeletingItem(null)}
           eyebrow={<span className="text-[var(--badge-red-text)]">Delete</span>}
           title="Delete this submission?"
@@ -557,7 +557,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       )}
     </div>
   );

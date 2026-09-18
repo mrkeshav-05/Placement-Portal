@@ -20,8 +20,8 @@ import {
   type OfferStatus,
   type OfferType,
 } from "@/lib/offer-schema";
-import { AdminDialog } from "@/components/common/admin-dialog";
 import { CompanySelect } from "@/components/common/company-select";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
   type DataTableColumn,
@@ -474,7 +474,7 @@ export function PlacementRecordsManager({
       />
 
       {editing !== undefined ? (
-        <AdminDialog
+        <PortalDialog
           onClose={() => setEditing(undefined)}
           eyebrow="Placement record"
           title={editing ? "Edit offer" : "Add offer"}
@@ -688,7 +688,7 @@ export function PlacementRecordsManager({
               </Button>
             </DialogFooter>
           </form>
-        </AdminDialog>
+        </PortalDialog>
       ) : null}
     </div>
   );

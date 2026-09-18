@@ -8,6 +8,7 @@ import {
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminStudentListItem = {
   id: string;
@@ -168,18 +169,17 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
       </section>
 
       {flaggedCount > 0 && (
-        <div
-          className="notice warning"
-          style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}
-        >
-          <AlertTriangle size={18} />
-          <div>
-            <strong>
-              {flaggedCount} student{flaggedCount === 1 ? "" : "s"} {flaggedCount === 1 ? "needs" : "need"} follow-up.
-            </strong>{" "}
-            They were eligible for 3 or more companies in a row but did not apply to any of them.
-          </div>
-        </div>
+        <Alert className="mt-4 mb-4 border-[var(--badge-orange-text)] bg-[var(--badge-orange-bg)] text-[var(--badge-orange-text)]">
+          <AlertTriangle />
+          <AlertDescription className="text-current">
+            <p>
+              <strong>
+                {flaggedCount} student{flaggedCount === 1 ? "" : "s"} {flaggedCount === 1 ? "needs" : "need"} follow-up.
+              </strong>{" "}
+              They were eligible for 3 or more companies in a row but did not apply to any of them.
+            </p>
+          </AlertDescription>
+        </Alert>
       )}
 
       <DataTable

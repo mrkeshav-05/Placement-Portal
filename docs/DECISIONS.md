@@ -506,3 +506,36 @@ Offered, Accepted, Rejected, Withdrawn, Upgraded to PPO — but `OfferType` and
 `OfferStatus` already carry meanings the dashboard aggregates on, and renaming
 `DECLINED` to "Rejected" would have moved which party gave the offer up. The
 new screen therefore uses the same two dropdowns as the rest of the portal.
+
+## 2026-09-18 — The hand-written stylesheets sit in `@layer components`
+
+`globals.css` and `admin.css` were unlayered, so every rule in them beat every
+Tailwind utility regardless of specificity: an unlayered declaration outranks
+anything in a layer. shadcn components carry their variants as utilities, so a
+converted control kept whatever the old stylesheet painted and the migration
+was skin deep wherever the two met. It also produced workarounds that read as
+noise — `h-auto` on the auth controls to release a height the component had
+already set, `!`-flagged utilities in the NOC view, legacy classes kept on tab
+strips and filter pills purely to win the cascade.
+
+Both stylesheets now sit in `components`, which the Tailwind import orders
+before `utilities`, so a utility at the call site wins. `admin.css` is layered
+at its `@import` rather than by wrapping the file. Element resets moved to
+`base`: unlayered, `button, input, select, textarea { font: inherit }` was
+overriding the `text-sm` a shadcn Button carries, so the component's own type
+scale had never applied anywhere.
+
+The consequence to know about: a legacy rule and a utility that name the same
+property now resolve the other way round. Where the legacy rule was the
+intended design, say so with a utility at the call site — the auth inputs now
+carry `h-11` instead of inheriting 44px from a `.login-fields input` rule that
+has been deleted. Reach for `!` only when a third party owns the element.
+
+## 2026-09-18 — `allowedDevOrigins` covers both loopback spellings
+
+The dev server runs in a container published on `0.0.0.0`, so it is reached by
+whichever host name the developer types. Next refuses to serve dev chunks to an
+origin it was not told about, and the refusal is silent in the browser: the
+page server-renders and then never hydrates, so nothing on it responds to a
+click and the application looks broken rather than misconfigured. Both
+loopback spellings are listed so that failure mode cannot recur.

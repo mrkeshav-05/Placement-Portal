@@ -282,3 +282,55 @@ Recommended next action:
 ```
 
 Do not place secrets, tokens, private student information, or uploaded files in this document.
+
+## Portal-wide shadcn pass and CSS layering, 2026-09-18
+
+Both sides of the portal are on shadcn now, and the hand-written stylesheets
+moved into `@layer components` so those components actually win the cascade.
+Read the two 2026-09-18 entries in `docs/DECISIONS.md` first; the layering one
+changes how you write CSS here.
+
+**Verified in the browser, signed in as a seeded demo student.** The interview
+experiences page end to end: composer opens, company picker searches and
+commits, every Select posts through its hidden input, the section counter and
+per-group badges track what is filled, submit stays disabled until one section
+is, the submission saves and lands in My submissions as Pending review with
+topic tags, an approved row appears under Browse, search matches words that
+only occur in an answer body, and the reader groups filled sections under
+their headings. All ten student routes render. Login and register were
+measured after the CSS cleanup: controls are 44px, the submit button is the
+institute blue. Profile's selects show their values and post the right names.
+
+**Not verified.** No admin screen was opened. `admin.css` is now layered, so
+every admin control where a shadcn utility and a `dt-*` or `admin-*` rule name
+the same property resolves the other way round than it used to — that is the
+intended effect, but the data grid's metrics were specified in pixels and
+nobody has looked at them since. Start there. `account/password` was also not
+opened, though it is the same shell as the two auth pages that were.
+
+**Three defects fixed in passing, all found during the conversion.** An
+unlocked Aadhaar, PAN, or college ID left its object URL alive for the life of
+the tab, so the decrypted file stayed fetchable after the preview closed;
+`closePreview` now revokes it, and checks the scheme so a resume's server URL
+is untouched. The NOC view showed a failed submit's error inside the unrelated
+cancel confirmation, because both dialogs share one `formError`. The feedback
+submit button read "Google sign-in required", which contradicts the
+credentials-only decision of 2026-09-17.
+
+**Dead CSS removed.** Layering made it obvious which rules the components
+had taken over. 368 lines went, across 60 rule sets whose selectors can no
+longer match anything: the whole `.job-filters`, `.compact-filters`,
+`.form-grid`, `.admin-toolbar`, `.composer-*`, and `.export-columns-*` blocks
+among them. Two categories were deliberately kept — the `rdp-*` rules, which
+react-day-picker applies itself, and `tone-1` through `tone-5`, which
+`team-view.tsx` builds as `tone-${index % 5}`. Neither appears in any JSX, so
+a plain grep will call them orphans again; they are not.
+
+**Known debt.** `companyColor()` in `frontend/src/lib/job-presenters.ts`
+returns five literal hex values, which breaks the no-literal-hex constraint and
+is not theme-aware; it is why the two company-initial swatches still carry an
+inline style. `announcement-composer.tsx` still has inline dropdowns on the
+`useDismissOnOutsideClick` hook rather than `Popover`. `FeedbacksManager` and
+`NocRequestsManager` both accept a `canPersist` prop that neither reads, while
+their pages compute and pass it — either wire it to the mutating control as
+`announcements-manager.tsx` does, or drop it from all four files.

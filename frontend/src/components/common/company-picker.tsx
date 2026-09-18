@@ -26,12 +26,15 @@ import {
  * `backdrop-filter` became its containing block.
  */
 export function CompanyPicker({
+  id,
   name,
   options,
   defaultValue = "",
   placeholder = "Select a company",
   allowCustom = true,
 }: {
+  /** Put the surrounding `Label`'s `htmlFor` on the trigger, not the hidden input. */
+  id?: string;
   name: string;
   options: readonly string[];
   defaultValue?: string;
@@ -59,6 +62,7 @@ export function CompanyPicker({
       <input type="hidden" name={name} value={value} />
 
       <Button
+        id={id}
         type="button"
         variant="outline"
         className="w-full justify-start font-normal"

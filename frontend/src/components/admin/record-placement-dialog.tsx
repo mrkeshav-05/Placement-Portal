@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { saveOfferAction } from "@/app/admin/placement-records/actions";
 import type { AdminApplicationRow } from "@/components/admin/applications-manager";
-import { AdminDialog } from "@/components/common/admin-dialog";
+import { PortalDialog } from "@/components/common/portal-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -59,7 +59,7 @@ export function RecordPlacementDialog({
   }
 
   return (
-    <AdminDialog
+    <PortalDialog
       onClose={onClose}
       eyebrow="Placement record"
       title={`Record placement — ${application.studentName}`}
@@ -143,6 +143,6 @@ export function RecordPlacementDialog({
           </Button>
         </DialogFooter>
       </form>
-    </AdminDialog>
+    </PortalDialog>
   );
 }
