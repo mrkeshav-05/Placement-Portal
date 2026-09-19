@@ -389,14 +389,14 @@ export function ApplicationsManager({
         header: "Batch",
         width: "100px",
         sortValue: (app) => app.batch,
-        cell: (app) => <span className="dt-numeric">{app.batch ?? "—"}</span>,
+        cell: (app) => <span>{app.batch ?? "—"}</span>,
       },
       {
         id: "cgpa",
         header: "CGPA",
         width: "90px",
         sortValue: (app) => app.cgpa,
-        cell: (app) => <span className="dt-numeric">{app.cgpa ?? "—"}</span>,
+        cell: (app) => <span>{app.cgpa ?? "—"}</span>,
       },
       {
         id: "job",
@@ -538,7 +538,7 @@ export function ApplicationsManager({
         sticky: true,
         hideable: false,
         sortValue: (app) => indexById.get(app.id) ?? 0,
-        cell: (app) => <span className="dt-numeric">{(indexById.get(app.id) ?? 0) + 1}</span>,
+        cell: (app) => <span>{(indexById.get(app.id) ?? 0) + 1}</span>,
       },
       {
         id: "rollNumber",
@@ -547,7 +547,12 @@ export function ApplicationsManager({
         sticky: true,
         hideable: false,
         sortValue: (app) => app.rollNumber,
-        cell: (app) => app.rollNumber ?? <span className="dt-muted">—</span>,
+        cell: (app) =>
+          app.rollNumber ? (
+            <span className="identifier">{app.rollNumber}</span>
+          ) : (
+            <span className="dt-muted">—</span>
+          ),
       },
       {
         id: "name",
@@ -597,28 +602,28 @@ export function ApplicationsManager({
         header: "Batch",
         width: "90px",
         sortValue: (app) => app.batch,
-        cell: (app) => <span className="dt-numeric">{app.batch ?? "—"}</span>,
+        cell: (app) => <span>{app.batch ?? "—"}</span>,
       },
       {
         id: "cgpa",
         header: "CGPA",
         width: "90px",
         sortValue: (app) => app.cgpa,
-        cell: (app) => <span className="dt-numeric">{app.cgpa ?? "—"}</span>,
+        cell: (app) => <span>{app.cgpa ?? "—"}</span>,
       },
       {
         id: "cgpa12",
         header: "CGPA 12th",
         width: "100px",
         sortValue: (app) => app.class12Percent,
-        cell: (app) => <span className="dt-numeric">{app.class12Percent ?? "—"}</span>,
+        cell: (app) => <span>{app.class12Percent ?? "—"}</span>,
       },
       {
         id: "cgpa10",
         header: "CGPA 10th",
         width: "100px",
         sortValue: (app) => app.class10Percent,
-        cell: (app) => <span className="dt-numeric">{app.class10Percent ?? "—"}</span>,
+        cell: (app) => <span>{app.class10Percent ?? "—"}</span>,
       },
       {
         id: "resume",

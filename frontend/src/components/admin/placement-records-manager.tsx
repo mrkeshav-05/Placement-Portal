@@ -246,7 +246,7 @@ export function PlacementRecordsManager({
         // is never compared against a monthly stipend.
         sortValue: (offer) => (isCtcType(offer.type) ? offer.ctc : offer.stipend),
         cell: (offer) => (
-          <strong className="dt-numeric">
+          <strong>
             {isCtcType(offer.type) ? formatRupees(offer.ctc) : formatStipend(offer.stipend)}
           </strong>
         ),
@@ -270,7 +270,7 @@ export function PlacementRecordsManager({
         header: "Season",
         width: "100px",
         sortValue: (offer) => offer.batch,
-        cell: (offer) => <span className="dt-numeric">{offer.batch}</span>,
+        cell: (offer) => <span>{offer.batch}</span>,
       },
       {
         id: "joiningDate",

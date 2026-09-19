@@ -7,6 +7,8 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-20, sidebar pass): `npm run lint`, `npm run type-check`, `npm run build`, and 130 frontend unit tests. No backend file changed, so pytest was not re-run. Both shells were exercised in a browser on a temporary public route (deleted afterwards) in light and dark: grouped items expanding, the icon rail, the mobile drawer at 420px, and the measured 15px/40px rows. See the section below for what that harness could not cover.
+- Last verified (2026-09-20, typography pass): `npm run lint`, `npm run type-check`, `npm run build` (27 self-hosted `.woff2` files, i.e. both Plex faces resolved and subset at build time), and 130 frontend unit tests. No backend or Python file changed, so pytest was not re-run. Checked in a browser against the running dev stack, unauthenticated: the login and register pages in both themes, with computed styles read back through CDP — `IBM Plex Sans` as the computed family on body, headings, labels and buttons; real 400/500/600/700 files in `document.fonts` rather than a synthesised weight; `-0.862px` of tracking on the 43.1px hero (`-0.02em`) and `normal` on everything small. Because `admin.css` is imported into `globals.css` and so is global, the two new rules were measured on that same page through injected probes: `.identifier` computes to `IBM Plex Mono` and pulls the file down, and `.dt-table` yields `tabular-nums` with `"1111111111"` and `"0000000000"` both at exactly 96.00px. **The signed-in admin screens were not looked at**, for the standing reason that nobody on this machine has an admin password. What that leaves unchecked is only whether the lighter 600 headings and the relaxed tracking sit well against the grid's fixed 50px header and 61px rows; the font mechanics themselves are confirmed above.
 - Last verified (2026-09-18, database table browser pass): `npm run lint`, `npm run type-check`, 130 frontend unit tests, and 174 backend pytest tests including 16 new ones over the password gate and the generated views. The browser itself was exercised against the running dev stack over HTTP: a wrong password rejected with 400, the right one setting a `tnp_db_admin` cookie, all 15 list pages answering 200, the `User` details page carrying all 41 columns, search matching one row out of the roster, and a throwaway `TeamMember` row created, edited, and deleted with the result read back through `psql`. Dark mode was checked in a browser: the real login page in both themes, and — because signing in needs the live `DB_ADMIN_PASSWORD`, which belongs to the repository owner rather than in an agent transcript — the list page and the `User` edit form were saved with `curl` and served from a scratch static server, which runs sqladmin's real markup against its real CSS and JavaScript. That confirmed the toggle cycling light/dark/system with its icon and label, the default following `prefers-color-scheme`, and the computed colours of the flatpickr calendar and the select2 tag field. The only thing that harness cannot show is the icon font, which is CORS-blocked from a foreign origin; on port 8000 it is same-origin. **The signed-in pages have still not been clicked through on the real origin.** `npm run build` was not re-run because no frontend file changed in this pass; the production backend image was not rebuilt either, but both Dockerfiles install from the one `requirements.txt` the dev image already built from, and nothing in `.dockerignore` excludes the Jinja templates.
 - Last verified (2026-09-18, bulk placement records pass): `npm run lint` (the same pre-existing `DATE_FMT` warning), `npm run type-check`, `npm run build` with `/admin/placement-records/add` registered, 126 frontend unit tests, and 158 backend pytest tests including 8 new ones covering the bulk endpoint's partial-result semantics. **Not walked in a signed-in browser**: the Cursor browser holds a redirect-looping cookie for `localhost:3000` that cannot be cleared through CDP, and nobody on this machine has an admin password to hand. `http://127.0.0.1:3000` is a clean cookie origin and renders the login page, so that is the way in.
 - Last verified (2026-09-18, Makefile/containerisation pass): `make up` from a stopped stack to all three services healthy, `make seed` loading 445 roster students plus the demonstration dataset, `make test-backend` (148 pytest tests in the container), `make db-dump`, the `db-remove-demo`/`db-seed-demo` round trip, `make db-studio` answering on port 5555, and the `.env` bootstrap and `make admin` allowlist edit exercised in a scratch directory so the real `.env` was untouched.
@@ -17,6 +19,75 @@ This file carries short-lived working context between teammates and agents. Cano
 - Last verified (2026-09-17, shared admin data table pass): `npm run lint` (one pre-existing unused-variable warning in `profile-view.tsx`), `npm run type-check`, `npm run build`, 104 frontend unit tests, and `docker compose up -d --build frontend` with all containers healthy. The 115 backend pytest tests were last run in the announcements pass; this pass changed no backend file.
 - Not yet exercised in a browser: every signed-in journey, including the new dashboard, `/admin/placement-records`, and the announcement composer. Nobody has a known admin password on this machine — `placements@iiitl.ac.in` has a hash set by the repository owner — so the screens were verified through the production build, the unit and pytest suites, and SQL against the seeded development database rather than by clicking. The four defect fixes below are covered by unit tests and, for the application export, by running its SQL against the development database; nobody has clicked Export CSV or approved a NOC in the browser.
 - External blocker: resume/document storage provider has not been selected
+
+## Both shells run on shadcn's Sidebar, 2026-09-20
+
+`admin-shell.tsx` and `portal-shell.tsx` no longer hand-roll a nav rail; both
+render `components/ui/sidebar`, and the 173 lines of CSS that backed the old
+ones are gone from `globals.css` and `admin.css`. Nav rows went from 12px to
+15px, sub-rows from 11.5px to 14px. Reasoning and the three deliberate
+departures from the generated component are in `DECISIONS.md` under
+2026-09-20.
+
+Worth knowing:
+
+- **`components/ui/sidebar.tsx` is edited, not stock.** The row sizes, the
+  17.5rem width and the institute-blue `data-[active=true]` styling live in
+  its `cva` variants so both shells inherit them. Re-running
+  `shadcn add sidebar --overwrite` silently reverts all of that, and the
+  result is a working sidebar that is simply smaller and grey, which is easy
+  to miss in review.
+- **The generator also rewrites `globals.css`.** It appends eight literal
+  `hsl()` `--sidebar-*` values and a trailing `.dark` block. Both were
+  replaced with aliases onto the existing tokens. If a future `shadcn add`
+  puts them back, that is the thing to delete.
+- Permission filtering is untouched: `visibleNav` still prunes against
+  `allowedPaths` before any menu renders, and a group with no permitted
+  children still disappears.
+
+Verified against the running dev stack by rendering both shells on a
+throwaway public route with fabricated props, since nobody here has an admin
+credential; the route was deleted afterwards. That covered both themes, the
+expand/collapse of the grouped items, the icon rail, and the mobile drawer at
+a 420px emulated viewport. Measured: 15px/40px rows, 14px/36px sub-rows,
+280px rail, and an active row resolving to the institute blue with its 3px
+inset marker. **What the preview could not show is the active state arising
+naturally**, because its own path matches no nav entry — the styling was read
+back by forcing the attribute, so the CSS is right, but nobody has watched the
+highlight follow a real navigation. Nor has anyone seen the sidebar against a
+real admin data grid.
+
+## The typeface is IBM Plex Sans, 2026-09-20
+
+The brief was that the portal looked generated. The typeface was only half of
+it: 41 of the 42 headings across `globals.css` and `admin.css` were `font: 800`
+regardless of size, with tracking down to `-0.05em`, which is the AI landing
+page look rather than anything Inter did wrong. Reasoning and full detail are
+in `DECISIONS.md` under 2026-09-20; the short version is Plex Sans at 600 for
+headings, negative tracking only above 24px, tabular figures on `.dt-table`
+instead of the 14 hand-tagged cells, and Plex Mono behind a new `.identifier`
+class for roll numbers.
+
+Two things to know before touching this again:
+
+- **Do not rename the `next/font` variables to `--font-sans`/`--font-mono`.**
+  Those are Tailwind theme keys, and `@theme inline` inlines its values into
+  utilities rather than emitting custom properties, so the hand-written
+  `var(--font-sans)` in both stylesheets resolves to nothing. An invalid
+  `var()` inside a `font` shorthand voids the entire declaration instead of
+  falling through to the next family, so the whole portal renders in the
+  browser's default serif. It is a striking failure and an easy one to
+  reintroduce; I shipped it for one screenshot. The variables are
+  `--font-plex-sans` and `--font-plex-mono`, and `@theme inline` maps the
+  Tailwind keys onto them so shadcn's `font-sans` gets Plex too.
+- Plex has no weight 800. Anything that wants to be heavier than the 600 this
+  pass settled on has 700 as its ceiling, and asking for more gets a
+  synthesised face that looks smeared.
+
+Still unlooked-at: the signed-in admin screens, same password reason as
+everywhere else in this file. The mechanics are measured (see the verification
+line above); what nobody has judged is whether 600 headings sit well against
+the grid's fixed 50px header and 61px rows.
 
 ## A stale test fake and a column added upstream, 2026-09-18
 

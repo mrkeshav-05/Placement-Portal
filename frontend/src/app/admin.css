@@ -1,122 +1,5 @@
 /* Admin Workspace Styling with Dark Theme & Left-Aligned Application Funnel */
 
-.admin-shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 240px 1fr;
-}
-
-.admin-shell > aside {
-  position: fixed;
-  inset: 0 auto 0 0;
-  width: 240px;
-  background: var(--sidebar-from);
-  color: var(--ink);
-  padding: 24px 14px;
-  display: flex;
-  flex-direction: column;
-  z-index: 30;
-  border-right: 1px solid var(--border);
-  box-shadow: none;
-}
-
-.admin-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 6px 20px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 14px;
-}
-
-.admin-brand > img {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
-  padding: 5px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: none;
-  border: 1px solid var(--border);
-}
-
-.admin-brand strong, .admin-brand span { display: block; }
-.admin-brand strong { font: 800 14px var(--font-inter); letter-spacing: -0.01em; color: var(--ink); }
-.admin-brand span { font-size: 9px; color: var(--muted); margin-top: 1px; font-weight: 600; }
-
-.admin-shell nav { display: grid; gap: 3px; }
-.admin-shell nav a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--ink-secondary);
-  text-decoration: none;
-  padding: 9px 11px;
-  border-radius: 9px;
-  font-size: 12px;
-  font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.admin-shell nav a svg { width: 16px; }
-.admin-shell nav a:hover {
-  background: var(--surface-alt);
-  color: var(--ink);
-}
-.admin-shell nav a.active {
-  background: var(--navy-soft-bg);
-  color: var(--navy);
-  box-shadow: inset 3px 0 var(--navy);
-}
-
-/* Expandable nav groups: one heading, several pages beneath it. */
-.nav-group { display: grid; gap: 2px; }
-.nav-group-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--ink-secondary);
-  padding: 9px 11px;
-  border-radius: 9px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.nav-group-toggle svg { width: 16px; flex-shrink: 0; }
-.nav-group-toggle span { flex: 1; }
-.nav-group-toggle .chevron { width: 14px; transition: transform 0.2s ease; }
-.nav-group-toggle .chevron.open { transform: rotate(180deg); }
-.nav-group-toggle:hover { background: var(--surface-alt); color: var(--ink); }
-.nav-group-toggle.current { color: var(--navy); }
-.nav-group-links {
-  display: grid;
-  gap: 2px;
-  margin: 2px 0 6px 20px;
-  padding-left: 10px;
-  border-left: 1px solid var(--border);
-}
-.nav-group-links a { padding: 7px 10px; font-size: 11.5px; }
-.nav-group-links a.active { box-shadow: inset 2px 0 var(--navy); }
-
-.student-portal-link {
-  margin-top: auto;
-  color: var(--ink-secondary);
-  text-decoration: none;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--surface-alt);
-  border: 1px solid var(--border);
-  transition: all 0.15s ease;
-}
-.student-portal-link:hover { color: var(--ink); background: var(--surface-highlight); border-color: var(--muted); }
-
-.admin-shell > main { grid-column: 2; min-width: 0; }
 .admin-topbar {
   height: 72px;
   background: var(--topbar-bg);
@@ -132,7 +15,7 @@
   z-index: 20;
   transition: background-color 0.25s ease, border-color 0.25s ease;
 }
-.admin-topbar > div:first-child strong { display: block; font: 800 14px var(--font-inter); letter-spacing: -0.01em; color: var(--ink); }
+.admin-topbar > div:first-child strong { display: block; font: 600 14px var(--font-plex-sans); color: var(--ink); }
 
 .admin-user {
   display: flex;
@@ -151,7 +34,7 @@
   border-radius: 50%;
   background: var(--navy);
   color: #fff;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 11px;
 }
 .admin-user strong, .admin-user small { display: block; }
@@ -166,7 +49,7 @@
 }
 
 .admin-heading { display: flex; justify-content: space-between; align-items: flex-end; }
-.admin-heading h1 { font: 800 28px var(--font-inter); letter-spacing: -0.03em; margin: 4px 0 2px; color: var(--ink); }
+.admin-heading h1 { font: 600 28px var(--font-plex-sans); letter-spacing: -0.01em; margin: 4px 0 2px; color: var(--ink); }
 .admin-heading p { color: var(--muted); font-size: 13px; margin: 0; }
 /* The anchor is the CSV export on /admin/applications: it downloads from a
    route handler, so it has to be a link, but it reads as the same action. */
@@ -283,7 +166,7 @@
 .composer-attachments { display: grid; gap: 8px; }
 .attachments-label {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
@@ -417,7 +300,7 @@
    literal colours, and every surface in this portal reads a token. */
 .rdp-root { --rdp-day-size: 34px; }
 .rdp-month_caption { display: flex; align-items: center; justify-content: center; padding: 2px 0 10px; }
-.rdp-caption_label { font: 700 13px var(--font-inter); color: var(--ink); border: 0; padding: 0; }
+.rdp-caption_label { font: 700 13px var(--font-plex-sans); color: var(--ink); border: 0; padding: 0; }
 /* The nav is a sibling of the month, not of the caption, so it is overlaid on
    the caption row rather than placed in it. */
 .rdp-months { position: relative; }
@@ -499,7 +382,7 @@
 .admin-tabs svg { width: 14px; }
 .admin-tabs b {
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 600;
   padding: 2px 7px;
   border-radius: 9999px;
   background: var(--surface-highlight);
@@ -517,7 +400,7 @@
 
 .recent-admin-link {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--blue);
@@ -544,7 +427,7 @@
 .metric-icon.violet { background: var(--badge-purple-bg); color: var(--badge-purple-text); }
 .admin-metrics small, .admin-metrics strong, .admin-metrics b { display: block; }
 .admin-metrics small { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-.admin-metrics strong { font: 800 24px var(--font-inter); margin: 2px 0 1px; color: var(--ink); letter-spacing: -0.02em; }
+.admin-metrics strong { font: 600 24px var(--font-plex-sans); margin: 2px 0 1px; color: var(--ink); letter-spacing: -0.01em; }
 .admin-metrics b { font-size: 9px; color: var(--green); }
 
 .analytics-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 16px; }
@@ -557,7 +440,7 @@
   transition: box-shadow 0.2s ease;
 }
 .analytics-grid header, .recent-admin header { display: flex; justify-content: space-between; align-items: flex-start; }
-.analytics-grid h2, .recent-admin h2 { font: 800 15px var(--font-inter); margin: 0; color: var(--ink); letter-spacing: -0.01em; }
+.analytics-grid h2, .recent-admin h2 { font: 600 15px var(--font-plex-sans); margin: 0; color: var(--ink); }
 .analytics-grid header p, .recent-admin header p { font-size: 10px; color: var(--muted); margin: 2px 0 0; }
 .analytics-grid header > svg { color: var(--muted); width: 18px; }
 
@@ -589,7 +472,7 @@
   border: 0;
   background: transparent;
   color: var(--ink);
-  font: 800 13px var(--font-inter);
+  font: 600 13px var(--font-plex-sans);
   cursor: pointer;
 }
 .season-picker select:disabled { cursor: not-allowed; color: var(--muted); }
@@ -616,7 +499,7 @@
   gap: 6px;
   height: 190px;
 }
-.column-chart b { font-size: 10px; font-weight: 800; color: var(--ink); }
+.column-chart b { font-size: 10px; font-weight: 600; color: var(--ink); }
 .column-chart i {
   display: block;
   width: 100%;
@@ -649,12 +532,12 @@
   box-shadow: var(--card-shadow);
 }
 .package-card header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.package-card h2 { font: 800 13px var(--font-inter); margin: 0; color: var(--ink); }
+.package-card h2 { font: 600 13px var(--font-plex-sans); margin: 0; color: var(--ink); }
 .package-card header svg { width: 16px; color: var(--blue); }
 .package-card dl { margin: 14px 0 10px; display: grid; gap: 8px; }
 .package-card dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .package-card dt { font-size: 10px; color: var(--muted); font-weight: 600; }
-.package-card dd { margin: 0; font: 800 13px var(--font-inter); color: var(--ink); }
+.package-card dd { margin: 0; font: 600 13px var(--font-plex-sans); color: var(--ink); }
 .package-card dd.highlight { color: var(--green); }
 .package-card small { font-size: 9px; color: var(--muted); }
 
@@ -721,7 +604,7 @@
 }
 
 .funnel-count {
-  font: 800 15px var(--font-inter);
+  font: 600 15px var(--font-plex-sans);
   color: var(--ink);
 }
 
@@ -781,9 +664,9 @@
 .dt-title {
   margin: 0;
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 /* The count is a fact about the list, not part of its name. */
 .dt-title span { margin-left: 8px; font-size: 22px; font-weight: 400; color: var(--muted); }
@@ -872,7 +755,7 @@
 }
 .dt-filter-button b, .dt-view-button b {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   padding: 2px 7px;
   border-radius: 9999px;
   background: var(--badge-blue-bg);
@@ -962,8 +845,30 @@
   max-height: 72vh;
   -webkit-overflow-scrolling: touch;
 }
-.dt-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; }
+/* Tabular figures for the whole grid, not per column. Plex's proportional
+   digits are set to look right inside a sentence, so a 1 is narrower than a 7
+   and a column of CGPAs comes out ragged down its decimal point. Declaring it
+   on the table means a column added later is aligned without anyone having to
+   remember; the property only touches digits, so text cells are unaffected. */
+.dt-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
 .dt-caption { caption-side: top; text-align: left; padding: 12px 16px 0; font-size: 13px; color: var(--muted); }
+
+/* An identifier a reader checks character by character rather than reads:
+   a roll number, a record id. In a proportional face 2023UCS1632 and
+   2023UCS1362 have the same silhouette, and the eye slides over the swap.
+   Plex Mono is the same family, so it sits beside the rest without looking
+   pasted in; a hair smaller because monospace runs wide at a shared size. */
+.identifier {
+  font-family: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.94em;
+  letter-spacing: 0;
+}
 
 /* A light header with dark text and a thin separator, not a coloured band:
    the values are the subject, and the header only has to be legible. It stays
@@ -1141,7 +1046,6 @@
 .dt-primary small { color: var(--muted); font-size: 13px; }
 .dt-muted { color: var(--muted); }
 /* Tabular figures so a column of numbers lines up on its digits. */
-.dt-numeric { font-variant-numeric: tabular-nums; }
 
 .data-table :focus-visible,
 .dt-check input:focus-visible {
@@ -1190,7 +1094,7 @@
 /* Admin Empty & Status banners */
 .admin-empty { text-align: center; padding: 48px 24px; color: var(--muted); }
 .admin-empty > svg { width: 32px; height: 32px; color: var(--muted); margin: auto; }
-.admin-empty h2 { margin: 10px 0 6px; color: var(--ink); font: 800 16px var(--font-inter); }
+.admin-empty h2 { margin: 10px 0 6px; color: var(--ink); font: 600 16px var(--font-plex-sans); }
 .admin-empty p { margin: 0; font-size: 12px; line-height: 1.6; }
 .admin-empty.compact { padding: 28px 12px; }
 .admin-empty.compact > svg { width: 24px; height: 24px; }
@@ -1221,7 +1125,7 @@
   padding: 26px;
   box-shadow: var(--card-shadow);
 }
-.admin-profile-banner h1 { font: 800 26px var(--font-inter); letter-spacing: -0.03em; margin: 4px 0 2px; }
+.admin-profile-banner h1 { font: 600 26px var(--font-plex-sans); letter-spacing: -0.01em; margin: 4px 0 2px; }
 .admin-profile-banner p { margin: 0; color: var(--on-brand-soft); font-size: 12px; }
 .admin-profile-banner > strong { font-size: 11px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 10px 14px; }
 
@@ -1229,7 +1133,7 @@
 .admin-profile-grid > article, .admin-detail-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: var(--card-shadow); }
 .admin-profile-grid article > header, .admin-detail-section > header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .admin-profile-grid header > svg, .admin-detail-section header > svg { box-sizing: content-box; width: 18px; padding: 8px; border-radius: 10px; background: var(--badge-blue-bg); color: var(--blue); }
-.admin-profile-grid h2, .admin-detail-section h2 { font: 800 15px var(--font-inter); margin: 0; color: var(--ink); }
+.admin-profile-grid h2, .admin-detail-section h2 { font: 600 15px var(--font-plex-sans); margin: 0; color: var(--ink); }
 .admin-profile-grid header p, .admin-detail-section header p { font-size: 10px; color: var(--muted); margin: 2px 0 0; }
 .admin-profile-grid dl { margin: 0; display: grid; gap: 10px; }
 .admin-profile-grid dl > div { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle); font-size: 11px; }
@@ -1274,7 +1178,7 @@
   height: 38px;
   border-radius: 12px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
@@ -1353,7 +1257,7 @@
 }
 
 .permission-category-box h3 {
-  font: 800 12px var(--font-inter);
+  font: 600 12px var(--font-plex-sans);
   margin: 0;
   color: var(--ink);
   text-transform: uppercase;
@@ -1414,12 +1318,10 @@
   .permission-categories-grid { grid-template-columns: 1fr; }
 }
 @media(max-width:760px){
-  .admin-shell { display: block; }
-  .admin-shell > aside { transform: translateX(-105%); transition: .25s cubic-bezier(0.4, 0, 0.2, 1); }
-  .admin-shell > aside.sidebar-open { transform: none; }
-  .admin-shell > main { min-width: 0; }
-  .admin-topbar { padding-left: 68px; }
-  .admin-topbar > div:first-child { display: none; }
+  /* No drawer rules here any more: shadcn's Sidebar becomes a Sheet below its
+     own breakpoint. The topbar keeps its heading and its normal left padding,
+     because the trigger is laid out beside the heading rather than floating
+     over that corner. */
   .admin-page { padding: 26px 16px; }
   .admin-heading { display: block; }
   .admin-heading button, .admin-heading a { margin-top: 14px; }

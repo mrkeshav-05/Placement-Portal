@@ -425,7 +425,8 @@ Two smaller decisions came out of the same pass:
   is invalid on a table cell and had always been dropped. They are now the px
   minimum each one already named, which is also what makes pinning possible.
 
-Plus Jakarta Sans is gone; Inter is the only typeface, headings included.
+Plus Jakarta Sans is gone; a single typeface carries the portal, headings
+included. That was Inter at the time, and is IBM Plex Sans since 2026-09-20.
 
 ## 2026-09-18 — One Makefile is the operational entry point, and Docker is the only prerequisite
 
@@ -597,3 +598,99 @@ changes their markup still reaches us. The storage key is shared with the
 portal deliberately: the two are separate origins today and the value does not
 actually carry across, but one project should not hold two spellings of the
 same preference.
+
+## 2026-09-20 — IBM Plex Sans, and a heading weight the portal can't shout with
+
+The complaint was that the portal looked generated, and the typeface was only
+part of it. Every heading in both stylesheets — 41 of 42 — was `font: 800`,
+from a 64px login headline down to 12px table labels, and fourteen of them
+also pulled the letters together with tracking as tight as `-0.05em`. Inter at
+ExtraBold with heavy negative tracking is the house style of the AI-generated
+landing page, so changing only the family would have kept the feel.
+
+IBM Plex Sans replaces Inter. It was drawn for interfaces dense with data
+rather than for marketing pages, which is what these screens are, and it has a
+neutral institutional voice that suits a placement office. Its heaviest weight
+is 700, so the ExtraBold-everything look is no longer reachable by accident.
+
+The treatment changed with it:
+
+- Headings are 600. The hierarchy here was always carried by size rather than
+  weight, so lightening every heading by the same amount keeps the structure
+  and drops the shouting.
+- Negative tracking is a display-type technique and now only applies above
+  24px: `-0.02em` at 32px and up, `-0.01em` from 24px, and nothing below,
+  where it was only making letters collide. The positive tracking on the
+  uppercase eyebrow labels is correct and stayed.
+- The data grid declares `font-variant-numeric: tabular-nums` on `.dt-table`
+  rather than per column. Plex's proportional digits are drawn to sit in a
+  sentence, so a column of CGPAs came out ragged down its decimal point. At
+  the table level a column added later is aligned without anyone remembering,
+  which the 14 hand-tagged `.dt-numeric` cells demonstrably could not manage;
+  that class is gone.
+- IBM Plex Mono is loaded for one job, `.identifier`: roll numbers and record
+  ids. `2023UCS1632` and `2023UCS1362` share a silhouette in a proportional
+  face, and a roll number is the one string a reader compares character by
+  character.
+
+Both faces are self-hosted through `next/font` with only the weights the
+stylesheets use, since Plex is not a variable font on Google Fonts.
+
+One trap is worth recording. The `next/font` variables are named
+`--font-plex-sans` and `--font-plex-mono`, not `--font-sans`/`--font-mono`,
+and `@theme inline` maps Tailwind's keys onto them. Naming them after the
+theme keys directly does not work: `@theme inline` substitutes values into
+generated utilities instead of emitting custom properties, so a hand-written
+`var(--font-sans)` resolves to nothing — and an invalid `var()` inside a
+`font` shorthand voids the whole declaration rather than falling through to
+the next family in the list, which renders the entire portal in the browser's
+default serif. The mapping exists so that a shadcn component reaching for
+`font-sans` gets Plex rather than the system UI font.
+
+## 2026-09-20 — Both shells run on shadcn's Sidebar, at a readable size
+
+The two navigation rails were hand-rolled and nearly identical: a fixed
+`aside`, a CSS-transform drawer below a breakpoint, a floating hamburger, a
+close button and a backdrop, written once in `globals.css` for students and
+again in `admin.css` for staff. 173 lines of CSS between them, two places to
+fix anything, and no keyboard affordance.
+
+Both now render `components/ui/sidebar`, which brings the drawer, the
+focus trap, the `Cmd/Ctrl+B` shortcut and the cookie-persisted open state with
+it. The admin groups use `Collapsible` with `SidebarMenuSub`, so the
+permission filtering that decides which children an account sees is unchanged
+— it still runs over `allowedPaths` before the menu is built.
+
+Three deliberate departures from what `shadcn add sidebar` generates:
+
+- **Type size.** Rows are 15px on 40px, sub-rows 14px on 36px, against the
+  generator's 14px on 32px. The nav this replaced was 12px with 11.5px
+  children, which is what made it look cramped. The width went to 17.5rem so
+  that "Interview experiences" still sits on one line.
+- **Colour.** The generator writes eight literal `hsl()` values for
+  `--sidebar-*` and a `.dark` block to match, which would be the only colours
+  in the project not derived from the brand ramp. They are aliases onto the
+  existing tokens instead — `--sidebar` is `--sidebar-from`, `--sidebar-accent`
+  is `--surface-alt`, and so on. Every one of those already has a dark value,
+  so a single declaration covers both themes and there is no `.dark` override
+  to keep in step.
+- **The active row.** `data-[active=true]` is the institute blue on
+  `--navy-soft-bg` with a 3px inset marker, carried over from the old
+  stylesheet. The generator's `bg-sidebar-accent` is the same grey as hover,
+  which tells a reader where the pointer is rather than where they are.
+
+`collapsible="icon"`, so collapsing leaves a rail rather than nothing: the
+data grids behind these screens are wide and regularly want the room, but an
+admin mid-task should not have to reopen the whole nav to reach the next
+screen. That is also what makes the `tooltip` on each row reachable.
+
+Two bugs in the generated code were fixed rather than suppressed, because the
+repository's `react-hooks` rules reject both:
+
+- `SidebarMenuSkeleton` picked its width with `Math.random()` inside a
+  `useMemo`. Beyond the purity rule, the server and the client roll different
+  numbers, so every skeleton row was a hydration mismatch. It hashes `useId()`
+  now, which keeps the varied widths and is stable across both.
+- `useIsMobile` set state synchronously inside an effect. It is
+  `useSyncExternalStore` now, with `false` as the server snapshot, which is
+  the shape React added that hook for: a media query is an external store.

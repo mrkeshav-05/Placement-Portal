@@ -94,6 +94,25 @@ The reusable eligibility rules live in `frontend/src/lib/eligibility.ts` and `ba
 
 ## UI system
 
+**Navigation**: both shells — `components/admin/admin-shell.tsx` and
+`components/layout/portal-shell.tsx` — render `components/ui/sidebar`, which
+owns the drawer, the collapse-to-icon rail and the `Cmd/Ctrl+B` shortcut.
+There is no hand-written sidebar CSS left in either stylesheet. The
+`--sidebar-*` variables are aliases onto the semantic tokens, not a second
+palette; the row sizes and the blue active state are set on the component's
+own variants so the two shells cannot drift. See the 2026-09-20 entry in
+`docs/DECISIONS.md`.
+
+**Type**: IBM Plex Sans is the only typeface, headings included, with IBM Plex
+Mono reserved for identifiers behind the `.identifier` class. Both are
+self-hosted through `next/font` in `layout.tsx` as `--font-plex-sans` and
+`--font-plex-mono`; `@theme inline` maps Tailwind's `font-sans`/`font-mono`
+keys onto them. Headings are 600 — Plex stops at 700, and nothing here needs
+it — and negative letter-spacing belongs only above 24px. Read the 2026-09-20
+entry in `docs/DECISIONS.md` before renaming either variable; the obvious
+name collides with a Tailwind theme key and silently renders the portal in
+the browser's default serif.
+
 Every rule reads a semantic token declared in `frontend/src/app/globals.css`;
 literal brand hex values only belong in the `:root` token blocks. There is one
 brand colour, the institute blue `#1F3A60` — see `docs/DECISIONS.md`

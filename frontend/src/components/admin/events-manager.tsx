@@ -98,7 +98,7 @@ export function EventsManager({
         header: "Placement year",
         width: "140px",
         sortValue: (event) => event.placementYear,
-        cell: (event) => <span className="dt-numeric">{event.placementYear}</span>,
+        cell: (event) => <span>{event.placementYear}</span>,
       },
       {
         id: "deadline",
@@ -118,7 +118,7 @@ export function EventsManager({
         header: "Applications",
         width: "130px",
         sortValue: (event) => event.applicationCount,
-        cell: (event) => <span className="dt-numeric">{event.applicationCount}</span>,
+        cell: (event) => <span>{event.applicationCount}</span>,
       },
       {
         id: "actions",

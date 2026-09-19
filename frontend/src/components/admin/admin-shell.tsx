@@ -9,22 +9,42 @@ import {
   BriefcaseBusiness,
   Building2,
   ChevronDown,
+  ExternalLink,
   FileQuestion,
   FileText,
   GraduationCap,
   KeyRound,
   LogOut,
-  Menu,
   MessageSquareText,
   Settings,
   ShieldCheck,
   Users,
-  X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { handleSignOut } from "@/lib/actions/auth";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 type NavLink = { label: string; href: string };
 type NavItem = {
@@ -100,109 +120,120 @@ export function AdminShell({
         : item,
     )
     .filter((item) => (item.children ? item.children.length > 0 : allowedPaths.includes(item.href!)));
-  const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  // A group starts open when the current page is inside it, and the viewer can
-  // then expand or collapse any of them.
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   return (
-    <div className="admin-shell">
-      <button
-        className="menu-button"
-        onClick={() => setOpen(true)}
-        aria-label="Open menu"
-      >
-        <Menu />
-      </button>
-      {open && (
-        <button
-          className="backdrop"
-          onClick={() => setOpen(false)}
-          aria-label="Close menu"
-        />
-      )}
-      <aside className={open ? "sidebar-open" : ""}>
-        <button
-          className="close-button"
-          onClick={() => setOpen(false)}
-          aria-label="Close menu"
-        >
-          <X />
-        </button>
-        <div className="admin-brand">
-          <Image
-            src="/iiitl-emblem.png"
-            alt=""
-            width={40}
-            height={32}
-            priority
-          />
-          <div>
-            <strong>T&P Admin</strong>
-            <span>IIIT Lucknow</span>
+    <SidebarProvider>
+      {/* Collapses to an icon rail rather than sliding away: the data grids
+          behind this are wide and regularly want the room, but an admin
+          halfway through a task should not have to reopen the whole nav to
+          move to the next screen. The rail is what makes `tooltip` below
+          worth setting. */}
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="border-b border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
+          <div className="flex items-center gap-3">
+            <Image
+              className="size-10 shrink-0 rounded-[10px] border border-[var(--border)] bg-white object-contain p-[5px] group-data-[collapsible=icon]:size-8"
+              src="/iiitl-emblem.png"
+              alt=""
+              width={40}
+              height={40}
+              priority
+            />
+            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+              <strong className="block truncate text-[15px] font-semibold text-[var(--ink)]">
+                T&amp;P Admin
+              </strong>
+              <span className="block truncate text-[12px] font-medium text-[var(--muted)]">
+                IIIT Lucknow
+              </span>
+            </div>
           </div>
-        </div>
-        <nav>
-          {visibleNav.map(({ label, href, icon: Icon, children }) => {
-            if (!children) {
-              return (
-                <Link
-                  className={path === href ? "active" : ""}
-                  href={href!}
-                  key={href}
-                  onClick={() => setOpen(false)}
-                >
-                  <Icon />
-                  <span>{label}</span>
+        </SidebarHeader>
+
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarMenu>
+              {visibleNav.map(({ label, href, icon: Icon, children }) => {
+                if (!children) {
+                  return (
+                    <SidebarMenuItem key={href}>
+                      <SidebarMenuButton asChild isActive={path === href} tooltip={label}>
+                        <Link href={href!}>
+                          <Icon />
+                          <span>{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                // A group starts open when the current page is inside it. It is
+                // uncontrolled from there on, so the viewer can collapse a group
+                // they are standing in without the state fighting them back open.
+                const holdsCurrentPage = children.some((child) => child.href === path);
+
+                return (
+                  <Collapsible
+                    key={label}
+                    asChild
+                    defaultOpen={holdsCurrentPage}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          tooltip={label}
+                          className={holdsCurrentPage ? "text-[var(--navy)]" : undefined}
+                        >
+                          <Icon />
+                          <span>{label}</span>
+                          <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {children.map((child) => (
+                            <SidebarMenuSubItem key={child.href}>
+                              <SidebarMenuSubButton asChild isActive={path === child.href}>
+                                <Link href={child.href}>
+                                  <span>{child.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-sidebar-border">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Open student portal">
+                <Link href="/dashboard">
+                  <ExternalLink />
+                  <span>Open student portal</span>
                 </Link>
-              );
-            }
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
 
-            const holdsCurrentPage = children.some((child) => child.href === path);
-            const expanded = collapsed[label] ?? holdsCurrentPage;
-
-            return (
-              <div className="nav-group" key={label}>
-                <button
-                  type="button"
-                  className={holdsCurrentPage ? "nav-group-toggle current" : "nav-group-toggle"}
-                  aria-expanded={expanded}
-                  onClick={() =>
-                    setCollapsed((previous) => ({ ...previous, [label]: !expanded }))
-                  }
-                >
-                  <Icon />
-                  <span>{label}</span>
-                  <ChevronDown className={expanded ? "chevron open" : "chevron"} />
-                </button>
-                {expanded ? (
-                  <div className="nav-group-links">
-                    {children.map((child) => (
-                      <Link
-                        className={path === child.href ? "active" : ""}
-                        href={child.href}
-                        key={child.href}
-                        onClick={() => setOpen(false)}
-                      >
-                        <span>{child.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </nav>
-        <Link className="student-portal-link" href="/dashboard">
-          Open student portal →
-        </Link>
-      </aside>
-      <main>
+      <SidebarInset>
         <header className="admin-topbar">
-          <div>
-            <span className="eyebrow">Administration</span>
-            <strong>Placement Operations</strong>
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="-ml-1" />
+            <div>
+              <span className="eyebrow">Administration</span>
+              <strong>Placement Operations</strong>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -248,7 +279,7 @@ export function AdminShell({
           </div>
         </header>
         {children}
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

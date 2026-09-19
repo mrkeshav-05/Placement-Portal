@@ -110,7 +110,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
         width: "140px",
         sortValue: (company) => company.jobCount,
         cell: (company) => (
-          <span className="dt-numeric">
+          <span>
             <strong>{company.jobCount}</strong> total · {company.activeJobCount} active
           </span>
         ),

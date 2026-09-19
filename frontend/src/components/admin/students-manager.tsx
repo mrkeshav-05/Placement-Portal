@@ -61,7 +61,11 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
         sortValue: (student) => student.rollNumber,
         cell: (student) => (
           <span>
-            {student.rollNumber ?? "Roll not added"}
+            {student.rollNumber ? (
+              <span className="identifier">{student.rollNumber}</span>
+            ) : (
+              "Roll not added"
+            )}
             <br />
             <small>
               {student.branch ?? "Branch not added"}
@@ -75,14 +79,14 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
         header: "CGPA",
         width: "100px",
         sortValue: (student) => student.cgpa,
-        cell: (student) => <span className="dt-numeric">{student.cgpa ?? "Not added"}</span>,
+        cell: (student) => <span>{student.cgpa ?? "Not added"}</span>,
       },
       {
         id: "applications",
         header: "Applications",
         width: "130px",
         sortValue: (student) => student.applicationCount,
-        cell: (student) => <span className="dt-numeric">{student.applicationCount}</span>,
+        cell: (student) => <span>{student.applicationCount}</span>,
       },
       {
         id: "followUp",

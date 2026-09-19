@@ -1,11 +1,32 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import "./globals.css";
 
-// Inter is the portal's only typeface, headings included. Self-hosted through
-// next/font, so it is not a network fetch and it carries fallback metrics.
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// IBM Plex Sans carries the whole portal. It was drawn for interfaces dense
+// with data rather than for landing pages, which is what most of these screens
+// are, and its heaviest weight is 700 — so the ExtraBold-everything look this
+// replaced is not reachable by accident.
+//
+// Only the four weights the stylesheets actually use are requested. Plex is
+// not a variable font on Google Fonts, so each one is a separate file.
+// Self-hosted through next/font, so none of it is a network fetch and the
+// fallback metrics are matched.
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plex-sans",
+});
+
+// Reserved for identifiers a reader compares character by character: roll
+// numbers, record ids, hashes. A proportional face makes 2023UCS1632 and
+// 2023UCS1362 look alike at a glance, which is the one thing a roll number
+// must not do.
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
+});
 
 export const metadata: Metadata = {
   title: "IIIT Lucknow | Training & Placement",
@@ -32,7 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={inter.variable}>
+      <body className={`${plexSans.variable} ${plexMono.variable}`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

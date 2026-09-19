@@ -14,15 +14,26 @@ import {
   KeyRound,
   LayoutDashboard,
   LogOut,
-  Menu,
   MessageSquareText,
   Phone,
   Users,
-  X,
 } from "lucide-react";
 import { useState } from "react";
 import { handleSignOut } from "@/lib/actions/auth";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 const navigation = [
   ["Dashboard", "/dashboard", LayoutDashboard],
@@ -45,74 +56,78 @@ export function PortalShell({
   student: { name: string; initials: string; subtitle: string };
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   return (
-    <div className="portal-shell">
-      <button
-        className="menu-button"
-        onClick={() => setOpen(true)}
-        aria-label="Open navigation"
-      >
-        <Menu />
-      </button>
-      {open && (
-        <button
-          className="backdrop"
-          onClick={() => setOpen(false)}
-          aria-label="Close navigation"
-        />
-      )}
-      <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
-        <button
-          className="close-button"
-          onClick={() => setOpen(false)}
-          aria-label="Close navigation"
-        >
-          <X />
-        </button>
-        <div className="brand">
-          <div className="brand-mark">
-            <Image
-              src="/iiitl-emblem.png"
-              alt=""
-              width={34}
-              height={27}
-              priority
-            />
+    <SidebarProvider>
+      {/* Icon rail on collapse, matching the admin shell. */}
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="border-b border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)] bg-white p-1.5 group-data-[collapsible=icon]:size-8">
+              <Image
+                className="size-full object-contain"
+                src="/iiitl-emblem.png"
+                alt=""
+                width={34}
+                height={27}
+                priority
+              />
+            </div>
+            <div className="min-w-0 group-data-[collapsible=icon]:hidden">
+              <strong className="block truncate text-[15px] font-semibold text-[var(--ink)]">
+                Placement Cell
+              </strong>
+              <span className="block truncate text-[12px] font-medium text-[var(--muted)]">
+                IIIT Lucknow
+              </span>
+            </div>
           </div>
-          <div>
-            <strong>Placement Cell</strong>
-            <span>IIIT Lucknow</span>
+        </SidebarHeader>
+
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarMenu>
+              {navigation.map(([label, href, Icon]) => (
+                <SidebarMenuItem key={href}>
+                  <SidebarMenuButton asChild isActive={pathname === href} tooltip={label}>
+                    <Link href={href}>
+                      <Icon />
+                      <span>{label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter>
+          {/* Not a link: the contact route already has a nav entry, and this
+              only says who to ask. Hidden in icon mode, where there is no room
+              for two lines of prose. */}
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] p-3 group-data-[collapsible=icon]:hidden">
+            <Bell size={18} className="shrink-0 text-[var(--blue)]" />
+            <div className="min-w-0">
+              <strong className="block truncate text-[13px] font-semibold text-[var(--ink)]">
+                Need assistance?
+              </strong>
+              <span className="block truncate text-[12px] text-[var(--muted)]">
+                Contact the placement team
+              </span>
+            </div>
           </div>
-        </div>
-        <nav aria-label="Main navigation">
-          {navigation.map(([label, href, Icon]) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setOpen(false)}
-              className={pathname === href ? "active" : ""}
-            >
-              <Icon size={19} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="sidebar-help">
-          <Bell size={18} />
-          <div>
-            <strong>Need assistance?</strong>
-            <span>Contact the placement team</span>
-          </div>
-        </div>
-      </aside>
-      <main>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset>
         <header className="topbar">
-          <div>
-            <span className="eyebrow">Student portal</span>
-            <strong>Training & Placement Cell</strong>
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="-ml-1" />
+            <div>
+              <span className="eyebrow">Student portal</span>
+              <strong>Training &amp; Placement Cell</strong>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
@@ -163,7 +178,7 @@ export function PortalShell({
           </div>
         </header>
         {children}
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
