@@ -3,13 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core import cache
 from app.core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic can go here
+    # The cache connects lazily on first use, so there is nothing to start:
+    # an unreachable Redis must not hold up the API, which serves every one of
+    # these routes from Postgres without it.
     yield
-    # Shutdown logic can go here
+    await cache.close()
 
 app = FastAPI(
     title="TNP Portal API",
@@ -27,6 +30,7 @@ app.add_middleware(
 )
 
 from app.routers import auth, dashboard, profile, jobs, applications, feedback, noc, announcements, team, notifications, uploads, users, interview_experiences, students, offers, analytics
+from app.routers import cache as cache_router
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
@@ -44,6 +48,7 @@ app.include_router(interview_experiences.router, prefix="/api/v1")
 app.include_router(students.router, prefix="/api/v1")
 app.include_router(offers.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(cache_router.router, prefix="/api/v1")
 
 # Database table browser at /admin, distinct from the frontend's admin portal.
 # Mounted last so its catch-all routes cannot shadow an API path, and silent

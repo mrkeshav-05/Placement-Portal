@@ -341,7 +341,13 @@ class Announcement(Base):
     job_profile: Mapped["JobProfile | None"] = relationship(back_populates="announcements")
     created_by: Mapped["User"] = relationship(back_populates="created_announcements")
     attachments: Mapped[list["AnnouncementAttachment"]] = relationship(
-        back_populates="announcement", cascade="all, delete-orphan"
+        back_populates="announcement",
+        cascade="all, delete-orphan",
+        # Upload order, so a set of files keeps the sequence the author added
+        # them in rather than whatever the planner returns. Unordered, the
+        # same announcement can list its attachments differently on each read,
+        # which also makes the cached copy differ from the uncached one.
+        order_by="AnnouncementAttachment.uploadedAt",
     )
 
 

@@ -7,6 +7,7 @@ This file carries short-lived working context between teammates and agents. Cano
 - Active objective: finish moving data access from Prisma-in-Next.js to FastAPI endpoints
 - Active owner: unassigned
 - Branch: main working tree contains the service split, containerization, and the auth rework
+- Last verified (2026-09-20, Redis cache pass): `npm run lint`, `npm run type-check`, `npm run build`, 130 frontend unit tests, and 197 backend pytest tests including 23 new ones over the cache. Exercised against the running dev stack with real PostgreSQL and real Redis, through the API rather than the browser: `GET /api/v1/announcements` 90.2ms cold and 1.1ms warm with identical bodies, `GET /api/v1/jobs` 69.3ms and 1.1ms over 7 rows in deadline order with the company name present, `?activeOnly=true` narrowing to the 5 ACTIVE rows, `GET /api/v1/jobs/{id}` 44.7ms and 2.3ms, an unknown id still 404, `POST /api/v1/cache/invalidate` returning 202 and the next read missing again, and the same call from a student refused with 403. `make cache-stats` read back 1 entry per topic with a live TTL. **The two ported pages were not viewed signed in**: `/dashboard` and `/company-events` both 307 to `/login`, and `make password` prompts on a TTY for a credential that is the repository owner's to set. What that leaves unchecked is only the rendering — the payload each page consumes is the verified one above, and the mapping is type-checked and builds.
 - Last verified (2026-09-20, sidebar pass): `npm run lint`, `npm run type-check`, `npm run build`, and 130 frontend unit tests. No backend file changed, so pytest was not re-run. Both shells were exercised in a browser on a temporary public route (deleted afterwards) in light and dark: grouped items expanding, the icon rail, the mobile drawer at 420px, and the measured 15px/40px rows. See the section below for what that harness could not cover.
 - Last verified (2026-09-20, typography pass): `npm run lint`, `npm run type-check`, `npm run build` (27 self-hosted `.woff2` files, i.e. both Plex faces resolved and subset at build time), and 130 frontend unit tests. No backend or Python file changed, so pytest was not re-run. Checked in a browser against the running dev stack, unauthenticated: the login and register pages in both themes, with computed styles read back through CDP — `IBM Plex Sans` as the computed family on body, headings, labels and buttons; real 400/500/600/700 files in `document.fonts` rather than a synthesised weight; `-0.862px` of tracking on the 43.1px hero (`-0.02em`) and `normal` on everything small. Because `admin.css` is imported into `globals.css` and so is global, the two new rules were measured on that same page through injected probes: `.identifier` computes to `IBM Plex Mono` and pulls the file down, and `.dt-table` yields `tabular-nums` with `"1111111111"` and `"0000000000"` both at exactly 96.00px. **The signed-in admin screens were not looked at**, for the standing reason that nobody on this machine has an admin password. What that leaves unchecked is only whether the lighter 600 headings and the relaxed tracking sit well against the grid's fixed 50px header and 61px rows; the font mechanics themselves are confirmed above.
 - Last verified (2026-09-18, database table browser pass): `npm run lint`, `npm run type-check`, 130 frontend unit tests, and 174 backend pytest tests including 16 new ones over the password gate and the generated views. The browser itself was exercised against the running dev stack over HTTP: a wrong password rejected with 400, the right one setting a `tnp_db_admin` cookie, all 15 list pages answering 200, the `User` details page carrying all 41 columns, search matching one row out of the roster, and a throwaway `TeamMember` row created, edited, and deleted with the result read back through `psql`. Dark mode was checked in a browser: the real login page in both themes, and — because signing in needs the live `DB_ADMIN_PASSWORD`, which belongs to the repository owner rather than in an agent transcript — the list page and the `User` edit form were saved with `curl` and served from a scratch static server, which runs sqladmin's real markup against its real CSS and JavaScript. That confirmed the toggle cycling light/dark/system with its icon and label, the default following `prefers-color-scheme`, and the computed colours of the flatpickr calendar and the select2 tag field. The only thing that harness cannot show is the icon font, which is CORS-blocked from a foreign origin; on port 8000 it is same-origin. **The signed-in pages have still not been clicked through on the real origin.** `npm run build` was not re-run because no frontend file changed in this pass; the production backend image was not rebuilt either, but both Dockerfiles install from the one `requirements.txt` the dev image already built from, and nothing in `.dockerignore` excludes the Jinja templates.
@@ -457,3 +458,56 @@ inline style. `announcement-composer.tsx` still has inline dropdowns on the
 `NocRequestsManager` both accept a `canPersist` prop that neither reads, while
 their pages compute and pass it — either wire it to the mutating control as
 `announcements-manager.tsx` does, or drop it from all four files.
+
+## Redis cache, 2026-09-20
+
+`GET /api/v1/announcements` and `GET /api/v1/jobs` now read through Redis, and
+`/dashboard` and `/company-events` were moved off Prisma onto them. The design
+and its reasoning are in the 2026-09-20 entry in `DECISIONS.md`; what follows
+is what a reader needs in hand before touching it.
+
+**The viewer has to be in the cache key.** `cache.get_or_set` takes a mapping
+of everything that changes the answer, and for announcements that includes
+`drafts`. Adding a filter to one of these endpoints without adding it to the
+key will serve one caller's rows to another. There is a test for exactly this
+(`TestAnnouncementVisibilityUnderCache`); keep it passing.
+
+**Invalidation crosses a process boundary.** Event writes and the announcement
+fallback still run Prisma in Next.js, and call `POST /api/v1/cache/invalidate`
+through `frontend/src/lib/cache-invalidation.ts`. Any new Prisma write to
+`JobProfile` or `Announcement` must do the same or the API will serve the old
+copy until `CACHE_TTL_SECONDS` expires. The whole mechanism is deletable once
+those writes move to the API.
+
+### Two pre-existing bugs this pass had to fix
+
+Both were on endpoints nothing called until these pages started calling them.
+
+- **Students could see draft announcements.** `_may_see_drafts` tested
+  `has_permission(caller, PERM_ANNOUNCEMENTS_VIEW)`, but that permission is in
+  `STUDENT_SCOPED_PERMISSIONS` — it is also what lets a student read published
+  notices — so it was true for every student and the draft filter never
+  applied. `GET /api/v1/announcements` had been returning drafts to any
+  signed-in student. It went unnoticed because the student dashboard read
+  Prisma with an explicit `status: "PUBLISHED"`, and porting it to this
+  endpoint would have made the leak live. The gate now requires
+  `has_any_admin_permission` first. Worth checking whether any other router
+  uses a `STUDENT_SCOPED_PERMISSIONS` member as an admin test; this was found
+  by accident rather than by audit.
+- **`GET /api/v1/jobs` returned 500 for every row.** All five array columns on
+  `JobProfile` are nullable in Postgres despite Prisma declaring `String[]`,
+  and all 8 seeded rows have `attachments` NULL, which `list[str]` rejects.
+  A `mode="before"` validator on `JobBase` now reads NULL as empty. The
+  columns could instead be backfilled and made NOT NULL in a migration, which
+  would be the tidier fix and is not done here.
+
+### Known gaps
+
+- `/dashboard` and `/company-events` have not been viewed signed in; see the
+  verification note above for why and for what was checked instead.
+- `GET /api/v1/jobs/{id}` dereferences the caller's `User` row without a None
+  check, so a valid token for a deleted account is a 500. Pre-existing,
+  unrelated to caching, and untouched.
+- The cache client is bound to the event loop that first uses it, which is
+  fine under uvicorn's single loop but will surprise anyone driving the app
+  from a second loop in a script.

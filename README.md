@@ -69,6 +69,7 @@ flowchart LR
 | Frontend (`frontend/`) | Next.js 16 App Router, React 19, TypeScript 5 |
 | Backend API (`backend/`) | FastAPI, SQLAlchemy 2, Pydantic 2, Python 3.12 |
 | Database (`database/`) | PostgreSQL 16, Prisma 6 schema and migrations |
+| Cache | Redis 7, in front of the announcement and event reads; optional at runtime |
 | Styling | Tailwind CSS 4, responsive repository-owned design system |
 | Authentication | Auth.js, Google OAuth, JWT sessions shared with the backend |
 | Validation and security | Zod, Pydantic, AES-256-GCM, security headers |
@@ -102,6 +103,16 @@ data.
 An `.env` written before `DB_ADMIN_PASSWORD` existed has no line for it, which
 leaves the table browser below switched off. `make db-admin-password` adds one.
 
+The stack also runs a Redis container, which caches the announcement and
+company-event reads that every signed-in page makes. It needs no
+configuration: Compose points the backend at it, and `CACHE_TTL_SECONDS`
+(default 300) is the only knob. It is optional at runtime in the strict
+sense — stop the container, or clear `REDIS_URL`, and those endpoints query
+PostgreSQL on every request and return the same answers, only slower. Nothing
+is stored there that one query cannot rebuild, so it has no volume and a
+restart is a cold cache rather than data loss. `make cache-stats` shows what
+it holds; `make cache-clear` drops it.
+
 Open [http://localhost:3000](http://localhost:3000). The API docs are at
 [http://localhost:8000/docs](http://localhost:8000/docs).
 
@@ -124,6 +135,7 @@ started by `up`; it is the one-shot container behind every `make db-*` command.
 | `make db-psql` / `make db-studio` | A psql shell, or Prisma Studio on port 5555 |
 | `make db-reset` | Drop the volume and rebuild the database from scratch |
 | `make db-dump` / `make db-restore FILE=…` | Back up and restore |
+| `make cache-stats` / `make cache-clear` | Inspect or drop the announcement and event cache |
 | `make check` | Lint, type-check, unit tests, and the production build |
 
 ### Reading and editing the tables directly
@@ -323,6 +335,8 @@ Student profiles appear under `/admin/students` after their first institute Goog
 | `make db-admin` | Where to find the table browser, and whether it is on |
 | `make db-admin-password` | Generate a new password for the table browser |
 | `make db-dump` / `make db-restore FILE=…` | Back up and restore |
+| `make cache-stats` | What the announcement and event cache is holding, and its hit rate |
+| `make cache-clear` | Drop it; the next read of each rebuilds from Postgres |
 | `make admin EMAIL=…` / `make password EMAIL=…` | Grant administrator access, set a password |
 | `make db-sync-admins` | Promote listed admins and demote unlisted ones |
 | `make check` | Lint, type-check, test, and build |

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { backendAuthHeader, backendBaseUrl, backendFetch } from "@/lib/api-client";
 import { requirePermission } from "@/lib/admin-session";
+import { invalidateBackendCache } from "@/lib/cache-invalidation";
 import { db } from "@/lib/db";
 import {
   PERM_ANNOUNCEMENTS_CREATE,
@@ -20,6 +21,21 @@ import {
 import type { AnnouncementCategory, AnnouncementStatus } from "@prisma/client";
 
 export type AnnouncementActionResult = { error?: string; success?: string };
+
+/**
+ * Clears both caches that hold an announcement.
+ *
+ * The API drops its own Redis entries when it performs the write, but these
+ * actions fall back to Prisma when the API call fails, and that path leaves
+ * the cache holding the previous copy. Asking unconditionally costs one
+ * request and removes the need to know which path ran.
+ */
+async function revalidateAnnouncementPages() {
+  await invalidateBackendCache("announcements");
+  revalidatePath("/admin/announcements");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/dashboard");
+}
 
 export async function saveAnnouncementAction(
   formData: FormData,
@@ -140,9 +156,7 @@ export async function saveAnnouncementAction(
     };
   }
 
-  revalidatePath("/admin/announcements");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/dashboard");
+  await revalidateAnnouncementPages();
 
   if (parsed.data.status === "DRAFT") {
     return { success: "Draft saved. Students cannot see it yet." };
@@ -264,9 +278,7 @@ export async function setAnnouncementStatusAction(
     };
   }
 
-  revalidatePath("/admin/announcements");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/dashboard");
+  await revalidateAnnouncementPages();
   return {
     success:
       status === "PUBLISHED"
@@ -307,8 +319,6 @@ export async function deleteAnnouncementAction(
     };
   }
 
-  revalidatePath("/admin/announcements");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/dashboard");
+  await revalidateAnnouncementPages();
   return { success: "Announcement deleted successfully." };
 }

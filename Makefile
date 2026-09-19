@@ -21,13 +21,14 @@ COMPOSE_DEV := docker compose -f docker-compose.yml -f docker-compose.dev.yml
 # The database toolbox: a one-shot container on the stack's network. Compose
 # starts `db` first because the service declares it as a healthy dependency.
 TOOLS       := $(COMPOSE) run --rm tools
-APP_SERVICES := db backend frontend
+APP_SERVICES := db cache backend frontend
 
 .PHONY: help up dev down stop start restart build rebuild clear-cache ps urls health logs \
         logs-frontend logs-backend logs-db seed env secrets admin password \
         db-migrate db-migrate-new db-seed-admins db-seed-students db-seed-demo \
         db-remove-demo db-pack-demo db-sync-admins db-reset db-studio db-psql \
-        db-admin db-admin-password db-dump db-restore check lint type-check test test-backend \
+        db-admin db-admin-password db-dump db-restore cache-stats cache-clear \
+        check lint type-check test test-backend \
         sh-frontend sh-backend sh-db sh-tools clean nuke doctor
 
 ##@ Help
@@ -114,6 +115,28 @@ logs-backend: ## Follow the backend log
 
 logs-db: ## Follow the database log
 	$(COMPOSE) logs -f --tail 100 db
+
+cache-stats: ## Show what the announcement and event cache is holding
+	@if [ -z "$$($(COMPOSE) ps -q cache)" ]; then echo "The cache is not running. Start it with: make up"; exit 0; fi
+	@printf "\n  %-26s %8s %8s\n" TOPIC ENTRIES TTL
+	@for topic in announcements events; do \
+		key="tnp:cache:$$topic"; \
+		entries=$$($(COMPOSE) exec -T cache redis-cli HLEN "$$key" | tr -d '\r'); \
+		ttl=$$($(COMPOSE) exec -T cache redis-cli TTL "$$key" | tr -d '\r'); \
+		if [ "$$ttl" = "-2" ]; then ttl="empty"; else ttl="$${ttl}s"; fi; \
+		printf "  %-26s %8s %8s\n" "$$topic" "$$entries" "$$ttl"; \
+	done
+	@# Hit rate since the server started, not since this cache was filled.
+	@$(COMPOSE) exec -T cache redis-cli INFO stats | \
+		awk -F: '/keyspace_hits|keyspace_misses/ { gsub(/\r/,""); printf "\n  %-26s %8s", $$1, $$2 }'
+	@printf "\n\n  Clear it with: make cache-clear\n\n"
+
+cache-clear: ## Drop the cached announcements and events
+	@# Only this feature's two keys, by name. Never FLUSHALL: the same Redis
+	@# is the obvious home for anything cached later, and a blanket flush
+	@# would take that with it.
+	@$(COMPOSE) exec -T cache redis-cli DEL tnp:cache:announcements tnp:cache:events >/dev/null
+	@printf "Cache cleared. The next read of each rebuilds it from Postgres.\n"
 
 ##@ Data
 

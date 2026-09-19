@@ -8,12 +8,14 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core import cache
 from app.core.security import (
     PERM_ANNOUNCEMENTS_CREATE,
     PERM_ANNOUNCEMENTS_DELETE,
     PERM_ANNOUNCEMENTS_UPDATE,
     PERM_ANNOUNCEMENTS_VIEW,
     get_current_user,
+    has_any_admin_permission,
     has_permission,
     require_permission,
 )
@@ -115,8 +117,18 @@ def _attachment_row(announcement_id: str, data: AnnouncementAttachmentInput) -> 
 
 
 def _may_see_drafts(caller: dict) -> bool:
-    """A draft belongs to the placement cell until it is published."""
-    return has_permission(caller, PERM_ANNOUNCEMENTS_VIEW)
+    """
+    A draft belongs to the placement cell until it is published.
+
+    Both halves are needed. `announcements.view` alone is not evidence of
+    anything: it sits in `STUDENT_SCOPED_PERMISSIONS`, because it is also what
+    lets a student read the published notices on their own dashboard, so
+    testing it by itself admits every student on the portal. Requiring an
+    administrative footing first is what makes it mean "in the admin portal",
+    which is how the permission catalogue describes it. Keeping the
+    permission in the test still lets an elevated account have it revoked.
+    """
+    return has_any_admin_permission(caller) and has_permission(caller, PERM_ANNOUNCEMENTS_VIEW)
 
 
 @router.get("", response_model=list[AnnouncementResponse])
@@ -135,7 +147,57 @@ async def list_announcements(
     """
     List announcements with optional filters. Accessible to all authenticated
     users; students only ever receive published rows.
+
+    Cached, except when searching. A search term is usually typed once and
+    never repeated, so caching it would fill the topic with entries nobody
+    reads a second time and evict the list every page actually loads.
     """
+    drafts = _may_see_drafts(caller)
+
+    async def load() -> list[dict]:
+        return [r.model_dump(mode="json") for r in await _query_announcements(
+            db,
+            drafts=drafts,
+            category=category,
+            status_filter=status_filter,
+            company_id=company_id,
+            search=search,
+            limit=limit,
+            offset=offset,
+        )]
+
+    if search:
+        return await load()
+
+    return await cache.get_or_set(
+        cache.TOPIC_ANNOUNCEMENTS,
+        {
+            # First, and not optional: drafts belong to the placement cell, so
+            # an answer built for them must never be handed to a student.
+            "drafts": drafts,
+            "view": "list",
+            "category": category,
+            "status": status_filter if drafts else None,
+            "company": company_id,
+            "limit": limit,
+            "offset": offset,
+        },
+        load,
+    )
+
+
+async def _query_announcements(
+    db: AsyncSession,
+    *,
+    drafts: bool,
+    category: Optional[str],
+    status_filter: Optional[str],
+    company_id: Optional[str],
+    search: Optional[str],
+    limit: int,
+    offset: int,
+) -> list[AnnouncementResponse]:
+    """The query behind the list endpoint, separated so the cache can defer it."""
     stmt = (
         select(Announcement)
         .options(
@@ -147,7 +209,7 @@ async def list_announcements(
         .order_by(Announcement.createdAt.desc())
     )
 
-    if _may_see_drafts(caller):
+    if drafts:
         if status_filter:
             stmt = stmt.where(Announcement.status == _parse_status(status_filter))
     else:
@@ -185,30 +247,49 @@ async def get_announcement(
 ):
     """
     Retrieve a single announcement by ID.
+
+    The cached value is the row as stored, with no viewer baked into it, so
+    the draft gate below runs on every request rather than being decided once
+    and shared with whoever asks next.
+
+    A missing row is cached too. That is only safe because every write drops
+    the whole topic: an id that 404s cannot quietly start existing while a
+    negative entry is still being served.
     """
-    stmt = (
-        select(Announcement)
-        .options(
-            selectinload(Announcement.company),
-            selectinload(Announcement.job_profile),
-            selectinload(Announcement.created_by),
-            selectinload(Announcement.attachments),
+    async def load() -> dict | None:
+        stmt = (
+            select(Announcement)
+            .options(
+                selectinload(Announcement.company),
+                selectinload(Announcement.job_profile),
+                selectinload(Announcement.created_by),
+                selectinload(Announcement.attachments),
+            )
+            .where(Announcement.id == announcement_id)
         )
-        .where(Announcement.id == announcement_id)
+        announcement = await db.scalar(stmt)
+        if not announcement:
+            return None
+        return _to_announcement_response(announcement).model_dump(mode="json")
+
+    payload = await cache.get_or_set(
+        cache.TOPIC_ANNOUNCEMENTS,
+        {"view": "detail", "id": announcement_id},
+        load,
     )
-    announcement = await db.scalar(stmt)
-    if not announcement:
+
+    if payload is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Announcement not found.",
         )
-    if announcement.status == AnnouncementStatus.DRAFT and not _may_see_drafts(caller):
+    if payload["status"] == AnnouncementStatus.DRAFT.value and not _may_see_drafts(caller):
         # Same 404 as a missing row: a draft's existence is not public either.
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Announcement not found.",
         )
-    return _to_announcement_response(announcement)
+    return payload
 
 
 @router.post("", response_model=AnnouncementResponse, status_code=status.HTTP_201_CREATED)
@@ -296,6 +377,7 @@ async def create_announcement(
     for attachment in data.attachments:
         db.add(_attachment_row(announcement_id, attachment))
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANNOUNCEMENTS)
 
     # Re-fetch with relations for proper response serialization
     stmt = (
@@ -414,6 +496,7 @@ async def update_announcement(
                 db.add(_attachment_row(announcement.id, item))
 
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANNOUNCEMENTS)
 
     # Re-fetch with relations
     saved = await db.scalar(stmt)
@@ -446,5 +529,6 @@ async def delete_announcement(
 
     await db.delete(announcement)
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANNOUNCEMENTS)
     return {"success": True, "message": "Announcement deleted successfully."}
 

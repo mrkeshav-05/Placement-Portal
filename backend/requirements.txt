@@ -7,6 +7,9 @@ sqladmin>=0.20
 # Signs the /admin session cookie (Starlette's SessionMiddleware needs it).
 itsdangerous>=2.2
 asyncpg>=0.30
+# Read-through cache for the announcement and event endpoints. The asyncio
+# client ships in the same package, so this adds no second dependency.
+redis>=5.0
 pydantic>=2.7
 pydantic-settings>=2.3
 email-validator>=2.0.0

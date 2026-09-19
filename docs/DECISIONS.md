@@ -694,3 +694,51 @@ repository's `react-hooks` rules reject both:
 - `useIsMobile` set state synchronously inside an effect. It is
   `useSyncExternalStore` now, with `false` as the server snapshot, which is
   the shape React added that hook for: a media query is an external store.
+
+## 2026-09-20 — Announcements and events are cached in Redis, keyed by who is asking
+
+The student dashboard and the company-events list are the two screens every
+signed-in student loads, and both rebuilt the same rows from Postgres on every
+request. They are now read through `GET /api/v1/announcements` and
+`GET /api/v1/jobs`, which sit behind a Redis cache in `app/core/cache.py`.
+
+**Cached in the API, and the hot reads moved there to meet it.** Putting the
+cache behind the FastAPI endpoints is where `AGENTS.md` says data access
+belongs, but those two pages queried Prisma directly and so would not have
+touched it. Caching the Prisma calls where they stood would have been quicker
+and would have deepened the dependency the data layer is trying to shed, so
+the reads moved instead. This is the migration the project was already
+committed to, done for the two pages that most justify it.
+
+**The viewer is part of the key.** `announcements.view` decides whether a list
+includes drafts. A cache keyed only by the query string would let whoever
+asked first decide what everyone else sees, so `get_or_set` takes a mapping
+that names the visibility alongside the filters. Per-viewer results are not
+cached at all: `GET /api/v1/jobs/{id}` caches the drive and recomputes
+eligibility on every request, because eligibility is a statement about the
+caller.
+
+**One hash per topic, not one key per query.** Each topic is a single Redis
+hash whose fields are the parameter combinations. Invalidating is `DEL` on one
+key — atomic, no `SCAN`, and no way to miss a combination of filters that was
+never enumerated. The cost is that expiry is per topic; `EXPIRE NX` keeps the
+window running from the first write so a busy topic still rebuilds.
+
+**Searches are not cached.** A search term is typed once. Caching it would
+fill the hash with entries nobody reads twice and evict the lists that every
+page load depends on.
+
+**Writes invalidate; the TTL is only a backstop.** Announcement writes through
+the API drop the topic themselves. Event writes still happen through Prisma in
+the Next.js process and cannot reach this cache, so `POST /api/v1/cache/invalidate`
+exists for them to call: the frontend names a topic, and key layout stays in
+one place. Retire it when those writes move to the API. `CACHE_TTL_SECONDS`
+(300) then covers only what neither path sees — a row changed through the
+table browser at `/admin`, or psql.
+
+**A cache outage costs latency and nothing else.** Every failure — no
+`REDIS_URL`, a refused connection, a timeout, a value JSON will not take —
+falls through to the loader and returns the same answer. An empty `REDIS_URL`
+is the same code path, so "off" is a state the tests exercise rather than an
+untried one. The client is given a 250 ms timeout and no retries, because a
+Redis slower than that is slower than the query it stands in front of.

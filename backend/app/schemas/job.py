@@ -1,6 +1,21 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Any, Optional
+from pydantic import BaseModel, ConfigDict, field_validator
+
+# Every array column on JobProfile is nullable in Postgres — Prisma declares
+# them `String[]` but the migration did not add NOT NULL, and a row written
+# without one stores NULL rather than an empty array. Pydantic rejects None
+# for a `list[str]`, which turned every such row into a 500 from this
+# endpoint. Read as "absent means none of them", which is what the columns
+# mean everywhere they are used.
+_LIST_COLUMNS = (
+    "locations",
+    "allowedBranches",
+    "allowedDegrees",
+    "allowedGenders",
+    "attachments",
+)
+
 
 class JobBase(BaseModel):
     companyId: str
@@ -26,6 +41,11 @@ class JobBase(BaseModel):
     duration: Optional[str] = None
     redirectUrl: Optional[str] = None
     attachments: list[str] = []
+
+    @field_validator(*_LIST_COLUMNS, mode="before")
+    @classmethod
+    def empty_when_null(cls, value: Any) -> Any:
+        return [] if value is None else value
 
 class JobCreate(JobBase):
     pass
@@ -57,10 +77,26 @@ class JobUpdate(BaseModel):
 class JobStatusUpdate(BaseModel):
     status: str
 
+class JobCompanySummary(BaseModel):
+    """
+    Enough of the company to render a row without a second request.
+
+    The student-facing lists show a company name and a logo, and the colour
+    and initials they are drawn with are derived from the name. Sending the id
+    alone would put a per-row lookup behind every list.
+    """
+    id: str
+    name: str
+    logoUrl: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class JobResponse(JobBase):
     id: str
     status: str
     createdAt: datetime
     createdById: str
+    company: Optional[JobCompanySummary] = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -11,7 +11,7 @@ The IIIT Lucknow Training & Placement Portal serves two roles:
 
 ## Current architecture
 
-The repository is split into three services, each with its own container.
+The repository is split into three services, each with its own container, alongside PostgreSQL and a Redis cache.
 
 | Directory | Role |
 |---|---|
@@ -27,6 +27,7 @@ The repository is split into three services, each with its own container.
 - shadcn/ui (new-york, `frontend/src/components/ui`) for every form control, dialog, and status banner on both sides of the portal, pointed at the repository's semantic tokens by the `@theme inline` bridge in `globals.css`. The admin data tables are the one part not on it: `DataTable` keeps its own CSS. The hand-written stylesheets still supply page shells, and they sit in `@layer components` so a utility at the call site outranks them — see the 2026-09-18 entry in `docs/DECISIONS.md` before adding a rule to either file
 - `cmdk` for the searchable recruiter picker and `react-day-picker` for the event deadline calendar; both are behaviour only, styled from the repository's own tokens, and neither stylesheet is imported
 - Node's test runner with `tsx` for frontend units; pytest for the backend
+- Redis (the `cache` Compose service) in front of the announcement and event read endpoints, through `backend/app/core/cache.py`. It is optional by construction: an empty `REDIS_URL`, an unreachable server, or a timeout all fall through to Postgres and return the same answer. Nothing is stored there that one query cannot rebuild, so it has no volume. See the 2026-09-20 entry in `docs/DECISIONS.md` before caching anything else, particularly the rule that the viewer belongs in the key
 - Docker Compose for the full stack, with a hot-reload override
 
 See `docs/DECISIONS.md` (2026-08-20) for why data access moved to FastAPI while Prisma kept the schema.
@@ -180,9 +181,9 @@ docs/                            Shared project memory and decisions
 - A `tools` service, behind the `tools` Compose profile so `up` never starts it, shares the `migrate` image and runs every database script (`make db-*`) as a one-shot container on the stack's network.
 - `.env` is a Make file target: anything that needs configuration depends on it, and it is written from `.env.example` with generated secrets on first run: `AUTH_SECRET`, `ENCRYPTION_KEY`, and `DB_ADMIN_PASSWORD`. An `.env` written before one of those existed has no line for it, so the feature it guards stays off until a target adds one.
 - One `.env` at the repository root serves every service. Compose reads it automatically.
-- Compose builds the in-cluster `DATABASE_URL` from `POSTGRES_*`; the `DATABASE_URL` in `.env` points at `localhost` and is only for host-side tooling such as the Prisma CLI.
+- Compose builds the in-cluster `DATABASE_URL` from `POSTGRES_*`; the `DATABASE_URL` in `.env` points at `localhost` and is only for host-side tooling such as the Prisma CLI. `REDIS_URL` works the same way: Compose points the backend at the `cache` service, and the `.env` value is for host-side runs only.
 - `frontend/next.config.ts` loads the root `.env` because Next only looks inside its own directory.
-- Frontend on port 3000, backend on port 8000, PostgreSQL on port 5432.
+- Frontend on port 3000, backend on port 8000, PostgreSQL on port 5432, Redis on port 6379.
 - `/api/health` on both the frontend and the backend is the health endpoint.
 - Google callback: `http://localhost:3000/api/auth/callback/google` locally.
 - Compose fails fast if `AUTH_SECRET`, `ENCRYPTION_KEY`, or the Google credentials are missing.

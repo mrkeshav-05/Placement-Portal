@@ -10,10 +10,15 @@ import {
   PERM_JOBS_PUBLISH,
   PERM_JOBS_UPDATE,
 } from "@/lib/permissions";
+import { invalidateBackendCache } from "@/lib/cache-invalidation";
 
 export type JobProfileActionResult = { error?: string; success?: string };
 
-function revalidateEventPages() {
+async function revalidateEventPages() {
+  // Two caches, and both have to let go. Next's route cache holds the
+  // rendered pages; Redis, behind the API, holds the rows they render from.
+  // Clearing only the first would rebuild the page from the stale list.
+  await invalidateBackendCache("events");
   revalidatePath("/admin/events");
   revalidatePath("/admin/dashboard");
   revalidatePath("/company-events");
@@ -99,7 +104,7 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     await db.jobProfile.create({ data: { ...data, attachments: [], createdById: user.id } });
   }
 
-  revalidateEventPages();
+  await revalidateEventPages();
   return { success: id ? "Event updated." : "Event created." };
 }
 
@@ -117,6 +122,6 @@ export async function deleteJobProfile(formData: FormData): Promise<JobProfileAc
 
   const deleted = await db.jobProfile.deleteMany({ where: { id: parsed.data.jobProfileId } });
   if (!deleted.count) return { error: "Event not found." };
-  revalidateEventPages();
+  await revalidateEventPages();
   return { success: "Event deleted." };
 }

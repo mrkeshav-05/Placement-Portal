@@ -49,6 +49,22 @@ services:
       timeout: 5s
       retries: 20
 
+  # Read-through cache for the announcement and event endpoints. Holds nothing
+  # that cannot be rebuilt from Postgres in one query, so it has no volume and
+  # a restart is a cold cache rather than data loss. `allkeys-lru` with a cap
+  # means a key nobody read gets evicted instead of growing the process.
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru", "--save", ""]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   # One-shot: applies Prisma migrations and seeds administrators, then exits.
   migrate:
     <<: *db-tools
@@ -80,6 +96,11 @@ services:
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
+      # In-cluster, and deliberately not read from .env: that file's REDIS_URL
+      # points at localhost for host-side tooling, and localhost inside this
+      # container is this container. Same reasoning as DATABASE_URL above.
+      REDIS_URL: redis://cache:6379/0
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -87,6 +108,10 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      # service_started, not service_healthy: the cache is optional at runtime,
+      # so a sick Redis must not be able to keep the API from booting.
+      cache:
+        condition: service_started
 
   frontend:
     build:
