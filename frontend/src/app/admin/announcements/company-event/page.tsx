@@ -5,7 +5,6 @@ import {
   type ComposerCompany,
   type ComposerEvent,
 } from "@/components/admin/announcement-composer";
-import { RecentAnnouncements } from "@/components/admin/recent-announcements";
 import { requirePermission } from "@/lib/admin-session";
 import { PERM_ANNOUNCEMENTS_CREATE } from "@/lib/permissions";
 import { db } from "@/lib/db";
@@ -15,17 +14,11 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   await requirePermission(PERM_ANNOUNCEMENTS_CREATE);
 
-  const [companies, jobs, recent] = await Promise.all([
+  const [companies, jobs] = await Promise.all([
     db.company.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
     db.jobProfile.findMany({
       orderBy: { createdAt: "desc" },
       select: { id: true, title: true, companyId: true, batch: true },
-    }),
-    db.announcement.findMany({
-      where: { category: "COMPANY_EVENT" },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      include: { company: { select: { name: true } } },
     }),
   ]);
 
@@ -59,18 +52,6 @@ export default async function Page() {
           companies={companyOptions}
           events={events}
           seasons={seasons}
-        />
-
-        <RecentAnnouncements
-          heading="Recent company event announcements"
-          items={recent.map((item) => ({
-            id: item.id,
-            title: item.title,
-            status: item.status,
-            companyName: item.company?.name ?? null,
-            tags: item.tags,
-            createdAt: item.createdAt.toISOString(),
-          }))}
         />
       </div>
     </AuthenticatedAdminShell>

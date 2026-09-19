@@ -354,7 +354,12 @@
   .student strong, .student span { display: block; }
   .topbar {
     height: 76px;
-    padding: 0 4vw;
+    /* Asymmetric to match .admin-topbar in admin.css: the left edge now opens
+       on the sidebar's collapse trigger, and the full 4vw gutter in front of
+       a 28px icon made it read as drifting toward the header's middle rather
+       than sitting at its edge. The right side keeps 4vw for the profile
+       cluster. */
+    padding: 0 4vw 0 20px;
     background: var(--topbar-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);

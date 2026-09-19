@@ -9,7 +9,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4vw;
+  /* Asymmetric on purpose. The right edge still wants the generous 4vw
+     gutter for the profile cluster, but the left edge now opens on the
+     sidebar's own collapse trigger, and 4vw of empty space in front of a
+     28px icon read as the icon drifting toward the middle of the header
+     rather than sitting at its edge. */
+  padding: 0 4vw 0 20px;
   position: sticky;
   top: 0;
   z-index: 20;

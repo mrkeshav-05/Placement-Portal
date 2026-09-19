@@ -482,11 +482,12 @@ const sidebarMenuButtonVariants = cva(
   //
   // 1. The row is 15px on a 40px line rather than the generator's 14px on 32px.
   //    The nav this replaced was 12px, which is what made it look cramped.
-  // 2. The active row keeps the institute blue — tinted ground, blue label and
-  //    a 3px marker down the left edge — instead of the generator's grey
-  //    `bg-sidebar-accent`, which is the same grey as hover and so says only
-  //    "pointer is here", not "you are here".
-  "peer/menu-button flex w-full items-center gap-2.5 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-[var(--navy-soft-bg)] data-[active=true]:font-semibold data-[active=true]:text-[var(--navy)] data-[active=true]:shadow-[inset_3px_0_var(--navy)] data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-[18px] [&>svg]:shrink-0",
+  // 2. The active row keeps the institute blue — tinted ground and blue
+  //    label — instead of the generator's grey `bg-sidebar-accent`, which is
+  //    the same grey as hover and so says only "pointer is here", not "you
+  //    are here". No left-edge marker: it read as a stray blue sliver rather
+  //    than a boundary, so the tint and the bold label carry "current" alone.
+  "peer/menu-button flex w-full items-center gap-2.5 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-[var(--navy-soft-bg)] data-[active=true]:font-semibold data-[active=true]:text-[var(--navy)] data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-[18px] [&>svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -709,10 +710,10 @@ function SidebarMenuSubButton({
       data-active={isActive}
       className={cn(
         // 14px on a 36px row: a step below the parent, still comfortably
-        // readable. The active marker is 2px against the parent's 3px, which
-        // is what distinguishes "this page" from "the group holding it".
+        // readable. Same active treatment as the parent — tint and bold
+        // label, no left-edge marker.
         "flex h-9 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2.5 text-sidebar-foreground ring-sidebar-ring outline-hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
-        "data-[active=true]:bg-[var(--navy-soft-bg)] data-[active=true]:font-semibold data-[active=true]:text-[var(--navy)] data-[active=true]:shadow-[inset_2px_0_var(--navy)]",
+        "data-[active=true]:bg-[var(--navy-soft-bg)] data-[active=true]:font-semibold data-[active=true]:text-[var(--navy)]",
         size === "sm" && "text-[13px]",
         size === "md" && "text-[14px]",
         "group-data-[collapsible=icon]:hidden",

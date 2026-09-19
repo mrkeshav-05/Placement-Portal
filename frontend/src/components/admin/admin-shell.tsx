@@ -132,12 +132,16 @@ export function AdminShell({
       <Sidebar collapsible="icon">
         <SidebarHeader className="border-b border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
           <div className="flex items-center gap-3">
+            {/* The PNG already carries its own alpha channel; the white card
+                behind it (bg-white + border) was covering that up and reading
+                as an opaque tile rather than a mark. Sized up and dropped
+                onto the sidebar's own background instead. */}
             <Image
-              className="size-10 shrink-0 rounded-[10px] border border-[var(--border)] bg-white object-contain p-[5px] group-data-[collapsible=icon]:size-8"
+              className="size-12 shrink-0 object-contain group-data-[collapsible=icon]:size-8"
               src="/iiitl-emblem.png"
               alt=""
-              width={40}
-              height={40}
+              width={48}
+              height={48}
               priority
             />
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">

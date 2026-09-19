@@ -64,16 +64,16 @@ export function PortalShell({
       <Sidebar collapsible="icon">
         <SidebarHeader className="border-b border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
           <div className="flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl border border-[var(--border)] bg-white p-1.5 group-data-[collapsible=icon]:size-8">
-              <Image
-                className="size-full object-contain"
-                src="/iiitl-emblem.png"
-                alt=""
-                width={34}
-                height={27}
-                priority
-              />
-            </div>
+            {/* Matches the admin shell: the PNG already has its own alpha
+                channel, so the white card behind it only covered that up. */}
+            <Image
+              className="size-12 shrink-0 object-contain group-data-[collapsible=icon]:size-8"
+              src="/iiitl-emblem.png"
+              alt=""
+              width={48}
+              height={48}
+              priority
+            />
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
               <strong className="block truncate text-[15px] font-semibold text-[var(--ink)]">
                 Placement Cell

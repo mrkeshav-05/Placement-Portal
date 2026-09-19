@@ -4,7 +4,7 @@ import {
   Award,
   BriefcaseBusiness,
   Building2,
-  CalendarRange,
+  Calendar,
   GraduationCap,
   Target,
   TrendingUp,
@@ -195,8 +195,6 @@ export function AdminDashboard({
           <p>Offers, packages, and pipeline for the selected placement season.</p>
         </div>
         <div className="season-picker">
-          <CalendarRange />
-          <span>Season</span>
           <Select
             value={overview.season === null ? "" : String(overview.season)}
             onValueChange={selectSeason}
@@ -204,14 +202,34 @@ export function AdminDashboard({
           >
             <SelectTrigger
               aria-label="Placement season"
-              // `.admin-heading button` paints every button in a page heading
-              // as a filled navy pill. The trigger opts out of it so the
-              // surrounding picker stays the visible control.
-              className="h-auto rounded-none bg-transparent p-0 text-[13px] font-extrabold text-[var(--ink)] normal-case shadow-none hover:transform-none focus-visible:ring-0"
+              // `.season-picker` draws the one visible box (border, fill,
+              // shadow). The icon, the "Select Season" label, and the value
+              // all sit inside this trigger now, so the whole shell opens
+              // the list instead of only the value text doing it. The
+              // trigger itself stays invisible: no border, fill, shadow, or
+              // height of its own beyond its content — same opt-out
+              // `.admin-heading button` needs, since that rule paints every
+              // heading button as a filled navy pill.
+              className="h-auto w-auto gap-2 rounded-none border-0 bg-transparent p-0 text-[14px] font-semibold text-[var(--ink)] normal-case shadow-none hover:transform-none focus-visible:ring-0"
             >
-              <SelectValue placeholder="No seasons yet" />
+              <Calendar className="size-4 text-[var(--ink)]" />
+              <span className="text-[14px] font-semibold text-[var(--ink)]">Select Season</span>
+              <SelectValue placeholder="No seasons yet" className="" />
             </SelectTrigger>
-            <SelectContent>
+            {/* `position="popper"` anchors the list to the trigger's own box
+                (side="bottom" by default) instead of Radix's default
+                item-aligned placement, which centred the list over whichever
+                row was selected and could open above the bar or spill past
+                its edge. `w-` pins it to the trigger's own measured width —
+                `min-w-` alone still let the list shrink-wrap to "2028",
+                its shortest item, and read as narrower than the bar it
+                opened from. */}
+            <SelectContent
+              position="popper"
+              align="start"
+              sideOffset={6}
+              className="w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)]"
+            >
               {overview.seasons.map((season) => (
                 <SelectItem key={season} value={String(season)}>
                   {season}

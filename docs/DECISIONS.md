@@ -675,9 +675,12 @@ Three deliberate departures from what `shadcn add sidebar` generates:
   so a single declaration covers both themes and there is no `.dark` override
   to keep in step.
 - **The active row.** `data-[active=true]` is the institute blue on
-  `--navy-soft-bg` with a 3px inset marker, carried over from the old
+  `--navy-soft-bg` with a bold navy label, carried over from the old
   stylesheet. The generator's `bg-sidebar-accent` is the same grey as hover,
-  which tells a reader where the pointer is rather than where they are.
+  which tells a reader where the pointer is rather than where they are. It
+  first shipped with a left-edge inset-shadow marker too, dropped 2026-09-20
+  after it read as a stray blue sliver rather than a boundary; the tint and
+  the bold label carry "current" on their own.
 
 `collapsible="icon"`, so collapsing leaves a rail rather than nothing: the
 data grids behind these screens are wide and regularly want the room, but an
