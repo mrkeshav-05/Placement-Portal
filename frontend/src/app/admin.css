@@ -52,6 +52,11 @@
   padding: 35px 4vw 70px;
   animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+/* The announcement composer's own funnel-plus-editor reads as one long
+   column at the shared 1280px, pushing "Publish to students" well below the
+   fold. Widened for this page only — every table page still wants the
+   narrower, denser 1280px. */
+.admin-page.composer-page { max-width: 1560px; }
 
 .admin-heading { display: flex; justify-content: space-between; align-items: flex-end; }
 .admin-heading h1 { font: 600 28px var(--font-plex-sans); letter-spacing: -0.01em; margin: 4px 0 2px; color: var(--ink); }
@@ -90,16 +95,23 @@
    choice narrows the next, so the controls read as one sequence. */
 .composer { margin-top: 18px; }
 .composer-fields { display: grid; gap: 10px; }
-.composer-row { position: relative; display: grid; gap: 10px; }
+.composer-row { position: relative; display: grid; gap: 8px; }
 .composer-row.two { grid-template-columns: 1fr 1fr; }
+/* Season, company, and event picked as one decision — the three columns
+   share the row instead of company/event stacking below on their own
+   line, which is why they run noticeably narrower than a two-up row. */
+.composer-row.three { grid-template-columns: 1fr 1fr 1fr; }
+/* The event field's dropdown anchors to this wrapper rather than the whole
+   row, now that the row holds three fields instead of one. */
+.composer-field-wrap { position: relative; min-width: 0; }
 .composer-field {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 13px 16px;
+  padding: 9px 12px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 9px;
   background: var(--surface-alt);
   color: var(--muted);
   font-size: 12px;
@@ -109,8 +121,8 @@
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .composer-field span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.composer-field svg { width: 15px; flex-shrink: 0; }
-.composer-field .tick { width: 14px; color: var(--muted); transition: transform 0.2s ease; }
+.composer-field svg { width: 13px; flex-shrink: 0; }
+.composer-field .tick { width: 12px; color: var(--muted); transition: transform 0.2s ease; }
 .composer-field .tick.open { transform: rotate(180deg); }
 .composer-field:hover:not(:disabled) { border-color: var(--blue); color: var(--ink); }
 .composer-field:disabled { opacity: 0.55; cursor: not-allowed; }

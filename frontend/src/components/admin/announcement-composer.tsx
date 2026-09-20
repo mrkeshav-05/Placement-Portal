@@ -10,7 +10,6 @@ import {
   Megaphone,
   Paperclip,
   Search,
-  Tag,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,6 +26,7 @@ import {
   MAX_ATTACHMENT_MB,
   type AnnouncementStatus,
 } from "@/lib/announcement-schema";
+import { cn } from "cn";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,6 @@ export function AnnouncementComposer({
   const [companyPickerOpen, setCompanyPickerOpen] = useState(false);
   const [companyQuery, setCompanyQuery] = useState("");
   const [eventOpen, setEventOpen] = useState(false);
-  const [tagOpen, setTagOpen] = useState(false);
   const [tagQuery, setTagQuery] = useState("");
 
   const [attachments, setAttachments] = useState<StagedAttachment[]>([]);
@@ -110,7 +109,6 @@ export function AnnouncementComposer({
   const [result, setResult] = useState<AnnouncementActionResult>({});
 
   const eventRef = useDismissOnOutsideClick(() => setEventOpen(false));
-  const tagRef = useDismissOnOutsideClick(() => setTagOpen(false));
 
   const selectedCompany = companies.find((company) => company.id === companyId) ?? null;
   const selectedEvent = events.find((event) => event.id === eventId) ?? null;
@@ -131,16 +129,9 @@ export function AnnouncementComposer({
     return term ? companies.filter((c) => c.name.toLowerCase().includes(term)) : companies;
   }, [companies, companyQuery]);
 
-  const tagMatches = useMemo(() => {
-    const term = tagQuery.trim().toLowerCase();
-    const pool = TAG_SUGGESTIONS.filter((tag) => !tags.includes(tag));
-    return term ? pool.filter((tag) => tag.toLowerCase().includes(term)) : pool;
-  }, [tagQuery, tags]);
-
-  const canCreateTag =
-    tagQuery.trim().length > 0 &&
-    !tags.some((tag) => tag.toLowerCase() === tagQuery.trim().toLowerCase()) &&
-    !tagMatches.some((tag) => tag.toLowerCase() === tagQuery.trim().toLowerCase());
+  // Tags typed beyond the suggestion pills, shown as removable chips since
+  // they have no pill of their own to toggle back off.
+  const customTags = tags.filter((tag) => !TAG_SUGGESTIONS.includes(tag));
 
   // The editor stays locked until the announcement knows what it is about,
   // which is the whole point of the funnel above it.
@@ -230,7 +221,7 @@ export function AnnouncementComposer({
 
       <div className="composer-fields">
         {isCompanyEvent ? (
-          <div className="composer-row two">
+          <div className="composer-row three">
             <button
               type="button"
               className={`composer-field${season ? " filled" : ""}`}
@@ -255,133 +246,135 @@ export function AnnouncementComposer({
               <span>{selectedCompany?.name ?? "Select company"}</span>
               {selectedCompany ? <Check className="tick" /> : <ChevronDown className="tick" />}
             </button>
-          </div>
-        ) : null}
 
-        {isCompanyEvent ? (
-          <div className="composer-row" ref={eventRef}>
-            <button
-              type="button"
-              className={`composer-field${selectedEvent ? " filled" : ""}`}
-              disabled={!companyId}
-              title={companyId ? "Select the drive" : "Choose a company first"}
-              onClick={() => setEventOpen((open) => !open)}
-            >
-              <FileText />
-              <span>{selectedEvent?.title ?? "Select event (optional)"}</span>
-              <ChevronDown className={eventOpen ? "tick open" : "tick"} />
-            </button>
-            {eventOpen ? (
-              <div className="composer-dropdown">
-                {eventsForSelection.length ? (
-                  <>
-                    <button
-                      type="button"
-                      className="dropdown-option"
-                      onClick={() => {
-                        setEventId("");
-                        setEventOpen(false);
-                      }}
-                    >
-                      Not about a specific drive
-                    </button>
-                    {eventsForSelection.map((event) => (
+            <div className="composer-field-wrap" ref={eventRef}>
+              <button
+                type="button"
+                className={`composer-field${selectedEvent ? " filled" : ""}`}
+                disabled={!companyId}
+                title={companyId ? "Select the drive" : "Choose a company first"}
+                onClick={() => setEventOpen((open) => !open)}
+              >
+                <FileText />
+                <span>{selectedEvent?.title ?? "Select event (optional)"}</span>
+                <ChevronDown className={eventOpen ? "tick open" : "tick"} />
+              </button>
+              {eventOpen ? (
+                <div className="composer-dropdown">
+                  {eventsForSelection.length ? (
+                    <>
                       <button
                         type="button"
-                        key={event.id}
-                        className={`dropdown-option${event.id === eventId ? " selected" : ""}`}
+                        className="dropdown-option"
                         onClick={() => {
-                          setEventId(event.id);
+                          setEventId("");
                           setEventOpen(false);
                         }}
                       >
-                        {event.title}
+                        Not about a specific drive
                       </button>
-                    ))}
-                  </>
-                ) : (
-                  <p className="dropdown-empty">
-                    {selectedCompany?.name ?? "This company"} has no drive for the {season} season.
-                  </p>
-                )}
-              </div>
-            ) : null}
+                      {eventsForSelection.map((event) => (
+                        <button
+                          type="button"
+                          key={event.id}
+                          className={`dropdown-option${event.id === eventId ? " selected" : ""}`}
+                          onClick={() => {
+                            setEventId(event.id);
+                            setEventOpen(false);
+                          }}
+                        >
+                          {event.title}
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <p className="dropdown-empty">
+                      {selectedCompany?.name ?? "This company"} has no drive for the {season} season.
+                    </p>
+                  )}
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
 
-        <div className="composer-row" ref={tagRef}>
-          <button
-            type="button"
-            className={`composer-field${tags.length ? " filled" : ""}`}
-            onClick={() => setTagOpen((open) => !open)}
-          >
-            <Tag />
-            <span>{tags.length ? tags.join(", ") : "Select a tag…"}</span>
-            <ChevronDown className={tagOpen ? "tick open" : "tick"} />
-          </button>
-          {tagOpen ? (
-            <div className="composer-dropdown">
-              <label className="dropdown-search">
-                <Search />
-                <input
-                  autoFocus
-                  value={tagQuery}
-                  onChange={(event) => setTagQuery(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      addTag(tagQuery);
-                    }
-                  }}
-                  placeholder="Search tags or create a new one"
-                />
-              </label>
-              {canCreateTag ? (
+        <div className="grid gap-2">
+          <Label>Tags</Label>
+          {/* Dashed border reads as "nothing chosen yet" throughout the admin
+              portal (see `.dt-filter-button`); a click fills the pill solid,
+              the same way a chosen filter does. Clicking a filled pill again
+              turns it back off. */}
+          <div className="flex flex-wrap gap-2">
+            {TAG_SUGGESTIONS.map((tag) => {
+              const active = tags.includes(tag);
+              return (
                 <button
-                  type="button"
-                  className="dropdown-option create"
-                  onClick={() => addTag(tagQuery)}
-                >
-                  Create “{tagQuery.trim()}”
-                </button>
-              ) : null}
-              {tagMatches.map((tag) => (
-                <button
-                  type="button"
                   key={tag}
-                  className="dropdown-option"
-                  onClick={() => addTag(tag)}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() =>
+                    setTags((previous) =>
+                      active ? previous.filter((t) => t !== tag) : [...previous, tag],
+                    )
+                  }
+                  className={cn(
+                    "rounded-full border px-2 py-0.5 text-[12px] font-semibold transition-colors",
+                    active
+                      ? "border-[var(--blue)] bg-[var(--blue)] text-white"
+                      : "border-dashed border-[var(--border)] bg-transparent text-[var(--muted)] hover:border-[var(--blue)] hover:text-[var(--blue)]",
+                  )}
                 >
                   {tag}
                 </button>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              value={tagQuery}
+              onChange={(event) => setTagQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addTag(tagQuery);
+                }
+              }}
+              placeholder="Add a custom tag"
+              className="h-9 max-w-[220px]"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!tagQuery.trim()}
+              onClick={() => addTag(tagQuery)}
+            >
+              Add tag
+            </Button>
+          </div>
+
+          {customTags.length ? (
+            <div className="flex flex-wrap gap-1.5">
+              {customTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  className="gap-1.5 bg-[var(--badge-blue-bg)] text-[var(--badge-blue-text)]"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => setTags((previous) => previous.filter((t) => t !== tag))}
+                    aria-label={`Remove the ${tag} tag`}
+                    className="cursor-pointer leading-none"
+                  >
+                    ×
+                  </button>
+                </Badge>
               ))}
-              {!tagMatches.length && !canCreateTag ? (
-                <p className="dropdown-empty">Every suggested tag is already on this announcement.</p>
-              ) : null}
             </div>
           ) : null}
         </div>
-
-        {tags.length ? (
-          <div className="flex flex-wrap gap-1.5">
-            {tags.map((tag) => (
-              <Badge
-                key={tag}
-                className="gap-1.5 bg-[var(--badge-blue-bg)] text-[var(--badge-blue-text)]"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => setTags((previous) => previous.filter((t) => t !== tag))}
-                  aria-label={`Remove the ${tag} tag`}
-                  className="cursor-pointer leading-none"
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
-        ) : null}
 
         <div className="composer-row">
           <Label htmlFor="announcement-title">
@@ -504,6 +497,11 @@ export function AnnouncementComposer({
             type="button"
             disabled={saving || !editorReady || !content.trim()}
             onClick={() => submit("PUBLISHED")}
+            // Publishing is the one action here that can't be undone from
+            // this screen (a draft can sit unpublished indefinitely), so it
+            // gets the portal's "go" colour rather than the institute-blue
+            // default every other primary action uses.
+            className="bg-[var(--green)] text-white hover:bg-[var(--green)]/90"
           >
             {saving ? "Publishing…" : "Publish to students"}
           </Button>

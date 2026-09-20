@@ -37,7 +37,7 @@ export default async function Page() {
 
   return (
     <AuthenticatedAdminShell>
-      <div className="admin-page">
+      <div className="admin-page composer-page">
         <section className="admin-heading">
           <div>
             <span className="eyebrow">Communications &amp; drives</span>
