@@ -2,7 +2,7 @@
 # lockfile and the database workspace (which owns the Prisma schema) are both
 # required to install and generate the client.
 
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 RUN apk add --no-cache openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -10,7 +10,7 @@ COPY frontend/package.json ./frontend/
 COPY database/package.json ./database/
 RUN npm ci
 
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 RUN apk add --no-cache openssl
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -20,7 +20,7 @@ COPY database ./database
 COPY frontend ./frontend
 RUN npm run db:generate && npm run build
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 RUN apk add --no-cache openssl wget
 WORKDIR /app
 ENV NODE_ENV=production \

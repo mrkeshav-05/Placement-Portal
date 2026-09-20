@@ -1,6 +1,6 @@
 # Development image: the workspace is bind-mounted, so dependencies are
 # installed on start and Next.js runs with hot reload.
-FROM node:20-alpine
+FROM node:22-alpine
 RUN apk add --no-cache openssl wget
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1 \

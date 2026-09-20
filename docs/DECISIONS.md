@@ -837,3 +837,28 @@ every table rather than as a per-screen migration.
   `.dt-check`, `.dt-sort`, `.dt-rows-*`, `.dt-page-buttons`) are now dead and
   can be pruned in a follow-up pass; left in place for now since an unused
   CSS rule is not a correctness risk.
+
+## 2026-09-20 — Node moves to 22 everywhere, because the rich-text sanitizer requires it
+
+`isomorphic-dompurify` and its `jsdom` dependency, added by the "Implement
+rich text editor for announcements with HTML sanitization" change, each
+declare `"engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" }`. Every
+image in the repository was still `node:20-alpine` — `frontend/Dockerfile`,
+`frontend/Dockerfile.dev`, `database/Dockerfile`, and `node-version: 20` in
+`.github/workflows/ci.yml` — which is outside that range entirely. `npm
+install` does not hard-fail on an engine mismatch, only warns, so the module
+installed anyway and crashed the first time it actually ran: `Failed to load
+external module jsdom-<hash>: TypeError: webidl.util.markAsUncloneable is
+not a function`, thrown from `frontend/src/lib/rich-text.ts` on module
+evaluation. Every announcement write path imports it — saving, deleting, and
+`setAnnouncementStatusAction` (publish/withdraw) — so all three failed on
+Node 20, in every environment including production, not only in local
+Docker. `next build` never caught it because bundling a server action does
+not execute it; the crash only fires when jsdom's native bindings actually
+load at request time.
+
+All four pins move to `node:22-alpine` / `node-version: 22`, the nearest LTS
+line that clears the floor. Not `node:24-alpine`: 22 is a smaller version
+jump off the LTS the project already had, and this fix is about clearing the
+engine floor, not about picking the newest available runtime. Revisit if a
+future dependency needs 24 or later.

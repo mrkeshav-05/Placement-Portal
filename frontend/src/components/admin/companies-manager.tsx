@@ -48,7 +48,7 @@ export function CompaniesManager({ companies }: { companies: AdminCompanyItem[] 
       {
         id: "name",
         header: "Company",
-        width: "240px",
+        width: "320px",
         sortValue: (company) => company.name,
         hideable: false,
         cell: (company) => (
