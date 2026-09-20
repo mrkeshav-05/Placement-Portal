@@ -774,3 +774,66 @@ string with no tags).
   hard ceiling (50,000 characters server-side) as a byte-size backstop.
 - Search indexing and one-line table previews strip tags back to plain text
   first (`stripHtmlToText`); nothing searches or truncates raw HTML.
+
+## 2026-09-20 — `DataTable` moves onto shadcn, in place, for all twelve screens
+
+Answers the question the 2026-09-18 grid entry left open — shadcn `Table` +
+`DropdownMenu`, not a second hand-rolled CSS pass — and does it once for
+every table rather than as a per-screen migration.
+
+- **A pilot was tried first and abandoned.** `/admin/announcements` was
+  briefly rebuilt as its own TanStack Table v8 component
+  (`frontend/src/components/admin/announcements-table/`), separate from
+  `common/data-table.tsx`. Converting each of the other eleven screens the
+  same way would have meant rewriting every column/filter definition across
+  roughly 6,000 lines in ten files — including the bulk-select checkbox and
+  sticky columns on Applications, the RBAC-sensitive Users and Team screens,
+  and every screen's exports and dialogs — for no behavioural gain over
+  restyling the one component they already share. That pilot folder is
+  deleted; nothing references it.
+- **The actual change is entirely inside `frontend/src/components/common/data-table.tsx`.**
+  `DataTableColumn<T>`, `DataTableFilter<T>`, `DataTableProps<T>`, and the
+  `applyTablePipeline`/`nextSortState` search-sort-filter-paginate pipeline in
+  `frontend/src/lib/data-table.ts` are unchanged. Only the render layer moved:
+  `table`/`thead`/`tr`/`th`/`tbody`/`td` become shadcn's `Table` family; the
+  filter popover becomes `Popover` + `Command` (`frontend/src/components/ui/command.tsx`,
+  already installed for the recruiter picker); column visibility becomes a
+  `DropdownMenu` (new: `frontend/src/components/ui/dropdown-menu.tsx`); rows-per-page
+  becomes the existing `Select`; every button in the table's own chrome
+  becomes `Button`. Because the props contract didn't change, none of the
+  eleven consuming manager files needed an edit — they inherit the new look
+  by rebuilding.
+- **No new runtime dependency.** `@tanstack/react-table` (added and pinned to
+  `8.21.3` for the abandoned pilot, since installing it bare pulls the
+  incompatible `9.x` `TableFeatures` API) was removed again once the pipeline
+  reuse made it unnecessary. `DropdownMenu` needed no new package either — the
+  unified `radix-ui` package already in `package.json` ships it, the same way
+  every other primitive in `components/ui` reads it.
+- **shadcn's own defaults read this portal's tokens, not a shadcn palette.**
+  `bg-muted`, `text-muted-foreground`, and friends resolve through the
+  `@theme inline` bridge in `globals.css` onto `--surface-alt`/`--muted` etc.,
+  the same tokens `admin.css` already used — so a shadcn `TableRow`'s built-in
+  hover state lands on the same colour the hand-rolled one did, in both
+  themes, with no per-component override.
+- **Every filter gets a search box now, not just ones with more than six
+  options.** The old `FilterMenu` added a search input only past a six-option
+  threshold, which is why the Company filter (six seeded rows) rendered with
+  none. `Command` ships an input and filters its own items, so every filter
+  chip across all twelve tables gets one for free.
+- **Rows-per-page is a `Select` now, not a native `<select>`.** A native
+  select's popup is drawn by the OS and carried its own accent colour (a red
+  hover ring on macOS) that didn't match anything else on the page.
+- **The header row and toolbar buttons are shadcn's own (smaller) sizes now**,
+  not the 50px/15px-600 header and 44-46px buttons the 2026-09-18 entry fixed
+  — sort triggers are `Button variant="ghost" size="sm"`, filter/view chips
+  are `Button variant="outline" size="sm"`, matching what shadcn's own
+  data-table examples ship.
+- `admin.css`'s `.dt-*` rules were not deleted. `.dt-header`/`.dt-card`/`.dt-toolbar`/
+  `.dt-scroll`/`.dt-table` (sizing, sticky offsets, `tabular-nums`)/`.dt-pagination`/
+  `.admin-empty`/`.dt-primary`/`.dt-muted`/`.dt-skeleton` still apply — they are
+  layout and cell-content helpers the ten untouched manager files' own `cell`
+  renderers still use, not the interactive chrome that moved to shadcn. Some
+  of the old interactive-chrome rules (`.dt-filter-button`, `.dt-popover*`,
+  `.dt-check`, `.dt-sort`, `.dt-rows-*`, `.dt-page-buttons`) are now dead and
+  can be pruned in a follow-up pass; left in place for now since an unused
+  CSS rule is not a correctness risk.

@@ -8,15 +8,16 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  CirclePlus,
   Inbox,
-  Plus,
   Search,
   Settings2,
+  X,
 } from "lucide-react";
+import { cn } from "cn";
 import {
   useCallback,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
@@ -30,6 +31,43 @@ import {
   type TableFilterState,
   type TableSort,
 } from "@/lib/data-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export type DataTableColumn<T> = {
   id: string;
@@ -284,31 +322,13 @@ function useHiddenColumns(
   return [hidden, toggle];
 }
 
-/** Closes a popover on an outside pointer press or Escape. */
-function useDismiss(active: boolean, onDismiss: () => void) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!active) return;
-
-    function onPointerDown(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) onDismiss();
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onDismiss();
-    }
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [active, onDismiss]);
-
-  return ref;
-}
-
+/**
+ * One multi-select filter chip: a shadcn `Popover` + `Command`, the same
+ * faceted-filter pattern shadcn's own data-table recipe uses. `Command`
+ * filters its items as you type on its own, so every filter gets a working
+ * search box for free — no option-count threshold needed to decide whether
+ * one is worth showing.
+ */
 function FilterMenu<T>({
   filter,
   selected,
@@ -319,16 +339,6 @@ function FilterMenu<T>({
   onChange: (values: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const ref = useDismiss(open, useCallback(() => setOpen(false), []));
-  const menuId = useId();
-
-  const options = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    return term
-      ? filter.options.filter((option) => option.label.toLowerCase().includes(term))
-      : filter.options;
-  }, [filter.options, query]);
 
   function toggle(value: string) {
     onChange(
@@ -339,68 +349,84 @@ function FilterMenu<T>({
   }
 
   return (
-    <div className="dt-menu" ref={ref}>
-      <button
-        type="button"
-        className={selected.length ? "dt-filter-button active" : "dt-filter-button"}
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <Plus />
-        {filter.label}
-        {selected.length ? <b>{selected.length}</b> : null}
-      </button>
-
-      {open ? (
-        <div className="dt-popover" id={menuId} role="group" aria-label={filter.label}>
-          {filter.searchable !== false ? (
-            <label className="dt-popover-search">
-              <Search />
-              <input
-                autoFocus
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={`Search ${filter.label.toLowerCase()}...`}
-                aria-label={`Search ${filter.label} options`}
-              />
-            </label>
-          ) : null}
-
-          <div className="dt-popover-list">
-            {options.map((option) => (
-              <label key={option.value} className="dt-check">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(option.value)}
-                  onChange={() => toggle(option.value)}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
-            {!options.length ? <p className="dt-popover-empty">No options match.</p> : null}
-          </div>
-
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={cn("h-9 border-dashed", selected.length && "border-solid")}
+        >
+          <CirclePlus />
+          {filter.label}
           {selected.length ? (
-            <button type="button" className="dt-popover-clear" onClick={() => onChange([])}>
-              Clear {filter.label.toLowerCase()}
-            </button>
+            <>
+              <Separator orientation="vertical" className="mx-1 h-4" />
+              <Badge variant="secondary" className="rounded-sm px-1 font-normal">
+                {selected.length}
+              </Badge>
+            </>
           ) : null}
-        </div>
-      ) : null}
-    </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[220px] p-0" align="start">
+        <Command>
+          {filter.searchable !== false ? (
+            <CommandInput placeholder={`Search ${filter.label.toLowerCase()}...`} />
+          ) : null}
+          <CommandList>
+            <CommandEmpty>No options match.</CommandEmpty>
+            <CommandGroup>
+              {filter.options.map((option) => {
+                const isSelected = selected.includes(option.value);
+                return (
+                  <CommandItem
+                    key={option.value}
+                    value={option.label}
+                    onSelect={() => toggle(option.value)}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-4 items-center justify-center rounded-[4px] border",
+                        isSelected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input",
+                      )}
+                    >
+                      {isSelected ? <Check className="size-3" /> : null}
+                    </span>
+                    <span>{option.label}</span>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+            {selected.length ? (
+              <>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem
+                    onSelect={() => onChange([])}
+                    className="justify-center text-center"
+                  >
+                    Clear {filter.label.toLowerCase()}
+                  </CommandItem>
+                </CommandGroup>
+              </>
+            ) : null}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
 /**
- * Rows-per-page control, styled like every other picker on the table rather
- * than left as a native `<select>`. A native select's popup is drawn by the
- * OS, not the page — on macOS it renders with the system's own highlight
- * colour, which fights this table's own dropdowns instead of matching them.
- * It opens upward: this control always sits at the bottom of the card, so a
- * downward popover would usually run past the viewport.
+ * Rows-per-page as a shadcn `Select`, not a native `<select>` — a native
+ * popup is drawn by the OS and carries its own accent colour (a red hover
+ * ring on macOS), which fought this table's own dropdowns instead of
+ * matching them.
  */
-function RowsPerPageMenu({
+function RowsPerPageControl({
   value,
   options,
   onChange,
@@ -411,56 +437,28 @@ function RowsPerPageMenu({
   onChange: (value: number) => void;
   id: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useDismiss(open, useCallback(() => setOpen(false), []));
-  const menuId = useId();
-
   return (
-    <div className="dt-menu" ref={ref}>
-      <label htmlFor={id}>Rows per page</label>
-      <button
-        type="button"
-        id={id}
-        className="dt-rows-button"
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((current) => !current)}
-      >
-        {value}
-        <ChevronDown />
-      </button>
-
-      {open ? (
-        <div
-          className="dt-popover align-top align-end"
-          id={menuId}
-          role="listbox"
-          aria-label="Rows per page"
-        >
-          <div className="dt-popover-list">
-            {options.map((option) => (
-              <button
-                key={option}
-                type="button"
-                role="option"
-                aria-selected={option === value}
-                className={option === value ? "dt-option active" : "dt-option"}
-                onClick={() => {
-                  onChange(option);
-                  setOpen(false);
-                }}
-              >
-                {option}
-                {option === value ? <Check /> : null}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
+    <div className="flex items-center gap-2">
+      <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
+        Rows per page
+      </label>
+      <Select value={String(value)} onValueChange={(next) => onChange(Number(next))}>
+        <SelectTrigger id={id} size="sm" className="w-[76px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent side="top">
+          {options.map((option) => (
+            <SelectItem key={option} value={String(option)}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
 
+/** Column visibility, as a shadcn `DropdownMenu` of checkbox items. */
 function ColumnMenu({
   columns,
   hidden,
@@ -470,48 +468,37 @@ function ColumnMenu({
   hidden: string[];
   onToggle: (id: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useDismiss(open, useCallback(() => setOpen(false), []));
-  const menuId = useId();
   const visibleCount = columns.length - hidden.length;
 
   return (
-    <div className="dt-menu" ref={ref}>
-      <button
-        type="button"
-        className="dt-view-button"
-        aria-expanded={open}
-        aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <Settings2 />
-        View
-      </button>
-
-      {open ? (
-        <div className="dt-popover align-end" id={menuId} role="group" aria-label="Toggle columns">
-          <p className="dt-popover-title">Toggle columns</p>
-          <div className="dt-popover-list">
-            {columns.map((column) => {
-              const isVisible = !hidden.includes(column.id);
-              // One column has to stay, otherwise the table is a blank box.
-              const isLastVisible = isVisible && visibleCount === 1;
-              return (
-                <label key={column.id} className="dt-check">
-                  <input
-                    type="checkbox"
-                    checked={isVisible}
-                    disabled={isLastVisible}
-                    onChange={() => onToggle(column.id)}
-                  />
-                  <span>{column.label}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button type="button" variant="outline" size="sm" className="h-9">
+          <Settings2 />
+          View
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[190px]">
+        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {columns.map((column) => {
+          const isVisible = !hidden.includes(column.id);
+          // One column has to stay, otherwise the table is a blank box.
+          const isLastVisible = isVisible && visibleCount === 1;
+          return (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              checked={isVisible}
+              disabled={isLastVisible}
+              onSelect={(event) => event.preventDefault()}
+              onCheckedChange={() => onToggle(column.id)}
+            >
+              {column.label}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -520,7 +507,10 @@ function ColumnMenu({
  *
  * It owns presentation and the search/filter/sort/paginate pipeline, and
  * nothing about any page: what a cell contains, what an action does, and
- * where the data came from all stay with the caller.
+ * where the data came from all stay with the caller. Presentation is shadcn
+ * throughout — `Table`, `DropdownMenu`, `Popover`+`Command`, `Select`,
+ * `Button` — reading this portal's own semantic tokens through the
+ * `@theme inline` bridge, so no component here carries a literal colour.
  */
 export function DataTable<T>({
   data,
@@ -672,186 +662,193 @@ export function DataTable<T>({
       ) : null}
 
       <div className="dt-card">
-      {showToolbar ? (
-        <div className="dt-toolbar">
-          {searchText ? (
-            <label className="dt-search">
-              <Search />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => {
-                  // A narrower result set has fewer pages than the one being
-                  // viewed, so searching returns to the first page.
-                  setQuery(event.target.value);
+        {showToolbar ? (
+          <div className="dt-toolbar">
+            {searchText ? (
+              <div className="relative w-full max-w-[380px] flex-1 min-w-[200px]">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  value={query}
+                  onChange={(event) => {
+                    // A narrower result set has fewer pages than the one being
+                    // viewed, so searching returns to the first page.
+                    setQuery(event.target.value);
+                    setPage(1);
+                  }}
+                  placeholder={searchPlaceholder}
+                  aria-label={searchPlaceholder}
+                  className="h-9 bg-muted/50 pl-9 focus-visible:bg-background"
+                />
+              </div>
+            ) : null}
+
+            {filters.map((filter) => (
+              <FilterMenu
+                key={filter.id}
+                filter={filter}
+                selected={filterState[filter.id] ?? []}
+                onChange={(values) => {
+                  setFilterState((previous) => ({ ...previous, [filter.id]: values }));
                   setPage(1);
                 }}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
               />
-            </label>
-          ) : null}
+            ))}
 
-          {filters.map((filter) => (
-            <FilterMenu
-              key={filter.id}
-              filter={filter}
-              selected={filterState[filter.id] ?? []}
-              onChange={(values) => {
-                setFilterState((previous) => ({ ...previous, [filter.id]: values }));
-                setPage(1);
-              }}
-            />
-          ))}
-
-          {activeFilterCount > 0 ? (
-            <button
-              type="button"
-              className="dt-reset"
-              onClick={() => {
-                setFilterState({});
-                setPage(1);
-              }}
-            >
-              Reset
-            </button>
-          ) : null}
-
-          {toolbarExtras}
-
-          <div className="dt-toolbar-end">
-            {columnVisibility && hideableColumns.length > 1 ? (
-              <ColumnMenu
-                columns={hideableColumns}
-                hidden={hiddenColumns}
-                onToggle={toggleColumn}
-              />
+            {activeFilterCount > 0 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 px-2"
+                onClick={() => {
+                  setFilterState({});
+                  setPage(1);
+                }}
+              >
+                Reset
+                <X />
+              </Button>
             ) : null}
-          </div>
-        </div>
-      ) : null}
 
-      <div className="dt-scroll">
-        <table
-          className="dt-table"
-          ref={tableRef}
-          style={minWidth ? { minWidth } : undefined}
-        >
-          {caption ? <caption className="dt-caption">{caption}</caption> : null}
-          <thead>
-            <tr>
-              {leadingColumn ? (
-                <th
-                  scope="col"
-                  data-column-id={LEADING_COLUMN_ID}
-                  className={leadingPin.className}
-                  style={{ width: leadingColumn.width ?? "44px", left: leadingPin.left }}
-                >
-                  {leadingColumn.header}
-                </th>
+            {toolbarExtras}
+
+            <div className="dt-toolbar-end">
+              {columnVisibility && hideableColumns.length > 1 ? (
+                <ColumnMenu columns={hideableColumns} hidden={hiddenColumns} onToggle={toggleColumn} />
               ) : null}
+            </div>
+          </div>
+        ) : null}
 
-              {visibleColumns.map((column) => {
-                const isSorted = sort?.columnId === column.id;
-                const ariaSort = !column.sortValue
-                  ? undefined
-                  : isSorted
-                    ? sort!.direction === "asc"
-                      ? "ascending"
-                      : "descending"
-                    : "none";
-
-                const pin = pinned(column.id);
-
-                return (
-                  <th
-                    key={column.id}
-                    scope="col"
-                    data-column-id={column.id}
-                    aria-sort={ariaSort}
-                    className={pin.className}
-                    style={{ width: column.width, textAlign: column.align, left: pin.left }}
+        <div className="dt-scroll">
+          <Table
+            ref={tableRef}
+            className="dt-table"
+            style={minWidth ? { minWidth } : undefined}
+          >
+            {caption ? <caption className="dt-caption">{caption}</caption> : null}
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                {leadingColumn ? (
+                  <TableHead
+                    data-column-id={LEADING_COLUMN_ID}
+                    className={cn("h-11 px-4", leadingPin.className)}
+                    style={{ width: leadingColumn.width ?? "44px", left: leadingPin.left }}
                   >
-                    {column.sortValue ? (
-                      <button
-                        type="button"
-                        className={isSorted ? "dt-sort active" : "dt-sort"}
-                        onClick={() => setSort((current) => nextSortState(current, column.id))}
-                        title={`Sort by ${
-                          column.menuLabel ??
-                          (typeof column.header === "string" ? column.header : column.id)
-                        }`}
-                      >
-                        <span>{column.header}</span>
-                        {isSorted ? (
-                          <ChevronDown className={sort!.direction === "asc" ? "flip" : undefined} />
-                        ) : (
-                          <ChevronsUpDown />
-                        )}
-                      </button>
-                    ) : (
-                      column.header
-                    )}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
+                    {leadingColumn.header}
+                  </TableHead>
+                ) : null}
 
-          <tbody>
-            {loading ? (
-              // Skeletons keep the table the same height it will be, so the
-              // page does not jump when the rows arrive.
-              Array.from({ length: 5 }, (_, index) => (
-                <tr key={`skeleton-${index}`} className="dt-skeleton-row">
-                  {Array.from({ length: columnCount }, (_, cellIndex) => (
-                    <td key={cellIndex}>
-                      <span className="dt-skeleton" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : result.rows.length ? (
-              result.rows.map((row) => (
-                <tr key={getRowId(row)} className={rowClassName?.(row)}>
-                  {leadingColumn ? (
-                    <td className={leadingPin.className} style={{ left: leadingPin.left }}>
-                      {leadingColumn.cell(row)}
-                    </td>
-                  ) : null}
-                  {visibleColumns.map((column) => {
-                    const pin = pinned(column.id);
-                    return (
-                      <td
-                        key={column.id}
-                        className={pin.className}
-                        style={{ textAlign: column.align, left: pin.left }}
-                      >
-                        {column.cell(row)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={Math.max(1, columnCount)}>
-                  <div className="admin-empty">
-                    {emptyIcon ?? <Inbox />}
-                    <h2>{emptyTitle}</h2>
-                    <p>{emptyDescription}</p>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                {visibleColumns.map((column) => {
+                  const isSorted = sort?.columnId === column.id;
+                  const ariaSort = !column.sortValue
+                    ? undefined
+                    : isSorted
+                      ? sort!.direction === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : "none";
 
-      {pagination && !loading ? (
-        <div className="dt-pagination">
-          <div className="dt-rows-per-page">
-            <RowsPerPageMenu
+                  const pin = pinned(column.id);
+
+                  return (
+                    <TableHead
+                      key={column.id}
+                      data-column-id={column.id}
+                      aria-sort={ariaSort}
+                      className={cn("h-11 px-4", pin.className)}
+                      style={{ width: column.width, textAlign: column.align, left: pin.left }}
+                    >
+                      {column.sortValue ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className={cn(
+                            "-ml-2 h-7 gap-1.5 px-2 text-xs font-semibold",
+                            isSorted && "text-foreground",
+                          )}
+                          onClick={() => setSort((current) => nextSortState(current, column.id))}
+                          title={`Sort by ${
+                            column.menuLabel ??
+                            (typeof column.header === "string" ? column.header : column.id)
+                          }`}
+                        >
+                          <span>{column.header}</span>
+                          {isSorted ? (
+                            <ChevronDown
+                              className={sort!.direction === "asc" ? "rotate-180" : undefined}
+                            />
+                          ) : (
+                            <ChevronsUpDown className="opacity-50" />
+                          )}
+                        </Button>
+                      ) : (
+                        column.header
+                      )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {loading ? (
+                // Skeletons keep the table the same height it will be, so the
+                // page does not jump when the rows arrive.
+                Array.from({ length: 5 }, (_, index) => (
+                  <TableRow key={`skeleton-${index}`} className="dt-skeleton-row">
+                    {Array.from({ length: columnCount }, (_, cellIndex) => (
+                      <TableCell key={cellIndex} className="h-[61px] px-4">
+                        <span className="dt-skeleton" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : result.rows.length ? (
+                result.rows.map((row) => (
+                  <TableRow key={getRowId(row)} className={rowClassName?.(row)}>
+                    {leadingColumn ? (
+                      <TableCell
+                        className={cn("h-[61px] px-4", leadingPin.className)}
+                        style={{ left: leadingPin.left }}
+                      >
+                        {leadingColumn.cell(row)}
+                      </TableCell>
+                    ) : null}
+                    {visibleColumns.map((column) => {
+                      const pin = pinned(column.id);
+                      return (
+                        <TableCell
+                          key={column.id}
+                          className={cn("h-[61px] px-4", pin.className)}
+                          style={{ textAlign: column.align, left: pin.left }}
+                        >
+                          {column.cell(row)}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={Math.max(1, columnCount)}>
+                    <div className="admin-empty">
+                      {emptyIcon ?? <Inbox />}
+                      <h2>{emptyTitle}</h2>
+                      <p>{emptyDescription}</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {pagination && !loading ? (
+          <div className="dt-pagination">
+            <RowsPerPageControl
               id={`${caption ?? "table"}-page-size`}
               value={pageSize}
               options={pageSizeOptions}
@@ -860,56 +857,63 @@ export function DataTable<T>({
                 setPage(1);
               }}
             />
-          </div>
 
-          <span className="dt-page-label">
-            Page {result.page} of {result.pageCount}
-            <small>
-              {result.filteredCount} {result.filteredCount === 1 ? "row" : "rows"}
-              {result.filteredCount !== data.length ? ` of ${data.length}` : ""}
-            </small>
-          </span>
+            <span className="dt-page-label">
+              Page {result.page} of {result.pageCount}
+              <small>
+                {result.filteredCount} {result.filteredCount === 1 ? "row" : "rows"}
+                {result.filteredCount !== data.length ? ` of ${data.length}` : ""}
+              </small>
+            </span>
 
-          <div className="dt-page-buttons">
-            <button
-              type="button"
-              aria-label="First page"
-              title="First page"
-              disabled={result.page <= 1}
-              onClick={() => setPage(1)}
-            >
-              <ChevronFirst />
-            </button>
-            <button
-              type="button"
-              aria-label="Previous page"
-              title="Previous page"
-              disabled={result.page <= 1}
-              onClick={() => setPage(Math.max(1, result.page - 1))}
-            >
-              <ChevronLeft />
-            </button>
-            <button
-              type="button"
-              aria-label="Next page"
-              title="Next page"
-              disabled={result.page >= result.pageCount}
-              onClick={() => setPage(Math.min(result.pageCount, result.page + 1))}
-            >
-              <ChevronRight />
-            </button>
-            <button
-              type="button"
-              aria-label="Last page"
-              title="Last page"
-              disabled={result.page >= result.pageCount}
-              onClick={() => setPage(result.pageCount)}
-            >
-              <ChevronLast />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="First page"
+                title="First page"
+                disabled={result.page <= 1}
+                onClick={() => setPage(1)}
+              >
+                <ChevronFirst />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Previous page"
+                title="Previous page"
+                disabled={result.page <= 1}
+                onClick={() => setPage(Math.max(1, result.page - 1))}
+              >
+                <ChevronLeft />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Next page"
+                title="Next page"
+                disabled={result.page >= result.pageCount}
+                onClick={() => setPage(Math.min(result.pageCount, result.page + 1))}
+              >
+                <ChevronRight />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label="Last page"
+                title="Last page"
+                disabled={result.page >= result.pageCount}
+                onClick={() => setPage(result.pageCount)}
+              >
+                <ChevronLast />
+              </Button>
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
       </div>
     </div>
   );
