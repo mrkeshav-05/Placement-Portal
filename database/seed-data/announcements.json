@@ -18,6 +18,51 @@
     "createdDaysAgo": 5
   },
   {
+    "slug": "zoho-campus-drive-schedule",
+    "title": "Zoho on-campus drive schedule released",
+    "companySlug": "zoho",
+    "category": "COMPANY_EVENT",
+    "tags": ["schedule", "fte"],
+    "content": "The written test for Zoho's Member of Technical Staff role is scheduled for next week. Report to the venue thirty minutes early with your institute ID.",
+    "createdDaysAgo": 10
+  },
+  {
+    "slug": "qualcomm-info-session",
+    "title": "Qualcomm information session for E&M and CS branches",
+    "companySlug": "qualcomm",
+    "category": "COMPANY_EVENT",
+    "tags": ["info-session", "hardware"],
+    "content": "Qualcomm will run an information session covering the VLSI Design Engineer role ahead of the application deadline. Open to all eligible branches.",
+    "createdDaysAgo": 6
+  },
+  {
+    "slug": "fractal-analytics-case-study-release",
+    "title": "Fractal Analytics case study round released",
+    "companySlug": "fractal-analytics",
+    "category": "COMPANY_EVENT",
+    "tags": ["case-study", "data-science"],
+    "content": "The take-home case study for the Associate Data Scientist role has been emailed to all applicants. Submissions are due before the next round begins.",
+    "createdDaysAgo": 3
+  },
+  {
+    "slug": "amazon-oa-reminder",
+    "title": "Amazon online assessment window closes soon",
+    "companySlug": "amazon",
+    "category": "COMPANY_EVENT",
+    "tags": ["assessment", "reminder"],
+    "content": "The online assessment window for both Amazon roles closes in two days. Complete both the coding and work simulation assessments before the deadline; partial submissions are not carried forward.",
+    "createdDaysAgo": 1
+  },
+  {
+    "slug": "cisco-drive-closed",
+    "title": "Cisco Network Engineer drive has concluded",
+    "companySlug": "cisco",
+    "category": "COMPANY_EVENT",
+    "tags": ["closed"],
+    "content": "The Cisco Network Engineer drive has concluded for this season. Final results have been communicated to candidates individually.",
+    "createdDaysAgo": 60
+  },
+  {
     "slug": "resume-deadline",
     "title": "Resume verification closes this Friday",
     "category": "GENERAL",
@@ -30,69 +75,24 @@
     "title": "Updated placement policy for the current cycle",
     "category": "GENERAL",
     "tags": ["policy"],
-    "content": "The one-offer policy now applies once a student accepts a full-time role above 15 LPA. Internship conversions are counted separately. The full policy document is available with the placement office.",
-    "createdDaysAgo": 25
-  },
-  {
-    "slug": "zoho-drive-schedule",
-    "title": "Zoho campus drive scheduled for next week",
-    "companySlug": "zoho",
-    "category": "COMPANY_EVENT",
-    "tags": ["campus-drive", "software", "schedule"],
-    "content": "The Zoho drive will run over two days. Day one is the online programming round in the computer centre; day two covers the design discussion and the final technical interview. Bring your institute ID card.",
-    "createdDaysAgo": 3
-  },
-  {
-    "slug": "texas-instruments-ppt",
-    "title": "Texas Instruments technical session on digital design",
-    "companySlug": "texas-instruments",
-    "category": "COMPANY_EVENT",
-    "tags": ["pre-placement-talk", "hardware"],
-    "content": "A technical session covering RTL design, verification workflows, and the day-to-day work of the embedded processing group. Recommended for anyone considering the hardware track.",
-    "createdDaysAgo": 6
-  },
-  {
-    "slug": "mock-interview-drive",
-    "title": "Mock interview drive open for registration",
-    "category": "GENERAL",
-    "tags": ["preparation", "interviews"],
-    "content": "Alumni volunteers will conduct mock technical and HR interviews over the coming fortnight. Slots are limited and allocated first come, first served. Register through the placement coordinators.",
-    "createdDaysAgo": 11
-  },
-  {
-    "slug": "sprinklr-internship-window",
-    "title": "Sprinklr internship applications now open",
-    "companySlug": "sprinklr",
-    "category": "COMPANY_EVENT",
-    "tags": ["internship", "software", "pre-final-year"],
-    "content": "The Sprinklr product engineering internship is open to the pre-final year. Strong performers convert to a full-time offer. Applications close along with the registration deadline listed on the job profile.",
-    "createdDaysAgo": 2
+    "content": "The one-offer policy remains in effect: once a student accepts an offer, all further applications are withdrawn automatically. Students who wish to sit for a dream company after accepting a first-round offer must request an exception in writing before the drive opens.",
+    "createdDaysAgo": 20
   },
   {
     "slug": "noc-process-reminder",
-    "title": "How to raise an NOC request",
+    "title": "NOC requests: allow three working days",
     "category": "GENERAL",
     "tags": ["noc", "process"],
-    "content": "Students holding an off-campus offer must raise an NOC request through the portal before accepting it. Include the offer letter and the exact engagement dates. Requests are processed within three working days.",
-    "createdDaysAgo": 18
+    "content": "Off-campus offers and research placements require a No-Objection Certificate before you can accept. Submit the request through the portal at least three working days before you need a decision.",
+    "createdDaysAgo": 12
   },
   {
-    "slug": "cisco-results-draft",
-    "title": "Cisco final results — pending sign-off",
-    "companySlug": "cisco",
-    "category": "COMPANY_EVENT",
-    "tags": ["results", "campus-drive"],
-    "content": "Draft of the final result announcement for the Cisco Network Consulting Engineer drive. Hold until the recruiter confirms the selected list in writing.",
-    "createdDaysAgo": 1,
-    "status": "DRAFT"
-  },
-  {
-    "slug": "spring-calendar-draft",
-    "title": "Spring placement calendar — draft",
+    "slug": "mid-season-stats-draft",
+    "title": "Mid-season placement statistics (draft)",
     "category": "GENERAL",
-    "tags": ["calendar", "schedule"],
-    "content": "Draft of the spring semester drive calendar. Dates for the February and March slots are still being confirmed with the visiting recruiters.",
-    "createdDaysAgo": 4,
+    "tags": ["statistics", "internal"],
+    "content": "Draft summary of offers made so far this season, broken down by branch and company, for internal review before it is published to students.",
+    "createdDaysAgo": 0,
     "status": "DRAFT"
   }
 ]

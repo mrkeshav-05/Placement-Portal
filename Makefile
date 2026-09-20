@@ -160,7 +160,7 @@ db-migrate-new: .env ## Create a migration from schema changes (NAME=add_field)
 db-seed-admins: .env ## Seed administrator accounts from ADMIN_EMAILS
 	$(TOOLS) npm run db:seed
 
-db-seed-students: .env ## Import the student roster from students_data.json
+db-seed-students: .env ## Import the student roster from database/seed-data/students.json
 	$(TOOLS) npm run db:import-students
 
 db-seed-demo: .env ## Seed the demonstration dataset (EMAIL= attaches it to an account)

@@ -1,13 +1,19 @@
 /**
- * Seeds the demonstration dataset packaged in database/seed-data.zip.
+ * Seeds the demonstration dataset packaged in database/seed-data.zip: dummy
+ * companies, job profiles, applications, offers, feedback, NOC requests, and
+ * announcements, all attached to real roster accounts (looked up by roll
+ * number) rather than synthetic ones. Run `npm run db:import-students` first
+ * so those accounts exist.
  *
  * Every row is written with a deterministic `demo-` prefixed id, so this script
  * is safe to re-run and `npm run db:remove-demo` can delete exactly what it
- * created without touching real records.
+ * created. The real student accounts it attaches activity to are never
+ * touched by removal, only the demo-prefixed rows pointing at them.
  *
- * The dataset stores dates as offsets rather than absolute timestamps, so the
- * archive does not go stale: registration deadlines stay in the future and
- * application history stays in the past no matter when the seed runs.
+ * Registration deadlines and other dates are stored as offsets from the seed
+ * run, so the archive does not go stale, except each job's `batch`, which is
+ * an absolute graduating year because it has to match the real students it
+ * targets.
  */
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
@@ -21,6 +27,7 @@ import type {
   JobStatus,
   JobType,
   NocStatus,
+  OfferSource,
   OfferStatus,
   OfferType,
 } from "@prisma/client";
@@ -44,33 +51,13 @@ function demoId(kind: string, slug: string) {
   return `demo-${kind}-${slug}`;
 }
 
-function studentEmail(slug: string) {
-  const domain = (process.env.STUDENT_EMAIL_DOMAIN || "iiitl.ac.in").replace(/^@/, "");
-  return `demo.${slug.replace(/-/g, ".")}@${domain}`;
-}
-
 interface CompanyRecord {
   slug: string;
   name: string;
   website?: string;
   description?: string;
-}
-
-interface StudentRecord {
-  slug: string;
-  name: string;
-  rollNumber: string;
-  branch: string;
-  degree: string;
-  batchOffset: number;
-  gender: string;
-  category: string;
-  contactNumber: string;
-  class10Percent: number;
-  class12Percent: number;
-  semGPAs: number[];
-  cgpa: number;
-  backlogs: number;
+  category?: string;
+  turnover?: string;
 }
 
 interface JobRecord {
@@ -82,13 +69,16 @@ interface JobRecord {
   ctcStipend?: number;
   ctcStipendInfo?: string;
   minCGPA: number;
+  min10Percent?: number;
+  min12Percent?: number;
   maxBacklogs: number;
   maxBans: number;
   allowedBranches: string[];
   allowedDegrees: string[];
   allowedGenders: string[];
   jobCategory?: string;
-  batchOffset: number;
+  /** Absolute graduating year, since this has to match real students. */
+  batch: number;
   deadlineInDays: number;
   status: JobStatus;
   openingOverview?: string;
@@ -97,7 +87,7 @@ interface JobRecord {
 }
 
 interface ApplicationRecord {
-  studentSlug: string;
+  studentRollNumber: string;
   jobSlug: string;
   status: ApplicationStatus;
   appliedDaysAgo: number;
@@ -117,12 +107,16 @@ interface AnnouncementRecord {
 
 interface OfferRecord {
   slug: string;
-  studentSlug: string;
+  studentRollNumber: string;
   companySlug: string;
   /** The drive the offer came from, when it came from one. */
   jobSlug?: string;
   type: OfferType;
   status: OfferStatus;
+  /** Defaults to ON_CAMPUS, matching the schema default, when omitted. */
+  source?: OfferSource;
+  /** Role as recorded, for an offer with no `jobSlug` to fall back to. */
+  jobTitle?: string;
   /** Annual CTC for FTE and PPO offers. */
   ctc?: number;
   /** Monthly stipend for internship offers. */
@@ -135,7 +129,7 @@ interface OfferRecord {
 
 interface FeedbackRecord {
   slug: string;
-  studentSlug: string;
+  studentRollNumber: string;
   feedbackType: FeedbackType;
   content: string;
   resolved: boolean;
@@ -146,7 +140,7 @@ interface FeedbackRecord {
 
 interface NocRecord {
   slug: string;
-  studentSlug: string;
+  studentRollNumber: string;
   company: string;
   address: string;
   city: string;
@@ -186,8 +180,8 @@ interface PersonalActivity {
     backlogs: number;
   };
   applications: { jobSlug: string; status: ApplicationStatus; appliedDaysAgo: number }[];
-  nocRequests: (Omit<NocRecord, "studentSlug">)[];
-  feedback: (Omit<FeedbackRecord, "studentSlug">)[];
+  nocRequests: (Omit<NocRecord, "studentRollNumber">)[];
+  feedback: (Omit<FeedbackRecord, "studentRollNumber">)[];
 }
 
 function openArchive() {
@@ -249,6 +243,9 @@ async function seedCompanies(records: CompanyRecord[]) {
       name: record.name,
       website: record.website ?? null,
       description: record.description ?? null,
+      category: record.category ?? null,
+      placementSession: currentYear,
+      turnover: record.turnover ?? null,
     };
     await db.company.upsert({ where: { id }, update: data, create: { id, ...data } });
     ids.set(record.slug, id);
@@ -256,36 +253,37 @@ async function seedCompanies(records: CompanyRecord[]) {
   return ids;
 }
 
-async function seedStudents(records: StudentRecord[]) {
+/**
+ * Looks up real roster accounts by roll number, rather than creating them:
+ * the demo dataset now attaches its dummy applications, offers, feedback, and
+ * NOC requests directly to real students so the portal looks populated for
+ * whoever signs in, instead of to synthetic `demo-` accounts nobody can sign
+ * in as. `npm run db:import-students` must have created these first.
+ */
+async function loadStudentsByRollNumber(rollNumbers: string[]) {
+  const unique = [...new Set(rollNumbers.map((rollNumber) => rollNumber.toUpperCase()))];
+  const users = await db.user.findMany({
+    where: { rollNumber: { in: unique } },
+    select: { id: true, rollNumber: true, batch: true },
+  });
+
   const ids = new Map<string, string>();
-  for (const record of records) {
-    const email = studentEmail(record.slug);
-    const data = {
-      name: record.name,
-      rollNumber: record.rollNumber,
-      branch: record.branch,
-      degree: record.degree,
-      batch: currentYear + record.batchOffset,
-      gender: record.gender,
-      category: record.category,
-      contactNumber: record.contactNumber,
-      class10Percent: record.class10Percent,
-      class12Percent: record.class12Percent,
-      semGPAs: record.semGPAs,
-      cgpa: record.cgpa,
-      backlogs: record.backlogs,
-    };
-    // Keyed on email rather than id because email is the identity Auth.js uses;
-    // the deterministic id is only applied when the row is first created.
-    const user = await db.user.upsert({
-      where: { email },
-      update: data,
-      create: { id: demoId("user", record.slug), email, role: "STUDENT", ...data },
-      select: { id: true },
-    });
-    ids.set(record.slug, user.id);
+  const batches = new Map<string, number>();
+  for (const user of users) {
+    if (!user.rollNumber) continue;
+    ids.set(user.rollNumber, user.id);
+    if (user.batch !== null) batches.set(user.rollNumber, user.batch);
   }
-  return ids;
+
+  const missing = unique.filter((rollNumber) => !ids.has(rollNumber));
+  if (missing.length > 0) {
+    throw new Error(
+      `The demo dataset references ${missing.length} roll number(s) with no account, e.g. "${missing[0]}". ` +
+        'Run "npm run db:import-students" first so the real roster exists.',
+    );
+  }
+
+  return { ids, batches };
 }
 
 async function seedJobs(
@@ -309,10 +307,13 @@ async function seedJobs(
       allowedBranches: record.allowedBranches,
       allowedDegrees: record.allowedDegrees,
       allowedGenders: record.allowedGenders,
+      min10Percent: record.min10Percent ?? null,
+      min12Percent: record.min12Percent ?? null,
       jobCategory: record.jobCategory ?? null,
-      batch: currentYear + record.batchOffset,
-      // Demo drives recruit the batch whose season they run in.
-      placementYear: currentYear + record.batchOffset,
+      // Absolute, not an offset from today: it has to match the real
+      // students the job targets, whose graduating year is itself fixed.
+      batch: record.batch,
+      placementYear: record.batch,
       registrationDeadline: offsetDays(record.deadlineInDays),
       status: record.status,
       openingOverview: record.openingOverview ?? null,
@@ -344,8 +345,8 @@ async function seedApplications(
   jobIds: Map<string, string>,
 ) {
   for (const record of records) {
-    const label = `application "${record.studentSlug} -> ${record.jobSlug}"`;
-    const userId = lookup(studentIds, record.studentSlug, "student", label);
+    const label = `application "${record.studentRollNumber} -> ${record.jobSlug}"`;
+    const userId = lookup(studentIds, record.studentRollNumber, "student", label);
     const jobProfileId = lookup(jobIds, record.jobSlug, "job", label);
     const appliedAt = offsetDays(-record.appliedDaysAgo);
 
@@ -353,7 +354,7 @@ async function seedApplications(
       where: { userId_jobProfileId: { userId, jobProfileId } },
       update: { status: record.status, appliedAt },
       create: {
-        id: demoId("application", `${record.studentSlug}--${record.jobSlug}`),
+        id: demoId("application", `${record.studentRollNumber}--${record.jobSlug}`),
         userId,
         jobProfileId,
         status: record.status,
@@ -405,8 +406,8 @@ async function seedOffers(
   for (const record of records) {
     const id = demoId("offer", record.slug);
     const label = `offer "${record.slug}"`;
-    const userId = lookup(studentIds, record.studentSlug, "student", label);
-    const batch = studentBatches.get(record.studentSlug);
+    const userId = lookup(studentIds, record.studentRollNumber, "student", label);
+    const batch = studentBatches.get(record.studentRollNumber);
     if (batch === undefined) {
       throw new Error(`${label} references a student with no batch.`);
     }
@@ -417,6 +418,8 @@ async function seedOffers(
       jobProfileId: record.jobSlug ? lookup(jobIds, record.jobSlug, "job", label) : null,
       type: record.type,
       status: record.status,
+      source: record.source ?? undefined,
+      jobTitle: record.jobTitle ?? null,
       batch,
       ctc: record.ctc ?? null,
       stipend: record.stipend ?? null,
@@ -439,7 +442,7 @@ async function seedFeedback(records: FeedbackRecord[], studentIds: Map<string, s
   for (const record of records) {
     const id = demoId("feedback", record.slug);
     const data = {
-      userId: lookup(studentIds, record.studentSlug, "student", `feedback "${record.slug}"`),
+      userId: lookup(studentIds, record.studentRollNumber, "student", `feedback "${record.slug}"`),
       feedbackType: record.feedbackType,
       content: record.content,
       resolved: record.resolved,
@@ -457,7 +460,12 @@ async function seedNocRequests(records: NocRecord[], studentIds: Map<string, str
     const id = demoId("noc", record.slug);
     const startDate = offsetDays(record.startDaysFromNow);
     const data = {
-      userId: lookup(studentIds, record.studentSlug, "student", `NOC request "${record.slug}"`),
+      userId: lookup(
+        studentIds,
+        record.studentRollNumber,
+        "student",
+        `NOC request "${record.slug}"`,
+      ),
       company: record.company,
       address: record.address,
       city: record.city,
@@ -629,7 +637,6 @@ async function main() {
   const adminId = await resolveAdministratorId();
 
   const companies = readEntry<CompanyRecord[]>(zip, "companies.json");
-  const students = readEntry<StudentRecord[]>(zip, "students.json");
   const jobs = readEntry<JobRecord[]>(zip, "job-profiles.json");
   const applications = readEntry<ApplicationRecord[]>(zip, "applications.json");
   const announcements = readEntry<AnnouncementRecord[]>(zip, "announcements.json");
@@ -640,26 +647,27 @@ async function main() {
   const personalActivity = readEntry<PersonalActivity>(zip, "personal-activity.json");
   const studentEmails = requestedStudentEmails();
 
+  const referencedRollNumbers = [
+    ...applications.map((a) => a.studentRollNumber),
+    ...offers.map((o) => o.studentRollNumber),
+    ...feedback.map((f) => f.studentRollNumber),
+    ...nocRequests.map((n) => n.studentRollNumber),
+  ];
+  const { ids: studentIds, batches: studentBatches } =
+    await loadStudentsByRollNumber(referencedRollNumbers);
+
   const companyIds = await seedCompanies(companies);
-  const studentIds = await seedStudents(students);
   const jobIds = await seedJobs(jobs, companyIds, adminId);
   await seedApplications(applications, studentIds, jobIds);
   await seedAnnouncements(announcements, companyIds, adminId);
-  await seedOffers(
-    offers,
-    studentIds,
-    companyIds,
-    jobIds,
-    new Map(students.map((student) => [student.slug, currentYear + student.batchOffset])),
-    adminId,
-  );
+  await seedOffers(offers, studentIds, companyIds, jobIds, studentBatches, adminId);
   await seedFeedback(feedback, studentIds);
   await seedNocRequests(nocRequests, studentIds);
   await seedTeamMembers(teamMembers);
 
-  console.log("Seeded the demonstration dataset from seed-data.zip:");
+  console.log("Seeded the demonstration dataset from seed-data.zip, attached to the real roster:");
   console.log(`  companies      ${companies.length}`);
-  console.log(`  students       ${students.length}`);
+  console.log(`  students       ${studentIds.size} real roster account(s) referenced`);
   console.log(`  job profiles   ${jobs.length}`);
   console.log(`  applications   ${applications.length}`);
   console.log(`  announcements  ${announcements.length}`);
@@ -673,8 +681,9 @@ async function main() {
     await seedPersonalActivity(studentEmails, personalActivity, jobIds);
   } else {
     console.log(
-      "The generated students cannot sign in, so your own student pages stay empty.\n" +
-        "Give your account its own applications, NOC requests, and feedback with:\n" +
+      "The applications, offers, feedback, and NOC requests above belong to a handful of\n" +
+        "real roster accounts, so most student pages stay empty unless you sign in as one\n" +
+        "of them. Give your own account its own activity with:\n" +
         "  make db-seed-demo EMAIL=you@iiitl.ac.in",
     );
   }

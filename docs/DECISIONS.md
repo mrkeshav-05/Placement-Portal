@@ -440,7 +440,7 @@ Docker.
 
 A root `Makefile` is now the entry point. `make up` builds, starts, and blocks
 until every container reports healthy; `make seed` applies migrations and loads
-administrators, the 445-row student roster, and the demonstration dataset in a
+administrators, the student roster, and the demonstration dataset in a
 single container run. Everything else is a subcommand of those two, and
 `make help` is generated from the `##` comment on each target, so the list
 cannot drift from the file.
@@ -451,8 +451,8 @@ Three things made that possible:
   a YAML anchor, gated behind a Compose profile so `up` never starts it. Every
   `make db-*` target is `docker compose run --rm tools <script>`, which puts the
   script on the stack's network with the in-cluster `DATABASE_URL` already set.
-  `students_data.json` is copied into that image, since the roster import reads
-  it from the repository root.
+  `database/seed-data/students.json` is copied into that image as part of
+  `database/`, since the roster import reads it from there.
 - **`.env` is a Make file target**, not a documented step. Any target that needs
   configuration depends on `.env`, so a first-time contributor gets one written
   from `.env.example` with a fresh `AUTH_SECRET` and `ENCRYPTION_KEY` instead of
@@ -1032,3 +1032,61 @@ criteria, not informational-only text fields.
   `ToggleGroup`, not a single dropdown, despite the reference image showing
   one. Converting it would have dropped the ability to allow two genders
   while excluding a third, which nothing asked for.
+
+## 2026-09-21 — The real roster replaces `students_data.json`, and the demo dataset attaches to it directly
+
+The placement cell supplied the actual 668-row student roster (roll number,
+name, branch, degree, graduation year, and a shared default password) and it
+now lives at `database/seed-data/students.json` — the path the *synthetic*
+demo roster used to occupy before this entry. Two scripts needed to change
+because of where that file now lives and what it now means:
+
+- **`database/scripts/import-students.ts`** reads the roster from
+  `database/seed-data/students.json` instead of a root `students_data.json`
+  (removed), and from the roster's own column names (`Institute Email ID`,
+  `Full Name`, `Roll Number`, `Graduation Year`, `Branch`, `Degree`,
+  `Password`) instead of the old lowercase/underscore ones. It now also sets
+  `passwordHash` from the roster's `Password` column on every run, the same
+  as `branch`/`degree`/`batch`/`personalEmail` already were — this is
+  deliberately an overwrite, not a fill-the-gap, because the production
+  workflow this exists for is: the placement cell rotates a student's
+  password by editing their row in the roster, reseeds, and emails them the
+  new password from the same row. A "only if empty" rule would silently keep
+  the old password live after that email went out. Rows that share a
+  password (every row does today, in the local development dataset) still
+  only pay bcrypt's hashing cost once, since the hash is cached by plaintext
+  value within a single run. One consequence worth stating plainly: an
+  individual password set through `/admin/users` (the documented path for
+  recovering one student's forgotten password) is overwritten the next time
+  `db:import-students` runs, if that student's roster row was not updated to
+  match. Bulk rotation belongs in the roster; one-off recovery between
+  rotations does not survive the next import.
+- **`database/scripts/seed-demo-data.ts`** no longer creates a small set of
+  synthetic `demo-user-*` accounts for its dummy companies, job profiles,
+  applications, offers, feedback, and NOC requests to point at. It looks up
+  real accounts by roll number instead (`loadStudentsByRollNumber`, which
+  fails loudly if `db:import-students` has not run yet) and every
+  `studentSlug` field across `database/seed-data/{applications,offers,
+  feedback,noc-requests}.json` and `personal-activity.json` is now
+  `studentRollNumber`. `database/seed-data/students.json` is no longer one of
+  the zip's entries — it is real data, not demo data, and
+  `pack-demo-data.ts` now excludes it by name so it never lands in
+  `seed-data.zip`.
+
+Chosen over keeping the two rosters (real accounts + a small synthetic one for
+demo activity) separate, which was the only alternative considered: it stays
+truer to the stated goal of a portal that already looks populated for actual
+students the moment `make seed` finishes, at the cost of `make db-remove-demo`
+no longer being a full undo of `make db-seed-demo` — the applications, offers,
+feedback, and NOC rows it created are removed as before (they keep their
+`demo-` ids), but the real accounts they were attached to, and any profile
+fields `db:import-students` filled on them, are not, because removing a real
+student account was never on the table.
+
+`JobRecord.batch` also changed from `currentYear + batchOffset` to a literal
+graduating year (2027 or 2028 in the current dataset). The old relative-offset
+scheme kept the synthetic roster from going stale as real time passed, but a
+job now has to match the fixed graduating year of the real students it
+targets, which does not move just because the calendar did. Registration
+deadlines and every other date in the dataset are still offsets from the seed
+run, so they stay evergreen.

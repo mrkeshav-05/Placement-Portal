@@ -1,194 +1,6014 @@
 [
   {
-    "slug": "aarav-sharma",
-    "name": "Aarav Sharma",
-    "rollNumber": "DEMO2021001",
-    "branch": "CSE",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Male",
-    "category": "General",
-    "contactNumber": "9000000001",
-    "class10Percent": 94.2,
-    "class12Percent": 93.0,
-    "semGPAs": [8.9, 9.1, 8.8, 9.2, 9.0, 9.3],
-    "cgpa": 9.05,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023001@iiitl.ac.in",
+    "Full Name": "Shantappa Hulsure",
+    "Roll Number": "LCB2023001",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "isha-verma",
-    "name": "Isha Verma",
-    "rollNumber": "DEMO2021002",
-    "branch": "IT",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Female",
-    "category": "General",
-    "contactNumber": "9000000002",
-    "class10Percent": 96.0,
-    "class12Percent": 95.4,
-    "semGPAs": [9.4, 9.5, 9.3, 9.6, 9.4, 9.5],
-    "cgpa": 9.45,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023002@iiitl.ac.in",
+    "Full Name": "Nachiket Deore",
+    "Roll Number": "LCB2023002",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "rohan-mehta",
-    "name": "Rohan Mehta",
-    "rollNumber": "DEMO2021003",
-    "branch": "CSE",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Male",
-    "category": "OBC",
-    "contactNumber": "9000000003",
-    "class10Percent": 88.0,
-    "class12Percent": 85.6,
-    "semGPAs": [7.4, 7.2, 7.6, 7.5, 7.3, 7.4],
-    "cgpa": 7.4,
-    "backlogs": 1
+    "Institute Email ID": "lcb2023003@iiitl.ac.in",
+    "Full Name": "Pratham Hole",
+    "Roll Number": "LCB2023003",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "ananya-iyer",
-    "name": "Ananya Iyer",
-    "rollNumber": "DEMO2021004",
-    "branch": "CSAI",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Female",
-    "category": "General",
-    "contactNumber": "9000000004",
-    "class10Percent": 92.8,
-    "class12Percent": 91.2,
-    "semGPAs": [8.6, 8.8, 8.5, 8.9, 8.7, 8.8],
-    "cgpa": 8.72,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023004@iiitl.ac.in",
+    "Full Name": "Ajay Kumar Baghel",
+    "Roll Number": "LCB2023004",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "kabir-nair",
-    "name": "Kabir Nair",
-    "rollNumber": "DEMO2021005",
-    "branch": "CSB",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Male",
-    "category": "General",
-    "contactNumber": "9000000005",
-    "class10Percent": 90.0,
-    "class12Percent": 89.4,
-    "semGPAs": [8.1, 8.3, 8.0, 8.4, 8.2, 8.3],
-    "cgpa": 8.22,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023005@iiitl.ac.in",
+    "Full Name": "Sparsh Sinha",
+    "Roll Number": "LCB2023005",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "meera-krishnan",
-    "name": "Meera Krishnan",
-    "rollNumber": "DEMO2021006",
-    "branch": "IT",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Female",
-    "category": "SC",
-    "contactNumber": "9000000006",
-    "class10Percent": 87.5,
-    "class12Percent": 86.0,
-    "semGPAs": [7.9, 8.0, 7.8, 8.1, 7.9, 8.0],
-    "cgpa": 7.95,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023006@iiitl.ac.in",
+    "Full Name": "Kritika Yadav",
+    "Roll Number": "LCB2023006",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "vivaan-gupta",
-    "name": "Vivaan Gupta",
-    "rollNumber": "DEMO2021007",
-    "branch": "CSE",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Male",
-    "category": "General",
-    "contactNumber": "9000000007",
-    "class10Percent": 85.0,
-    "class12Percent": 82.4,
-    "semGPAs": [6.8, 6.5, 6.9, 6.7, 6.6, 6.8],
-    "cgpa": 6.72,
-    "backlogs": 2
+    "Institute Email ID": "lcb2023007@iiitl.ac.in",
+    "Full Name": "Akshay Kumar",
+    "Roll Number": "LCB2023007",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "saanvi-rao",
-    "name": "Saanvi Rao",
-    "rollNumber": "DEMO2021008",
-    "branch": "CSAI",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Female",
-    "category": "General",
-    "contactNumber": "9000000008",
-    "class10Percent": 95.2,
-    "class12Percent": 94.8,
-    "semGPAs": [9.1, 9.0, 9.2, 9.3, 9.1, 9.2],
-    "cgpa": 9.15,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023008@iiitl.ac.in",
+    "Full Name": "Raunak Dange",
+    "Roll Number": "LCB2023008",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "arjun-desai",
-    "name": "Arjun Desai",
-    "rollNumber": "DEMO2021009",
-    "branch": "IT",
-    "degree": "B.Tech",
-    "batchOffset": 1,
-    "gender": "Male",
-    "category": "OBC",
-    "contactNumber": "9000000009",
-    "class10Percent": 89.6,
-    "class12Percent": 88.2,
-    "semGPAs": [8.4, 8.2, 8.5, 8.3, 8.6, 8.4],
-    "cgpa": 8.4,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023009@iiitl.ac.in",
+    "Full Name": "Rahul Naskar",
+    "Roll Number": "LCB2023009",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "diya-chatterjee",
-    "name": "Diya Chatterjee",
-    "rollNumber": "DEMO2022010",
-    "branch": "CSE",
-    "degree": "M.Tech",
-    "batchOffset": 2,
-    "gender": "Female",
-    "category": "General",
-    "contactNumber": "9000000010",
-    "class10Percent": 91.0,
-    "class12Percent": 90.6,
-    "semGPAs": [8.8, 9.0, 8.9, 9.1],
-    "cgpa": 8.95,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023010@iiitl.ac.in",
+    "Full Name": "Utkarsh Gupta",
+    "Roll Number": "LCB2023010",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "aditya-joshi",
-    "name": "Aditya Joshi",
-    "rollNumber": "DEMO2022011",
-    "branch": "CSB",
-    "degree": "B.Tech",
-    "batchOffset": 2,
-    "gender": "Male",
-    "category": "General",
-    "contactNumber": "9000000011",
-    "class10Percent": 86.4,
-    "class12Percent": 84.8,
-    "semGPAs": [7.6, 7.8, 7.7, 7.9],
-    "cgpa": 7.75,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023011@iiitl.ac.in",
+    "Full Name": "Dishant Garg",
+    "Roll Number": "LCB2023011",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
   },
   {
-    "slug": "navya-reddy",
-    "name": "Navya Reddy",
-    "rollNumber": "DEMO2022012",
-    "branch": "CSAI",
-    "degree": "B.Tech",
-    "batchOffset": 2,
-    "gender": "Female",
-    "category": "General",
-    "contactNumber": "9000000012",
-    "class10Percent": 93.4,
-    "class12Percent": 92.0,
-    "semGPAs": [8.7, 8.9, 8.8, 9.0],
-    "cgpa": 8.85,
-    "backlogs": 0
+    "Institute Email ID": "lcb2023012@iiitl.ac.in",
+    "Full Name": "Ansh Bhargava",
+    "Roll Number": "LCB2023012",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023013@iiitl.ac.in",
+    "Full Name": "Ujjwal Goyal",
+    "Roll Number": "LCB2023013",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023014@iiitl.ac.in",
+    "Full Name": "Vaidehi Joshi",
+    "Roll Number": "LCB2023014",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023015@iiitl.ac.in",
+    "Full Name": "Kaithey Hanika Vasu",
+    "Roll Number": "LCB2023015",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023016@iiitl.ac.in",
+    "Full Name": "Eshant Gupta",
+    "Roll Number": "LCB2023016",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023017@iiitl.ac.in",
+    "Full Name": "Raj Rakshit Shukla",
+    "Roll Number": "LCB2023017",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023018@iiitl.ac.in",
+    "Full Name": "Anushka",
+    "Roll Number": "LCB2023018",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023019@iiitl.ac.in",
+    "Full Name": "Aryan Sharma",
+    "Roll Number": "LCB2023019",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023020@iiitl.ac.in",
+    "Full Name": "Yeggoni Ranadeep",
+    "Roll Number": "LCB2023020",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023021@iiitl.ac.in",
+    "Full Name": "Apoorv Mittal",
+    "Roll Number": "LCB2023021",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023022@iiitl.ac.in",
+    "Full Name": "Tanmay Janardan Deshmukh",
+    "Roll Number": "LCB2023022",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023023@iiitl.ac.in",
+    "Full Name": "Ashwin Gajbhiye",
+    "Roll Number": "LCB2023023",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023025@iiitl.ac.in",
+    "Full Name": "Sahin Kaushar",
+    "Roll Number": "LCB2023025",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023026@iiitl.ac.in",
+    "Full Name": "Erin Helga D Silva",
+    "Roll Number": "LCB2023026",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023027@iiitl.ac.in",
+    "Full Name": "Diana Solomon",
+    "Roll Number": "LCB2023027",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023028@iiitl.ac.in",
+    "Full Name": "Hardee Amit Parekh",
+    "Roll Number": "LCB2023028",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023029@iiitl.ac.in",
+    "Full Name": "Vaibhav Verma",
+    "Roll Number": "LCB2023029",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023030@iiitl.ac.in",
+    "Full Name": "Shivang Agrahari",
+    "Roll Number": "LCB2023030",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023031@iiitl.ac.in",
+    "Full Name": "Prateek Mishra",
+    "Roll Number": "LCB2023031",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023032@iiitl.ac.in",
+    "Full Name": "Gaurav Ghodinde",
+    "Roll Number": "LCB2023032",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023033@iiitl.ac.in",
+    "Full Name": "Atul Gond",
+    "Roll Number": "LCB2023033",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023034@iiitl.ac.in",
+    "Full Name": "Manish Kumar",
+    "Roll Number": "LCB2023034",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023035@iiitl.ac.in",
+    "Full Name": "Lavish Shakya",
+    "Roll Number": "LCB2023035",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023037@iiitl.ac.in",
+    "Full Name": "Abhay Sagar",
+    "Roll Number": "LCB2023037",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023038@iiitl.ac.in",
+    "Full Name": "Kehsav Pundhir",
+    "Roll Number": "LCB2023038",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023039@iiitl.ac.in",
+    "Full Name": "Prashik Humane",
+    "Roll Number": "LCB2023039",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023040@iiitl.ac.in",
+    "Full Name": "Pranilash Reddy Pesara",
+    "Roll Number": "LCB2023040",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023041@iiitl.ac.in",
+    "Full Name": "Ramcharan Teja",
+    "Roll Number": "LCB2023041",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023042@iiitl.ac.in",
+    "Full Name": "Anjali Meena",
+    "Roll Number": "LCB2023042",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023043@iiitl.ac.in",
+    "Full Name": "Boda Baba",
+    "Roll Number": "LCB2023043",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023044@iiitl.ac.in",
+    "Full Name": "Ananya Kuchhal",
+    "Roll Number": "LCB2023044",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023045@iiitl.ac.in",
+    "Full Name": "Tanish Moral",
+    "Roll Number": "LCB2023045",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023046@iiitl.ac.in",
+    "Full Name": "Amritanshu Priyadarshi",
+    "Roll Number": "LCB2023046",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023047@iiitl.ac.in",
+    "Full Name": "Ranjni Singh Rajput",
+    "Roll Number": "LCB2023047",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023048@iiitl.ac.in",
+    "Full Name": "Bhumika Wahane",
+    "Roll Number": "LCB2023048",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023049@iiitl.ac.in",
+    "Full Name": "Arun Kumar Swami",
+    "Roll Number": "LCB2023049",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023050@iiitl.ac.in",
+    "Full Name": "Piyush Nayak",
+    "Roll Number": "LCB2023050",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023051@iiitl.ac.in",
+    "Full Name": "Aman Verma",
+    "Roll Number": "LCB2023051",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023052@iiitl.ac.in",
+    "Full Name": "Nanera Ankur Nitinbhai",
+    "Roll Number": "LCB2023052",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023053@iiitl.ac.in",
+    "Full Name": "Medha Bhardwaj",
+    "Roll Number": "LCB2023053",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023054@iiitl.ac.in",
+    "Full Name": "Shresth Sharma",
+    "Roll Number": "LCB2023054",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023055@iiitl.ac.in",
+    "Full Name": "Adarsh Verma",
+    "Roll Number": "LCB2023055",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023056@iiitl.ac.in",
+    "Full Name": "Sameer Anil Pazare",
+    "Roll Number": "LCB2023056",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2023057@iiitl.ac.in",
+    "Full Name": "Sayimpu Leela Aakash",
+    "Roll Number": "LCB2023057",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024001@iiitl.ac.in",
+    "Full Name": "Dinar",
+    "Roll Number": "LCB2024001",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024002@iiitl.ac.in",
+    "Full Name": "Aditi Kute",
+    "Roll Number": "LCB2024002",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024003@iiitl.ac.in",
+    "Full Name": "Chilkuri Pradyumna Reddy",
+    "Roll Number": "LCB2024003",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024004@iiitl.ac.in",
+    "Full Name": "Kinshuk Sanand",
+    "Roll Number": "LCB2024004",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024005@iiitl.ac.in",
+    "Full Name": "Lav Garg",
+    "Roll Number": "LCB2024005",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024006@iiitl.ac.in",
+    "Full Name": "Manas Srivastava",
+    "Roll Number": "LCB2024006",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024007@iiitl.ac.in",
+    "Full Name": "Khushi",
+    "Roll Number": "LCB2024007",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024008@iiitl.ac.in",
+    "Full Name": "Janmesh Shewale",
+    "Roll Number": "LCB2024008",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024009@iiitl.ac.in",
+    "Full Name": "Abhinav Kumar Jha",
+    "Roll Number": "LCB2024009",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024010@iiitl.ac.in",
+    "Full Name": "Mehul Raj",
+    "Roll Number": "LCB2024010",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024011@iiitl.ac.in",
+    "Full Name": "Parteek",
+    "Roll Number": "LCB2024011",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024012@iiitl.ac.in",
+    "Full Name": "Tanishka Meena",
+    "Roll Number": "LCB2024012",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024013@iiitl.ac.in",
+    "Full Name": "Stephen Elizah",
+    "Roll Number": "LCB2024013",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024014@iiitl.ac.in",
+    "Full Name": "Keshav",
+    "Roll Number": "LCB2024014",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024015@iiitl.ac.in",
+    "Full Name": "Nihal Sharma",
+    "Roll Number": "LCB2024015",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024016@iiitl.ac.in",
+    "Full Name": "Kushagra",
+    "Roll Number": "LCB2024016",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024017@iiitl.ac.in",
+    "Full Name": "Varun Kailas Baisane",
+    "Roll Number": "LCB2024017",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024018@iiitl.ac.in",
+    "Full Name": "Vipul Solanki",
+    "Roll Number": "LCB2024018",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024019@iiitl.ac.in",
+    "Full Name": "Ram",
+    "Roll Number": "LCB2024019",
+    "Graduation Year": "2027",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024020@iiitl.ac.in",
+    "Full Name": "N V H Nikhil",
+    "Roll Number": "LCB2024020",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024021@iiitl.ac.in",
+    "Full Name": "Vennela Varshini Anasoori",
+    "Roll Number": "LCB2024021",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024022@iiitl.ac.in",
+    "Full Name": "Mohit Garg",
+    "Roll Number": "LCB2024022",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024023@iiitl.ac.in",
+    "Full Name": "Parth Vallabhbhai Khunt",
+    "Roll Number": "LCB2024023",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024024@iiitl.ac.in",
+    "Full Name": "Nitesh Kumar Kumawat",
+    "Roll Number": "LCB2024024",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024025@iiitl.ac.in",
+    "Full Name": "Vedant Vinod Kulkarni",
+    "Roll Number": "LCB2024025",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024026@iiitl.ac.in",
+    "Full Name": "Anuj Gupta",
+    "Roll Number": "LCB2024026",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024027@iiitl.ac.in",
+    "Full Name": "Shubham Mittal",
+    "Roll Number": "LCB2024027",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024028@iiitl.ac.in",
+    "Full Name": "Amit Singh",
+    "Roll Number": "LCB2024028",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024029@iiitl.ac.in",
+    "Full Name": "Tanish Kumar Rai",
+    "Roll Number": "LCB2024029",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024030@iiitl.ac.in",
+    "Full Name": "Lakshya Garg",
+    "Roll Number": "LCB2024030",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024031@iiitl.ac.in",
+    "Full Name": "Parth Vijay",
+    "Roll Number": "LCB2024031",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024032@iiitl.ac.in",
+    "Full Name": "Ritvika Singh Arya",
+    "Roll Number": "LCB2024032",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024033@iiitl.ac.in",
+    "Full Name": "Aishwarya Singh",
+    "Roll Number": "LCB2024033",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024034@iiitl.ac.in",
+    "Full Name": "N S Puneeth",
+    "Roll Number": "LCB2024034",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024035@iiitl.ac.in",
+    "Full Name": "Avani Munshi",
+    "Roll Number": "LCB2024035",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024036@iiitl.ac.in",
+    "Full Name": "Ayush Verma",
+    "Roll Number": "LCB2024036",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024037@iiitl.ac.in",
+    "Full Name": "Akash Thakur",
+    "Roll Number": "LCB2024037",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024038@iiitl.ac.in",
+    "Full Name": "Soumyaditya Masanta",
+    "Roll Number": "LCB2024038",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024039@iiitl.ac.in",
+    "Full Name": "Akshay Devidas Lad",
+    "Roll Number": "LCB2024039",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024040@iiitl.ac.in",
+    "Full Name": "Devansh Chaudhary",
+    "Roll Number": "LCB2024040",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024041@iiitl.ac.in",
+    "Full Name": "Harshita Patel",
+    "Roll Number": "LCB2024041",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024042@iiitl.ac.in",
+    "Full Name": "Abhinav Neema",
+    "Roll Number": "LCB2024042",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024043@iiitl.ac.in",
+    "Full Name": "Sushant Verma",
+    "Roll Number": "LCB2024043",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024044@iiitl.ac.in",
+    "Full Name": "Mohammad Rehan Khan",
+    "Roll Number": "LCB2024044",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024045@iiitl.ac.in",
+    "Full Name": "Sambhav Sharma",
+    "Roll Number": "LCB2024045",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024046@iiitl.ac.in",
+    "Full Name": "Gourav Kumar",
+    "Roll Number": "LCB2024046",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024047@iiitl.ac.in",
+    "Full Name": "Anish Kumawat",
+    "Roll Number": "LCB2024047",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024048@iiitl.ac.in",
+    "Full Name": "Manav Agarwal",
+    "Roll Number": "LCB2024048",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024049@iiitl.ac.in",
+    "Full Name": "Aditya Manoj Mishra",
+    "Roll Number": "LCB2024049",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024050@iiitl.ac.in",
+    "Full Name": "Sanika Sharad Gaikwad",
+    "Roll Number": "LCB2024050",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024051@iiitl.ac.in",
+    "Full Name": "Atharv Vaish",
+    "Roll Number": "LCB2024051",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024052@iiitl.ac.in",
+    "Full Name": "Manas Sharma",
+    "Roll Number": "LCB2024052",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024053@iiitl.ac.in",
+    "Full Name": "Yash Meena",
+    "Roll Number": "LCB2024053",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024054@iiitl.ac.in",
+    "Full Name": "Banoth Tejdeep Naik",
+    "Roll Number": "LCB2024054",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024055@iiitl.ac.in",
+    "Full Name": "Mrunal Mahesh Kulkarni",
+    "Roll Number": "LCB2024055",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024056@iiitl.ac.in",
+    "Full Name": "Deva Ganesh",
+    "Roll Number": "LCB2024056",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024057@iiitl.ac.in",
+    "Full Name": "Jayavaram Sreeram",
+    "Roll Number": "LCB2024057",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024058@iiitl.ac.in",
+    "Full Name": "Lucky Mahiwal",
+    "Roll Number": "LCB2024058",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024059@iiitl.ac.in",
+    "Full Name": "Anvesha Chauhan",
+    "Roll Number": "LCB2024059",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcb2024060@iiitl.ac.in",
+    "Full Name": "Tanay Singh",
+    "Roll Number": "LCB2024060",
+    "Graduation Year": "2028",
+    "Branch": "CSB",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023001@iiitl.ac.in",
+    "Full Name": "Pranjay Singh",
+    "Roll Number": "LCI2023001",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023002@iiitl.ac.in",
+    "Full Name": "Jaswanth Prudhvi Taduvai",
+    "Roll Number": "LCI2023002",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023003@iiitl.ac.in",
+    "Full Name": "Aditya Singh",
+    "Roll Number": "LCI2023003",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023004@iiitl.ac.in",
+    "Full Name": "Vedamsh Cheripelli",
+    "Roll Number": "LCI2023004",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023005@iiitl.ac.in",
+    "Full Name": "Saanvi Lohani",
+    "Roll Number": "LCI2023005",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023006@iiitl.ac.in",
+    "Full Name": "Shrishti Dubey",
+    "Roll Number": "LCI2023006",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023007@iiitl.ac.in",
+    "Full Name": "Ayushi Awasthi",
+    "Roll Number": "LCI2023007",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023008@iiitl.ac.in",
+    "Full Name": "Shreya Jambhale",
+    "Roll Number": "LCI2023008",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023009@iiitl.ac.in",
+    "Full Name": "Riya Patil",
+    "Roll Number": "LCI2023009",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023010@iiitl.ac.in",
+    "Full Name": "Devisetty Siri Maya Lalitha",
+    "Roll Number": "LCI2023010",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023012@iiitl.ac.in",
+    "Full Name": "Digvijay Rahul Deshmukh",
+    "Roll Number": "LCI2023012",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023013@iiitl.ac.in",
+    "Full Name": "Tarang Agrawal",
+    "Roll Number": "LCI2023013",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023014@iiitl.ac.in",
+    "Full Name": "Diva Goyal",
+    "Roll Number": "LCI2023014",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023015@iiitl.ac.in",
+    "Full Name": "Nathan Thomas",
+    "Roll Number": "LCI2023015",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023017@iiitl.ac.in",
+    "Full Name": "Papabattula Ruthvik",
+    "Roll Number": "LCI2023017",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023018@iiitl.ac.in",
+    "Full Name": "Ashutosh Dapakara",
+    "Roll Number": "LCI2023018",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023019@iiitl.ac.in",
+    "Full Name": "Deevi Rahul Bharadwaz",
+    "Roll Number": "LCI2023019",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023020@iiitl.ac.in",
+    "Full Name": "Annam Radesh",
+    "Roll Number": "LCI2023020",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023021@iiitl.ac.in",
+    "Full Name": "Ayush Kumar",
+    "Roll Number": "LCI2023021",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023022@iiitl.ac.in",
+    "Full Name": "Akhand Pratap Dhiryan",
+    "Roll Number": "LCI2023022",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023023@iiitl.ac.in",
+    "Full Name": "Shashank Kumar",
+    "Roll Number": "LCI2023023",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023025@iiitl.ac.in",
+    "Full Name": "Prashant Kumar Yadav",
+    "Roll Number": "LCI2023025",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023026@iiitl.ac.in",
+    "Full Name": "Arjun Kunwar",
+    "Roll Number": "LCI2023026",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023027@iiitl.ac.in",
+    "Full Name": "Priyanshu Shah",
+    "Roll Number": "LCI2023027",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023028@iiitl.ac.in",
+    "Full Name": "Abhinav Sagar",
+    "Roll Number": "LCI2023028",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023029@iiitl.ac.in",
+    "Full Name": "Aman Choudhary",
+    "Roll Number": "LCI2023029",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023030@iiitl.ac.in",
+    "Full Name": "Muskan Agrawal",
+    "Roll Number": "LCI2023030",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023031@iiitl.ac.in",
+    "Full Name": "Sarthak Kumar",
+    "Roll Number": "LCI2023031",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023032@iiitl.ac.in",
+    "Full Name": "Nandyala Sai Ganesh Poshith",
+    "Roll Number": "LCI2023032",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023033@iiitl.ac.in",
+    "Full Name": "Aditya Ravindra Masne",
+    "Roll Number": "LCI2023033",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023034@iiitl.ac.in",
+    "Full Name": "Utkarsh Srivastava",
+    "Roll Number": "LCI2023034",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023035@iiitl.ac.in",
+    "Full Name": "Mohd Kaif",
+    "Roll Number": "LCI2023035",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023036@iiitl.ac.in",
+    "Full Name": "Anurag Kumar",
+    "Roll Number": "LCI2023036",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023037@iiitl.ac.in",
+    "Full Name": "Ashwini Kumar Singh",
+    "Roll Number": "LCI2023037",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023038@iiitl.ac.in",
+    "Full Name": "Gagan Mishra",
+    "Roll Number": "LCI2023038",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023039@iiitl.ac.in",
+    "Full Name": "Pratush Shyam Gupt",
+    "Roll Number": "LCI2023039",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023040@iiitl.ac.in",
+    "Full Name": "Nithin Sagili",
+    "Roll Number": "LCI2023040",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023041@iiitl.ac.in",
+    "Full Name": "Akula Nagashiva",
+    "Roll Number": "LCI2023041",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023042@iiitl.ac.in",
+    "Full Name": "Nakshatra Patil",
+    "Roll Number": "LCI2023042",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023043@iiitl.ac.in",
+    "Full Name": "Naresh Kumar Sihag",
+    "Roll Number": "LCI2023043",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023045@iiitl.ac.in",
+    "Full Name": "Vivek Rathore",
+    "Roll Number": "LCI2023045",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023046@iiitl.ac.in",
+    "Full Name": "Aditya Singh Chandel",
+    "Roll Number": "LCI2023046",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023048@iiitl.ac.in",
+    "Full Name": "Khushal Midha",
+    "Roll Number": "LCI2023048",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023049@iiitl.ac.in",
+    "Full Name": "Rahul Kumar",
+    "Roll Number": "LCI2023049",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023050@iiitl.ac.in",
+    "Full Name": "Goutam Dawar",
+    "Roll Number": "LCI2023050",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023051@iiitl.ac.in",
+    "Full Name": "Shiv Kaushik",
+    "Roll Number": "LCI2023051",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023052@iiitl.ac.in",
+    "Full Name": "Swyam Kumar",
+    "Roll Number": "LCI2023052",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023054@iiitl.ac.in",
+    "Full Name": "Piyush Kant",
+    "Roll Number": "LCI2023054",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023055@iiitl.ac.in",
+    "Full Name": "Abhay Sahu",
+    "Roll Number": "LCI2023055",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023056@iiitl.ac.in",
+    "Full Name": "Segu Rohith Kumar",
+    "Roll Number": "LCI2023056",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023057@iiitl.ac.in",
+    "Full Name": "Yendluri Veda Akash",
+    "Roll Number": "LCI2023057",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023058@iiitl.ac.in",
+    "Full Name": "Lakshya Agarwal",
+    "Roll Number": "LCI2023058",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2023059@iiitl.ac.in",
+    "Full Name": "Pagadala Romith Chenna Kesav",
+    "Roll Number": "LCI2023059",
+    "Graduation Year": "2027",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024001@iiitl.ac.in",
+    "Full Name": "Bhumika Mistri",
+    "Roll Number": "LCI2024001",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024002@iiitl.ac.in",
+    "Full Name": "Bhavika Suresh Badhe",
+    "Roll Number": "LCI2024002",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024004@iiitl.ac.in",
+    "Full Name": "Gangolu Suprathik Joshua",
+    "Roll Number": "LCI2024004",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024005@iiitl.ac.in",
+    "Full Name": "Surendra Vishnoi",
+    "Roll Number": "LCI2024005",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024006@iiitl.ac.in",
+    "Full Name": "Abhas Nath",
+    "Roll Number": "LCI2024006",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024007@iiitl.ac.in",
+    "Full Name": "Parchuri Chandrasekhar",
+    "Roll Number": "LCI2024007",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024008@iiitl.ac.in",
+    "Full Name": "Motati Srikar Reddy",
+    "Roll Number": "LCI2024008",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024009@iiitl.ac.in",
+    "Full Name": "Sai Vikas Suthapalli",
+    "Roll Number": "LCI2024009",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024010@iiitl.ac.in",
+    "Full Name": "Arham Kachhara",
+    "Roll Number": "LCI2024010",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024011@iiitl.ac.in",
+    "Full Name": "Shreyansh Jain",
+    "Roll Number": "LCI2024011",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024012@iiitl.ac.in",
+    "Full Name": "Ashutosh Saugan",
+    "Roll Number": "LCI2024012",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024013@iiitl.ac.in",
+    "Full Name": "Pagadala Sindhuja",
+    "Roll Number": "LCI2024013",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024014@iiitl.ac.in",
+    "Full Name": "Avinash Singh",
+    "Roll Number": "LCI2024014",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024015@iiitl.ac.in",
+    "Full Name": "Divyanshu Kumar",
+    "Roll Number": "LCI2024015",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024016@iiitl.ac.in",
+    "Full Name": "Omkar Gaddi",
+    "Roll Number": "LCI2024016",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024017@iiitl.ac.in",
+    "Full Name": "Shourya Bhale",
+    "Roll Number": "LCI2024017",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024018@iiitl.ac.in",
+    "Full Name": "Raja Hasini",
+    "Roll Number": "LCI2024018",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024019@iiitl.ac.in",
+    "Full Name": "Muppidi Hansika Reddy",
+    "Roll Number": "LCI2024019",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024021@iiitl.ac.in",
+    "Full Name": "Aviral Soni",
+    "Roll Number": "LCI2024021",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024022@iiitl.ac.in",
+    "Full Name": "Satyavrat Rai",
+    "Roll Number": "LCI2024022",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024023@iiitl.ac.in",
+    "Full Name": "Shikhar Agarwal",
+    "Roll Number": "LCI2024023",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024024@iiitl.ac.in",
+    "Full Name": "Rohit Kumar Singh",
+    "Roll Number": "LCI2024024",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024025@iiitl.ac.in",
+    "Full Name": "Panmand Pranav Santosh",
+    "Roll Number": "LCI2024025",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024026@iiitl.ac.in",
+    "Full Name": "Manoj Kumar",
+    "Roll Number": "LCI2024026",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024027@iiitl.ac.in",
+    "Full Name": "Srushti Sanjay Vispute",
+    "Roll Number": "LCI2024027",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024028@iiitl.ac.in",
+    "Full Name": "Mehul Kumar Dewangan",
+    "Roll Number": "LCI2024028",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024029@iiitl.ac.in",
+    "Full Name": "Suhani Thakur",
+    "Roll Number": "LCI2024029",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024030@iiitl.ac.in",
+    "Full Name": "Lavanya Nagar",
+    "Roll Number": "LCI2024030",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024031@iiitl.ac.in",
+    "Full Name": "Anmol Agrawal",
+    "Roll Number": "LCI2024031",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024032@iiitl.ac.in",
+    "Full Name": "George Joseph",
+    "Roll Number": "LCI2024032",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024033@iiitl.ac.in",
+    "Full Name": "Mohammad Amaan",
+    "Roll Number": "LCI2024033",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024034@iiitl.ac.in",
+    "Full Name": "Devang Vaishnav",
+    "Roll Number": "LCI2024034",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024035@iiitl.ac.in",
+    "Full Name": "Kuber Vikram Khandare",
+    "Roll Number": "LCI2024035",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024036@iiitl.ac.in",
+    "Full Name": "Tejas S Janagi",
+    "Roll Number": "LCI2024036",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024037@iiitl.ac.in",
+    "Full Name": "Sahasra Kunku",
+    "Roll Number": "LCI2024037",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024038@iiitl.ac.in",
+    "Full Name": "Mayank Tiwari",
+    "Roll Number": "LCI2024038",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024039@iiitl.ac.in",
+    "Full Name": "Pratibha Yadav",
+    "Roll Number": "LCI2024039",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024042@iiitl.ac.in",
+    "Full Name": "Duggempudi Sai Praneeth Reddy",
+    "Roll Number": "LCI2024042",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024043@iiitl.ac.in",
+    "Full Name": "Vaibhav Raj Dwivedi",
+    "Roll Number": "LCI2024043",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024044@iiitl.ac.in",
+    "Full Name": "Piyush Kumar",
+    "Roll Number": "LCI2024044",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024045@iiitl.ac.in",
+    "Full Name": "Ramesh Bijarniya",
+    "Roll Number": "LCI2024045",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024046@iiitl.ac.in",
+    "Full Name": "Ayush Tilekar",
+    "Roll Number": "LCI2024046",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024047@iiitl.ac.in",
+    "Full Name": "Aman Jarwal",
+    "Roll Number": "LCI2024047",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024048@iiitl.ac.in",
+    "Full Name": "Sreeram Bukka",
+    "Roll Number": "LCI2024048",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024049@iiitl.ac.in",
+    "Full Name": "Preetam",
+    "Roll Number": "LCI2024049",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024050@iiitl.ac.in",
+    "Full Name": "Shreya Das",
+    "Roll Number": "LCI2024050",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024051@iiitl.ac.in",
+    "Full Name": "Prasoon Patel",
+    "Roll Number": "LCI2024051",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024052@iiitl.ac.in",
+    "Full Name": "Khan Khurram Mukarram",
+    "Roll Number": "LCI2024052",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024053@iiitl.ac.in",
+    "Full Name": "Jai Parashar",
+    "Roll Number": "LCI2024053",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024054@iiitl.ac.in",
+    "Full Name": "Rakshak Batagurki",
+    "Roll Number": "LCI2024054",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024055@iiitl.ac.in",
+    "Full Name": "Ankit Singh",
+    "Roll Number": "LCI2024055",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024056@iiitl.ac.in",
+    "Full Name": "Nikky",
+    "Roll Number": "LCI2024056",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024058@iiitl.ac.in",
+    "Full Name": "Junagade Vansh Shailesh",
+    "Roll Number": "LCI2024058",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lci2024059@iiitl.ac.in",
+    "Full Name": "Dinabandhu Chatar",
+    "Roll Number": "LCI2024059",
+    "Graduation Year": "2028",
+    "Branch": "CSAI",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023001@iiitl.ac.in",
+    "Full Name": "Hitha Sai Srinath Nalla",
+    "Roll Number": "LCS2023001",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023002@iiitl.ac.in",
+    "Full Name": "Ankit",
+    "Roll Number": "LCS2023002",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023003@iiitl.ac.in",
+    "Full Name": "Rebant Pratap Singh",
+    "Roll Number": "LCS2023003",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023004@iiitl.ac.in",
+    "Full Name": "Vivek Tripathi",
+    "Roll Number": "LCS2023004",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023005@iiitl.ac.in",
+    "Full Name": "Yuwansh Bansal",
+    "Roll Number": "LCS2023005",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023006@iiitl.ac.in",
+    "Full Name": "Sanyam Gupta",
+    "Roll Number": "LCS2023006",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023007@iiitl.ac.in",
+    "Full Name": "Mula Yuva Hemasri",
+    "Roll Number": "LCS2023007",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023008@iiitl.ac.in",
+    "Full Name": "Snehal Manish Taori",
+    "Roll Number": "LCS2023008",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023009@iiitl.ac.in",
+    "Full Name": "Salusha",
+    "Roll Number": "LCS2023009",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023010@iiitl.ac.in",
+    "Full Name": "Deepanshi Verma",
+    "Roll Number": "LCS2023010",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023011@iiitl.ac.in",
+    "Full Name": "Akshaya V",
+    "Roll Number": "LCS2023011",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023012@iiitl.ac.in",
+    "Full Name": "Dev Darshan",
+    "Roll Number": "LCS2023012",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023013@iiitl.ac.in",
+    "Full Name": "Satyajit Sahoo",
+    "Roll Number": "LCS2023013",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023014@iiitl.ac.in",
+    "Full Name": "Rohan Prakash",
+    "Roll Number": "LCS2023014",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023016@iiitl.ac.in",
+    "Full Name": "Nidhish",
+    "Roll Number": "LCS2023016",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023017@iiitl.ac.in",
+    "Full Name": "Lakshya Prajapati",
+    "Roll Number": "LCS2023017",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023018@iiitl.ac.in",
+    "Full Name": "Ashok Kaji",
+    "Roll Number": "LCS2023018",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023019@iiitl.ac.in",
+    "Full Name": "Amolly Choudhary",
+    "Roll Number": "LCS2023019",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023020@iiitl.ac.in",
+    "Full Name": "Anadi Mehta",
+    "Roll Number": "LCS2023020",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023021@iiitl.ac.in",
+    "Full Name": "Soham Balwant",
+    "Roll Number": "LCS2023021",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023022@iiitl.ac.in",
+    "Full Name": "Sanchita Patel",
+    "Roll Number": "LCS2023022",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023023@iiitl.ac.in",
+    "Full Name": "Aditya Mahamuni",
+    "Roll Number": "LCS2023023",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023024@iiitl.ac.in",
+    "Full Name": "Shivam Zhar",
+    "Roll Number": "LCS2023024",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023025@iiitl.ac.in",
+    "Full Name": "Ajay",
+    "Roll Number": "LCS2023025",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023026@iiitl.ac.in",
+    "Full Name": "Raghvendra Mishra",
+    "Roll Number": "LCS2023026",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023027@iiitl.ac.in",
+    "Full Name": "Srinidhi Kukkudapu",
+    "Roll Number": "LCS2023027",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023028@iiitl.ac.in",
+    "Full Name": "Koushik Yadav",
+    "Roll Number": "LCS2023028",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023029@iiitl.ac.in",
+    "Full Name": "Arshia Adhya",
+    "Roll Number": "LCS2023029",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023030@iiitl.ac.in",
+    "Full Name": "Kalyan Chilamkuri",
+    "Roll Number": "LCS2023030",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023031@iiitl.ac.in",
+    "Full Name": "Sankaramaddi Yamini",
+    "Roll Number": "LCS2023031",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023032@iiitl.ac.in",
+    "Full Name": "Siddharth Paladi",
+    "Roll Number": "LCS2023032",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023033@iiitl.ac.in",
+    "Full Name": "Vaibhav Rawat",
+    "Roll Number": "LCS2023033",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023034@iiitl.ac.in",
+    "Full Name": "Tanishq Kancharla",
+    "Roll Number": "LCS2023034",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023035@iiitl.ac.in",
+    "Full Name": "Vedant Jadhav",
+    "Roll Number": "LCS2023035",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023036@iiitl.ac.in",
+    "Full Name": "Nayaab Zameer Qazi",
+    "Roll Number": "LCS2023036",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023037@iiitl.ac.in",
+    "Full Name": "Sai Sri Chandana Pappala",
+    "Roll Number": "LCS2023037",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023038@iiitl.ac.in",
+    "Full Name": "Mohd Haider",
+    "Roll Number": "LCS2023038",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023039@iiitl.ac.in",
+    "Full Name": "Sarthak Nayyar",
+    "Roll Number": "LCS2023039",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023040@iiitl.ac.in",
+    "Full Name": "Hitarth Singh Rajput",
+    "Roll Number": "LCS2023040",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023041@iiitl.ac.in",
+    "Full Name": "Vinayak Chaurasia",
+    "Roll Number": "LCS2023041",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023042@iiitl.ac.in",
+    "Full Name": "Akshat Singh",
+    "Roll Number": "LCS2023042",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023043@iiitl.ac.in",
+    "Full Name": "Sidharth Kumar Singh",
+    "Roll Number": "LCS2023043",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023044@iiitl.ac.in",
+    "Full Name": "Sumit Kumar",
+    "Roll Number": "LCS2023044",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023045@iiitl.ac.in",
+    "Full Name": "Aryam Agarwal",
+    "Roll Number": "LCS2023045",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023046@iiitl.ac.in",
+    "Full Name": "Karthik Batthi",
+    "Roll Number": "LCS2023046",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023047@iiitl.ac.in",
+    "Full Name": "Mayank Mishra",
+    "Roll Number": "LCS2023047",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023048@iiitl.ac.in",
+    "Full Name": "Sangale Sumit Mahadeo",
+    "Roll Number": "LCS2023048",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023049@iiitl.ac.in",
+    "Full Name": "Gana Kalvakuntla",
+    "Roll Number": "LCS2023049",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023050@iiitl.ac.in",
+    "Full Name": "Pranjal Sharma",
+    "Roll Number": "LCS2023050",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023051@iiitl.ac.in",
+    "Full Name": "Aryan Kadian",
+    "Roll Number": "LCS2023051",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023052@iiitl.ac.in",
+    "Full Name": "Vishal Suryakant Satpute",
+    "Roll Number": "LCS2023052",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023053@iiitl.ac.in",
+    "Full Name": "Jagdish Shanamwad",
+    "Roll Number": "LCS2023053",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023054@iiitl.ac.in",
+    "Full Name": "Ansh Agrawal",
+    "Roll Number": "LCS2023054",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023055@iiitl.ac.in",
+    "Full Name": "Karamtot Pavan",
+    "Roll Number": "LCS2023055",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023056@iiitl.ac.in",
+    "Full Name": "Prakash Kumar",
+    "Roll Number": "LCS2023056",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2023057@iiitl.ac.in",
+    "Full Name": "M Tharun",
+    "Roll Number": "LCS2023057",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024001@iiitl.ac.in",
+    "Full Name": "Devanand M S",
+    "Roll Number": "LCS2024001",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024002@iiitl.ac.in",
+    "Full Name": "Gurmeet",
+    "Roll Number": "LCS2024002",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024003@iiitl.ac.in",
+    "Full Name": "Anjali Pai",
+    "Roll Number": "LCS2024003",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024004@iiitl.ac.in",
+    "Full Name": "Sandesh Raj",
+    "Roll Number": "LCS2024004",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024005@iiitl.ac.in",
+    "Full Name": "Prabhnoor Kaur",
+    "Roll Number": "LCS2024005",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024006@iiitl.ac.in",
+    "Full Name": "Chirag Raju Shirsath",
+    "Roll Number": "LCS2024006",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024007@iiitl.ac.in",
+    "Full Name": "Ayush Kumar Shukla",
+    "Roll Number": "LCS2024007",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024008@iiitl.ac.in",
+    "Full Name": "Kishan Garhwal",
+    "Roll Number": "LCS2024008",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024009@iiitl.ac.in",
+    "Full Name": "Vinayak Goel",
+    "Roll Number": "LCS2024009",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024010@iiitl.ac.in",
+    "Full Name": "Annam Dhanush",
+    "Roll Number": "LCS2024010",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024011@iiitl.ac.in",
+    "Full Name": "Insha",
+    "Roll Number": "LCS2024011",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024012@iiitl.ac.in",
+    "Full Name": "Kotha Saiteja",
+    "Roll Number": "LCS2024012",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024013@iiitl.ac.in",
+    "Full Name": "Samay Toradmal",
+    "Roll Number": "LCS2024013",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024014@iiitl.ac.in",
+    "Full Name": "Aachman Yadav",
+    "Roll Number": "LCS2024014",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024015@iiitl.ac.in",
+    "Full Name": "P Santhosh Sri Sai Ram",
+    "Roll Number": "LCS2024015",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024016@iiitl.ac.in",
+    "Full Name": "Vaidik Saxena",
+    "Roll Number": "LCS2024016",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024017@iiitl.ac.in",
+    "Full Name": "Harshit",
+    "Roll Number": "LCS2024017",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024018@iiitl.ac.in",
+    "Full Name": "Khushi",
+    "Roll Number": "LCS2024018",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024019@iiitl.ac.in",
+    "Full Name": "Vikash Bairwa",
+    "Roll Number": "LCS2024019",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024020@iiitl.ac.in",
+    "Full Name": "Aditya Chandak",
+    "Roll Number": "LCS2024020",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024021@iiitl.ac.in",
+    "Full Name": "Sai Srinidhi",
+    "Roll Number": "LCS2024021",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024022@iiitl.ac.in",
+    "Full Name": "Smarak Gartia",
+    "Roll Number": "LCS2024022",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024023@iiitl.ac.in",
+    "Full Name": "Anisha Chillamacharla",
+    "Roll Number": "LCS2024023",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024024@iiitl.ac.in",
+    "Full Name": "Mohd Arham Farooqui",
+    "Roll Number": "LCS2024024",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024025@iiitl.ac.in",
+    "Full Name": "Shaik Meer Ghalib Shaheed",
+    "Roll Number": "LCS2024025",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024026@iiitl.ac.in",
+    "Full Name": "Arush Srivastava",
+    "Roll Number": "LCS2024026",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024027@iiitl.ac.in",
+    "Full Name": "Nidubrolu Lochit Vinay",
+    "Roll Number": "LCS2024027",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024028@iiitl.ac.in",
+    "Full Name": "Nishchal Chandel",
+    "Roll Number": "LCS2024028",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024029@iiitl.ac.in",
+    "Full Name": "Nayakam Rakshith Kumar",
+    "Roll Number": "LCS2024029",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024030@iiitl.ac.in",
+    "Full Name": "Bobba Vishwanth Reddy",
+    "Roll Number": "LCS2024030",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024031@iiitl.ac.in",
+    "Full Name": "Charitha Tubati",
+    "Roll Number": "LCS2024031",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024032@iiitl.ac.in",
+    "Full Name": "Rohan Garg",
+    "Roll Number": "LCS2024032",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024033@iiitl.ac.in",
+    "Full Name": "Anika Jain",
+    "Roll Number": "LCS2024033",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024034@iiitl.ac.in",
+    "Full Name": "Sathvika Ajmeera",
+    "Roll Number": "LCS2024034",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024035@iiitl.ac.in",
+    "Full Name": "Md Mozammil Ali",
+    "Roll Number": "LCS2024035",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024036@iiitl.ac.in",
+    "Full Name": "Dhruv Shukla",
+    "Roll Number": "LCS2024036",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024037@iiitl.ac.in",
+    "Full Name": "Diksha Narayan",
+    "Roll Number": "LCS2024037",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024038@iiitl.ac.in",
+    "Full Name": "Piyush Khattar",
+    "Roll Number": "LCS2024038",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024039@iiitl.ac.in",
+    "Full Name": "Shivansh Jain",
+    "Roll Number": "LCS2024039",
+    "Graduation Year": "2027",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024040@iiitl.ac.in",
+    "Full Name": "Swathi Sri Bathina",
+    "Roll Number": "LCS2024040",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024041@iiitl.ac.in",
+    "Full Name": "Devansh Verma",
+    "Roll Number": "LCS2024041",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024042@iiitl.ac.in",
+    "Full Name": "Samarth Singh",
+    "Roll Number": "LCS2024042",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024043@iiitl.ac.in",
+    "Full Name": "Vansh Tomar",
+    "Roll Number": "LCS2024043",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024044@iiitl.ac.in",
+    "Full Name": "Mehul Gupta",
+    "Roll Number": "LCS2024044",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024045@iiitl.ac.in",
+    "Full Name": "Chhatrapal Diwan",
+    "Roll Number": "LCS2024045",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024046@iiitl.ac.in",
+    "Full Name": "Bollagani Abhinav",
+    "Roll Number": "LCS2024046",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024047@iiitl.ac.in",
+    "Full Name": "Mohd Taha Rafi",
+    "Roll Number": "LCS2024047",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024048@iiitl.ac.in",
+    "Full Name": "Akshaj Dnyaneshwar Sonar",
+    "Roll Number": "LCS2024048",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024049@iiitl.ac.in",
+    "Full Name": "Anmol Verma",
+    "Roll Number": "LCS2024049",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024050@iiitl.ac.in",
+    "Full Name": "Harsh Singh",
+    "Roll Number": "LCS2024050",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024051@iiitl.ac.in",
+    "Full Name": "Prathmesh Sarda",
+    "Roll Number": "LCS2024051",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024052@iiitl.ac.in",
+    "Full Name": "Aaryan Dadu",
+    "Roll Number": "LCS2024052",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024053@iiitl.ac.in",
+    "Full Name": "Jarupla Rajesh",
+    "Roll Number": "LCS2024053",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024054@iiitl.ac.in",
+    "Full Name": "Md Anas Ali Usmani",
+    "Roll Number": "LCS2024054",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024055@iiitl.ac.in",
+    "Full Name": "Naman Khandelwal",
+    "Roll Number": "LCS2024055",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lcs2024056@iiitl.ac.in",
+    "Full Name": "Shreyansh Patil",
+    "Roll Number": "LCS2024056",
+    "Graduation Year": "2028",
+    "Branch": "CS",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023001@iiitl.ac.in",
+    "Full Name": "Hrushikesh Sunil Gore",
+    "Roll Number": "LIT2023001",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023002@iiitl.ac.in",
+    "Full Name": "Om Swami",
+    "Roll Number": "LIT2023002",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023003@iiitl.ac.in",
+    "Full Name": "Aditya Raj",
+    "Roll Number": "LIT2023003",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023004@iiitl.ac.in",
+    "Full Name": "Pranav Reddy Katreddy",
+    "Roll Number": "LIT2023004",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023005@iiitl.ac.in",
+    "Full Name": "Ayushi Chandrashekhar Dhete",
+    "Roll Number": "LIT2023005",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023006@iiitl.ac.in",
+    "Full Name": "Abhay Prasad",
+    "Roll Number": "LIT2023006",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023007@iiitl.ac.in",
+    "Full Name": "Satyam Gupta",
+    "Roll Number": "LIT2023007",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023008@iiitl.ac.in",
+    "Full Name": "Mayank",
+    "Roll Number": "LIT2023008",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023009@iiitl.ac.in",
+    "Full Name": "Garikapati Sairam Sharan",
+    "Roll Number": "LIT2023009",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023010@iiitl.ac.in",
+    "Full Name": "Thatikonda Venkata Sai Tejesh",
+    "Roll Number": "LIT2023010",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023011@iiitl.ac.in",
+    "Full Name": "Karan Agarwal",
+    "Roll Number": "LIT2023011",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023012@iiitl.ac.in",
+    "Full Name": "Akshith Reddy Nimma",
+    "Roll Number": "LIT2023012",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023013@iiitl.ac.in",
+    "Full Name": "Parth Bandwal",
+    "Roll Number": "LIT2023013",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023014@iiitl.ac.in",
+    "Full Name": "Jigyasa Jamra",
+    "Roll Number": "LIT2023014",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023015@iiitl.ac.in",
+    "Full Name": "Gunjkar Aditya Gopalrao",
+    "Roll Number": "LIT2023015",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023016@iiitl.ac.in",
+    "Full Name": "Piyush Kumar",
+    "Roll Number": "LIT2023016",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023017@iiitl.ac.in",
+    "Full Name": "Radhika Kalanee",
+    "Roll Number": "LIT2023017",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023018@iiitl.ac.in",
+    "Full Name": "Shaurya Kumar Tripathi",
+    "Roll Number": "LIT2023018",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023019@iiitl.ac.in",
+    "Full Name": "Sweta Kumari",
+    "Roll Number": "LIT2023019",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023020@iiitl.ac.in",
+    "Full Name": "Tanishk Khandelwal",
+    "Roll Number": "LIT2023020",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023021@iiitl.ac.in",
+    "Full Name": "Anurag Yadav",
+    "Roll Number": "LIT2023021",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023022@iiitl.ac.in",
+    "Full Name": "Priyanshu Agarwal",
+    "Roll Number": "LIT2023022",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023024@iiitl.ac.in",
+    "Full Name": "Kurapati Venkata Revanth",
+    "Roll Number": "LIT2023024",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023025@iiitl.ac.in",
+    "Full Name": "Sakshi Sahu",
+    "Roll Number": "LIT2023025",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023026@iiitl.ac.in",
+    "Full Name": "Tadikonda Purnanagaphaneendra",
+    "Roll Number": "LIT2023026",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023027@iiitl.ac.in",
+    "Full Name": "Pranay Buradkar",
+    "Roll Number": "LIT2023027",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023028@iiitl.ac.in",
+    "Full Name": "Bhuvika Agrawal",
+    "Roll Number": "LIT2023028",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023029@iiitl.ac.in",
+    "Full Name": "Tanishq Rajendrraa Aswar",
+    "Roll Number": "LIT2023029",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023030@iiitl.ac.in",
+    "Full Name": "Rishiraj Mukherjee",
+    "Roll Number": "LIT2023030",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023032@iiitl.ac.in",
+    "Full Name": "Aman Vishwakarma",
+    "Roll Number": "LIT2023032",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023034@iiitl.ac.in",
+    "Full Name": "Koyyani Naga Sai Yaaghnetha",
+    "Roll Number": "LIT2023034",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023035@iiitl.ac.in",
+    "Full Name": "Ananya Varshney",
+    "Roll Number": "LIT2023035",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023036@iiitl.ac.in",
+    "Full Name": "Anamika Kumari",
+    "Roll Number": "LIT2023036",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023037@iiitl.ac.in",
+    "Full Name": "Chagapuram Srivastav",
+    "Roll Number": "LIT2023037",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023039@iiitl.ac.in",
+    "Full Name": "Banavath Murali",
+    "Roll Number": "LIT2023039",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023040@iiitl.ac.in",
+    "Full Name": "Maneesh Shukla",
+    "Roll Number": "LIT2023040",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023041@iiitl.ac.in",
+    "Full Name": "Rishabh Kushwaha",
+    "Roll Number": "LIT2023041",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023042@iiitl.ac.in",
+    "Full Name": "Saloni",
+    "Roll Number": "LIT2023042",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023043@iiitl.ac.in",
+    "Full Name": "Dheeraj O",
+    "Roll Number": "LIT2023043",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023044@iiitl.ac.in",
+    "Full Name": "Vishal Parida",
+    "Roll Number": "LIT2023044",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023045@iiitl.ac.in",
+    "Full Name": "Neelesh Kumar Meena",
+    "Roll Number": "LIT2023045",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023046@iiitl.ac.in",
+    "Full Name": "Shubh Agarwal",
+    "Roll Number": "LIT2023046",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023047@iiitl.ac.in",
+    "Full Name": "Sarthak Tiwari",
+    "Roll Number": "LIT2023047",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023048@iiitl.ac.in",
+    "Full Name": "Yatin Sharma",
+    "Roll Number": "LIT2023048",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023049@iiitl.ac.in",
+    "Full Name": "Ayush Yadav",
+    "Roll Number": "LIT2023049",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023050@iiitl.ac.in",
+    "Full Name": "Prince Yadav",
+    "Roll Number": "LIT2023050",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023051@iiitl.ac.in",
+    "Full Name": "Maneesh Kumar",
+    "Roll Number": "LIT2023051",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023052@iiitl.ac.in",
+    "Full Name": "Harshit Maheshwari",
+    "Roll Number": "LIT2023052",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023053@iiitl.ac.in",
+    "Full Name": "Bada Moksha Sai Reddy",
+    "Roll Number": "LIT2023053",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023054@iiitl.ac.in",
+    "Full Name": "Vishesh Singh",
+    "Roll Number": "LIT2023054",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023055@iiitl.ac.in",
+    "Full Name": "Abhay Pratap Singh Ahirwar",
+    "Roll Number": "LIT2023055",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023056@iiitl.ac.in",
+    "Full Name": "Akshita Agarwal",
+    "Roll Number": "LIT2023056",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023058@iiitl.ac.in",
+    "Full Name": "Suraj Kumar",
+    "Roll Number": "LIT2023058",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2023059@iiitl.ac.in",
+    "Full Name": "Imrana Sumbul",
+    "Roll Number": "LIT2023059",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024002@iiitl.ac.in",
+    "Full Name": "Sri Charan Chittineni",
+    "Roll Number": "LIT2024002",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024003@iiitl.ac.in",
+    "Full Name": "Merin Theres Jose",
+    "Roll Number": "LIT2024003",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024004@iiitl.ac.in",
+    "Full Name": "Siddharth Varma",
+    "Roll Number": "LIT2024004",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024005@iiitl.ac.in",
+    "Full Name": "Chekka Naga Sai Venkata Sujit",
+    "Roll Number": "LIT2024005",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024006@iiitl.ac.in",
+    "Full Name": "Agastya",
+    "Roll Number": "LIT2024006",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024007@iiitl.ac.in",
+    "Full Name": "Tushar Kumar",
+    "Roll Number": "LIT2024007",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024008@iiitl.ac.in",
+    "Full Name": "Kaustubh Prafulla Goge",
+    "Roll Number": "LIT2024008",
+    "Graduation Year": "2027",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024009@iiitl.ac.in",
+    "Full Name": "Arushi Waddepalli",
+    "Roll Number": "LIT2024009",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024010@iiitl.ac.in",
+    "Full Name": "Mayank Katnoria",
+    "Roll Number": "LIT2024010",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024011@iiitl.ac.in",
+    "Full Name": "Diya Anna Varghese",
+    "Roll Number": "LIT2024011",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024012@iiitl.ac.in",
+    "Full Name": "Rushil Dhingra",
+    "Roll Number": "LIT2024012",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024013@iiitl.ac.in",
+    "Full Name": "Khushi Arya",
+    "Roll Number": "LIT2024013",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024014@iiitl.ac.in",
+    "Full Name": "Aditya Kumar Upadhyay",
+    "Roll Number": "LIT2024014",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024015@iiitl.ac.in",
+    "Full Name": "Vibha Dawar",
+    "Roll Number": "LIT2024015",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024016@iiitl.ac.in",
+    "Full Name": "Sanjana Chennupati",
+    "Roll Number": "LIT2024016",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024017@iiitl.ac.in",
+    "Full Name": "Garlapati Gagana Harshini",
+    "Roll Number": "LIT2024017",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024018@iiitl.ac.in",
+    "Full Name": "Mayank Kumar Singh",
+    "Roll Number": "LIT2024018",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024019@iiitl.ac.in",
+    "Full Name": "Satyam Kaushik",
+    "Roll Number": "LIT2024019",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024020@iiitl.ac.in",
+    "Full Name": "Sahil",
+    "Roll Number": "LIT2024020",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024021@iiitl.ac.in",
+    "Full Name": "Aryan Singh",
+    "Roll Number": "LIT2024021",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024022@iiitl.ac.in",
+    "Full Name": "Harshit Vaish",
+    "Roll Number": "LIT2024022",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024023@iiitl.ac.in",
+    "Full Name": "Aakarsh Saxena",
+    "Roll Number": "LIT2024023",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024024@iiitl.ac.in",
+    "Full Name": "Vaddepally Ajay Chandra",
+    "Roll Number": "LIT2024024",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024025@iiitl.ac.in",
+    "Full Name": "Ishaan Bansal",
+    "Roll Number": "LIT2024025",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024026@iiitl.ac.in",
+    "Full Name": "Shingare Aditya Sachin",
+    "Roll Number": "LIT2024026",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024027@iiitl.ac.in",
+    "Full Name": "Aaditya Kothari",
+    "Roll Number": "LIT2024027",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024028@iiitl.ac.in",
+    "Full Name": "K V Chabil Krishna",
+    "Roll Number": "LIT2024028",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024029@iiitl.ac.in",
+    "Full Name": "Vedant Vijay Humbe",
+    "Roll Number": "LIT2024029",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024030@iiitl.ac.in",
+    "Full Name": "Anjali Singh",
+    "Roll Number": "LIT2024030",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024031@iiitl.ac.in",
+    "Full Name": "Akshat Agrawal",
+    "Roll Number": "LIT2024031",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024033@iiitl.ac.in",
+    "Full Name": "Chandraveer Singh",
+    "Roll Number": "LIT2024033",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024034@iiitl.ac.in",
+    "Full Name": "Vaibhav Agarwal",
+    "Roll Number": "LIT2024034",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024035@iiitl.ac.in",
+    "Full Name": "Gubba Pavani",
+    "Roll Number": "LIT2024035",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024036@iiitl.ac.in",
+    "Full Name": "S Ahish Ragav",
+    "Roll Number": "LIT2024036",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024037@iiitl.ac.in",
+    "Full Name": "Naman Gulati",
+    "Roll Number": "LIT2024037",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024038@iiitl.ac.in",
+    "Full Name": "Krishna Gupta",
+    "Roll Number": "LIT2024038",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024039@iiitl.ac.in",
+    "Full Name": "Saood Ali",
+    "Roll Number": "LIT2024039",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024040@iiitl.ac.in",
+    "Full Name": "Janhavi Ajay Madiwale",
+    "Roll Number": "LIT2024040",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024041@iiitl.ac.in",
+    "Full Name": "Kachhadiya Manankumar Rajnishbhai",
+    "Roll Number": "LIT2024041",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024042@iiitl.ac.in",
+    "Full Name": "Anirudh Singh Rajora",
+    "Roll Number": "LIT2024042",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024043@iiitl.ac.in",
+    "Full Name": "Mohit Gupta",
+    "Roll Number": "LIT2024043",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024044@iiitl.ac.in",
+    "Full Name": "Ajeet Maurya",
+    "Roll Number": "LIT2024044",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024045@iiitl.ac.in",
+    "Full Name": "Saksham Gupta",
+    "Roll Number": "LIT2024045",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024046@iiitl.ac.in",
+    "Full Name": "Jatal Chetna Digambar",
+    "Roll Number": "LIT2024046",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024047@iiitl.ac.in",
+    "Full Name": "Pratik Sanjay Kapure",
+    "Roll Number": "LIT2024047",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024048@iiitl.ac.in",
+    "Full Name": "Sumit Singh",
+    "Roll Number": "LIT2024048",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024049@iiitl.ac.in",
+    "Full Name": "B Prasad",
+    "Roll Number": "LIT2024049",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024050@iiitl.ac.in",
+    "Full Name": "Dhruv Kumar Singh",
+    "Roll Number": "LIT2024050",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024052@iiitl.ac.in",
+    "Full Name": "Sparsh Chaudhary",
+    "Roll Number": "LIT2024052",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024054@iiitl.ac.in",
+    "Full Name": "Chowdam Tanmai",
+    "Roll Number": "LIT2024054",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024055@iiitl.ac.in",
+    "Full Name": "Umesh",
+    "Roll Number": "LIT2024055",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024056@iiitl.ac.in",
+    "Full Name": "Ravi Kumar",
+    "Roll Number": "LIT2024056",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024057@iiitl.ac.in",
+    "Full Name": "Sarikonda Uday Tejan",
+    "Roll Number": "LIT2024057",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024058@iiitl.ac.in",
+    "Full Name": "Sumanth V U",
+    "Roll Number": "LIT2024058",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024059@iiitl.ac.in",
+    "Full Name": "Prajjwal Kumar",
+    "Roll Number": "LIT2024059",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "lit2024060@iiitl.ac.in",
+    "Full Name": "Divyanshu Singh",
+    "Roll Number": "LIT2024060",
+    "Graduation Year": "2028",
+    "Branch": "IT",
+    "Degree": "B.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25001@iiitl.ac.in",
+    "Full Name": "Akash Singh",
+    "Roll Number": "MCS25001",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25002@iiitl.ac.in",
+    "Full Name": "Medha Jha",
+    "Roll Number": "MCS25002",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25003@iiitl.ac.in",
+    "Full Name": "Katoju Ganesh",
+    "Roll Number": "MCS25003",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25004@iiitl.ac.in",
+    "Full Name": "Prabhat Singh",
+    "Roll Number": "MCS25004",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25005@iiitl.ac.in",
+    "Full Name": "Neelendra Singh",
+    "Roll Number": "MCS25005",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25006@iiitl.ac.in",
+    "Full Name": "Sagar Marwal",
+    "Roll Number": "MCS25006",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25007@iiitl.ac.in",
+    "Full Name": "Arushi Tamrakar",
+    "Roll Number": "MCS25007",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25008@iiitl.ac.in",
+    "Full Name": "Shivani M",
+    "Roll Number": "MCS25008",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25009@iiitl.ac.in",
+    "Full Name": "Raghav Sharma",
+    "Roll Number": "MCS25009",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25010@iiitl.ac.in",
+    "Full Name": "Pradipto Saha",
+    "Roll Number": "MCS25010",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25011@iiitl.ac.in",
+    "Full Name": "Komal Sandhu",
+    "Roll Number": "MCS25011",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25012@iiitl.ac.in",
+    "Full Name": "Apooruv Dubey",
+    "Roll Number": "MCS25012",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25013@iiitl.ac.in",
+    "Full Name": "Rachit Jain",
+    "Roll Number": "MCS25013",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25014@iiitl.ac.in",
+    "Full Name": "Chetan Saini",
+    "Roll Number": "MCS25014",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25015@iiitl.ac.in",
+    "Full Name": "Gargi Rawat",
+    "Roll Number": "MCS25015",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25016@iiitl.ac.in",
+    "Full Name": "Tirth Patel",
+    "Roll Number": "MCS25016",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25017@iiitl.ac.in",
+    "Full Name": "Mohd Kaif",
+    "Roll Number": "MCS25017",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25018@iiitl.ac.in",
+    "Full Name": "Shreyash Gupta",
+    "Roll Number": "MCS25018",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25019@iiitl.ac.in",
+    "Full Name": "Kushal Punem",
+    "Roll Number": "MCS25019",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25020@iiitl.ac.in",
+    "Full Name": "Majji Tejeswani",
+    "Roll Number": "MCS25020",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25021@iiitl.ac.in",
+    "Full Name": "Nihal Dewangan",
+    "Roll Number": "MCS25021",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25022@iiitl.ac.in",
+    "Full Name": "Aarohi Kumar",
+    "Roll Number": "MCS25022",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25023@iiitl.ac.in",
+    "Full Name": "Umang Singh",
+    "Roll Number": "MCS25023",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25024@iiitl.ac.in",
+    "Full Name": "Ritik Sindhwani",
+    "Roll Number": "MCS25024",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25025@iiitl.ac.in",
+    "Full Name": "Ishaan Shailesh Phaye",
+    "Roll Number": "MCS25025",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25026@iiitl.ac.in",
+    "Full Name": "Anmol Nawani",
+    "Roll Number": "MCS25026",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25027@iiitl.ac.in",
+    "Full Name": "Abhijeet Singh",
+    "Roll Number": "MCS25027",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25028@iiitl.ac.in",
+    "Full Name": "Shubham Kumar Kushwaha",
+    "Roll Number": "MCS25028",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25029@iiitl.ac.in",
+    "Full Name": "Chinmay Apte",
+    "Roll Number": "MCS25029",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25030@iiitl.ac.in",
+    "Full Name": "Divyansh Gehlot",
+    "Roll Number": "MCS25030",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25031@iiitl.ac.in",
+    "Full Name": "Ashish Parmar",
+    "Roll Number": "MCS25031",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25033@iiitl.ac.in",
+    "Full Name": "Akshat Dubey",
+    "Roll Number": "MCS25033",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25034@iiitl.ac.in",
+    "Full Name": "Sandeep Choudhary",
+    "Roll Number": "MCS25034",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25035@iiitl.ac.in",
+    "Full Name": "Prathamesh Suresh Andhare",
+    "Roll Number": "MCS25035",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25036@iiitl.ac.in",
+    "Full Name": "Hitanshu Patil",
+    "Roll Number": "MCS25036",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25038@iiitl.ac.in",
+    "Full Name": "Sachidanand Sharma",
+    "Roll Number": "MCS25038",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25039@iiitl.ac.in",
+    "Full Name": "Karunakar Mandula",
+    "Roll Number": "MCS25039",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25040@iiitl.ac.in",
+    "Full Name": "Mayank Rameshchandra Kapgate",
+    "Roll Number": "MCS25040",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25041@iiitl.ac.in",
+    "Full Name": "Aryan Verma",
+    "Roll Number": "MCS25041",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25042@iiitl.ac.in",
+    "Full Name": "Vinimesh Shakya",
+    "Roll Number": "MCS25042",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25043@iiitl.ac.in",
+    "Full Name": "K.Madhushalini",
+    "Roll Number": "MCS25043",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25044@iiitl.ac.in",
+    "Full Name": "Piyush Choudhary",
+    "Roll Number": "MCS25044",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25045@iiitl.ac.in",
+    "Full Name": "Rose Gupta",
+    "Roll Number": "MCS25045",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25046@iiitl.ac.in",
+    "Full Name": "Harshit Ekka",
+    "Roll Number": "MCS25046",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25047@iiitl.ac.in",
+    "Full Name": "Aditya Paneru",
+    "Roll Number": "MCS25047",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25048@iiitl.ac.in",
+    "Full Name": "Nitin Budania",
+    "Roll Number": "MCS25048",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25049@iiitl.ac.in",
+    "Full Name": "Shajid Ali Khan",
+    "Roll Number": "MCS25049",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25050@iiitl.ac.in",
+    "Full Name": "Sanskar Rajput",
+    "Roll Number": "MCS25050",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25051@iiitl.ac.in",
+    "Full Name": "Brahmareddy Ambavarapu",
+    "Roll Number": "MCS25051",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25052@iiitl.ac.in",
+    "Full Name": "Dhirendra Kumar Dhidhi",
+    "Roll Number": "MCS25052",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25053@iiitl.ac.in",
+    "Full Name": "Ashish Kumar Vishwakarma",
+    "Roll Number": "MCS25053",
+    "Graduation Year": "2027",
+    "Branch": "CS (DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25054@iiitl.ac.in",
+    "Full Name": "Kavya Singh",
+    "Roll Number": "MCS25054",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs25055@iiitl.ac.in",
+    "Full Name": "Hardik Bharatbhai Kanjariya",
+    "Roll Number": "MCS25055",
+    "Graduation Year": "2027",
+    "Branch": "CS (AI)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26001@iiitl.ac.in",
+    "Full Name": "Krishna Saraf",
+    "Roll Number": "MCS26001",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26002@iiitl.ac.in",
+    "Full Name": "Sanidhya Singh",
+    "Roll Number": "MCS26002",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26003@iiitl.ac.in",
+    "Full Name": "Siddharth Kishor",
+    "Roll Number": "MCS26003",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26004@iiitl.ac.in",
+    "Full Name": "Smriti Priya",
+    "Roll Number": "MCS26004",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26005@iiitl.ac.in",
+    "Full Name": "Ankit Kumar Singh",
+    "Roll Number": "MCS26005",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26006@iiitl.ac.in",
+    "Full Name": "Rahul Kumar",
+    "Roll Number": "MCS26006",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26007@iiitl.ac.in",
+    "Full Name": "Bhupendra Singh",
+    "Roll Number": "MCS26007",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26008@iiitl.ac.in",
+    "Full Name": "Yash Jindal",
+    "Roll Number": "MCS26008",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26009@iiitl.ac.in",
+    "Full Name": "Ashish Kumar Singh",
+    "Roll Number": "MCS26009",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26010@iiitl.ac.in",
+    "Full Name": "Himanshu Tiwari",
+    "Roll Number": "MCS26010",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26011@iiitl.ac.in",
+    "Full Name": "Rohit Rajput",
+    "Roll Number": "MCS26011",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26012@iiitl.ac.in",
+    "Full Name": "Rishabh Singh",
+    "Roll Number": "MCS26012",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26013@iiitl.ac.in",
+    "Full Name": "Naghul Pranav K K",
+    "Roll Number": "MCS26013",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26014@iiitl.ac.in",
+    "Full Name": "Aditya Ajay Jaiswal",
+    "Roll Number": "MCS26014",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26015@iiitl.ac.in",
+    "Full Name": "Upadhyay Awanish Dilip",
+    "Roll Number": "MCS26015",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26016@iiitl.ac.in",
+    "Full Name": "Asmit Kumar Tyagi",
+    "Roll Number": "MCS26016",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26017@iiitl.ac.in",
+    "Full Name": "Harsh Mathur",
+    "Roll Number": "MCS26017",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26018@iiitl.ac.in",
+    "Full Name": "Arshita Navin",
+    "Roll Number": "MCS26018",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26019@iiitl.ac.in",
+    "Full Name": "Karanam Ram Prasad",
+    "Roll Number": "MCS26019",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26020@iiitl.ac.in",
+    "Full Name": "Kumari Sanya Rai",
+    "Roll Number": "MCS26020",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26021@iiitl.ac.in",
+    "Full Name": "Himanshu Kumar Dubey",
+    "Roll Number": "MCS26021",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26022@iiitl.ac.in",
+    "Full Name": "Mannem Jaswanth",
+    "Roll Number": "MCS26022",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26023@iiitl.ac.in",
+    "Full Name": "Aditya Daulat Shinde",
+    "Roll Number": "MCS26023",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26024@iiitl.ac.in",
+    "Full Name": "Shivam Sharma",
+    "Roll Number": "MCS26024",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26025@iiitl.ac.in",
+    "Full Name": "Ajendra Sharma",
+    "Roll Number": "MCS26025",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26026@iiitl.ac.in",
+    "Full Name": "Omshree Patra",
+    "Roll Number": "MCS26026",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26027@iiitl.ac.in",
+    "Full Name": "Katta Gurunadham",
+    "Roll Number": "MCS26027",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26028@iiitl.ac.in",
+    "Full Name": "Amit Yadav",
+    "Roll Number": "MCS26028",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26029@iiitl.ac.in",
+    "Full Name": "Hemanth Kumar Budige",
+    "Roll Number": "MCS26029",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26030@iiitl.ac.in",
+    "Full Name": "Pallavi Singh",
+    "Roll Number": "MCS26030",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26031@iiitl.ac.in",
+    "Full Name": "Sunkari Sai Deekshith",
+    "Roll Number": "MCS26031",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26032@iiitl.ac.in",
+    "Full Name": "Aanchal Singh",
+    "Roll Number": "MCS26032",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26033@iiitl.ac.in",
+    "Full Name": "Kamuni Lokeshwar",
+    "Roll Number": "MCS26033",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26034@iiitl.ac.in",
+    "Full Name": "Anuj Gupta",
+    "Roll Number": "MCS26034",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26035@iiitl.ac.in",
+    "Full Name": "Palash Biswas",
+    "Roll Number": "MCS26035",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26036@iiitl.ac.in",
+    "Full Name": "Abdullah Ahmad",
+    "Roll Number": "MCS26036",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26037@iiitl.ac.in",
+    "Full Name": "Gaddaguti Yashwanth Kumar",
+    "Roll Number": "MCS26037",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26038@iiitl.ac.in",
+    "Full Name": "Shubh Jain",
+    "Roll Number": "MCS26038",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26039@iiitl.ac.in",
+    "Full Name": "Devnani Shalini Jitendrabhai",
+    "Roll Number": "MCS26039",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26040@iiitl.ac.in",
+    "Full Name": "Vamsi Naik Kelavath",
+    "Roll Number": "MCS26040",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26041@iiitl.ac.in",
+    "Full Name": "Amod Lupane",
+    "Roll Number": "MCS26041",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26042@iiitl.ac.in",
+    "Full Name": "Ujjwal Sahu",
+    "Roll Number": "MCS26042",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26043@iiitl.ac.in",
+    "Full Name": "Marri Sanju",
+    "Roll Number": "MCS26043",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26044@iiitl.ac.in",
+    "Full Name": "Het Ashishbhai Ratanpara",
+    "Roll Number": "MCS26044",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26045@iiitl.ac.in",
+    "Full Name": "Anish Kushwaha",
+    "Roll Number": "MCS26045",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26046@iiitl.ac.in",
+    "Full Name": "Rahul Kumar",
+    "Roll Number": "MCS26046",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26047@iiitl.ac.in",
+    "Full Name": "Gourav Saini",
+    "Roll Number": "MCS26047",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26048@iiitl.ac.in",
+    "Full Name": "Anuj Pandey",
+    "Roll Number": "MCS26048",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26049@iiitl.ac.in",
+    "Full Name": "Ayush Kumar",
+    "Roll Number": "MCS26049",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26050@iiitl.ac.in",
+    "Full Name": "Dheeraj Yadav",
+    "Roll Number": "MCS26050",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26051@iiitl.ac.in",
+    "Full Name": "Yash Sunil Thombre",
+    "Roll Number": "MCS26051",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26052@iiitl.ac.in",
+    "Full Name": "Rakesh Banoth",
+    "Roll Number": "MCS26052",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mcs26053@iiitl.ac.in",
+    "Full Name": "Vishesh Srivastava",
+    "Roll Number": "MCS26053",
+    "Graduation Year": "2028",
+    "Branch": "CS (AI&DS)",
+    "Degree": "M.Tech",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25001@iiitl.ac.in",
+    "Full Name": "Sunil Kumar",
+    "Roll Number": "MSA25001",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25003@iiitl.ac.in",
+    "Full Name": "Urmi Kanrar",
+    "Roll Number": "MSA25003",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25004@iiitl.ac.in",
+    "Full Name": "Rahul Kumar",
+    "Roll Number": "MSA25004",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25006@iiitl.ac.in",
+    "Full Name": "Deepti Sharma",
+    "Roll Number": "MSA25006",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25007@iiitl.ac.in",
+    "Full Name": "G.Deepak",
+    "Roll Number": "MSA25007",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25008@iiitl.ac.in",
+    "Full Name": "Ajay",
+    "Roll Number": "MSA25008",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25009@iiitl.ac.in",
+    "Full Name": "Samir Thakur",
+    "Roll Number": "MSA25009",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25010@iiitl.ac.in",
+    "Full Name": "Harishchandra Kumar Yadav",
+    "Roll Number": "MSA25010",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25011@iiitl.ac.in",
+    "Full Name": "Eleti Nithinpious",
+    "Roll Number": "MSA25011",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25013@iiitl.ac.in",
+    "Full Name": "Nitesh Kumar",
+    "Roll Number": "MSA25013",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25014@iiitl.ac.in",
+    "Full Name": "Moumita Paul",
+    "Roll Number": "MSA25014",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25015@iiitl.ac.in",
+    "Full Name": "Laxmikanta Roy",
+    "Roll Number": "MSA25015",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25015@iiitl.ac.in",
+    "Full Name": "Laxmikanta Roy",
+    "Roll Number": "MSA25015",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26015@iiitl.ac.in",
+    "Full Name": "Yagni Rajesh Mehta",
+    "Roll Number": "MSA25015",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25017@iiitl.ac.in",
+    "Full Name": "Akash Kumar Barnwal",
+    "Roll Number": "MSA25017",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25018@iiitl.ac.in",
+    "Full Name": "Harsh Jain",
+    "Roll Number": "MSA25018",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25019@iiitl.ac.in",
+    "Full Name": "Uday Kumar",
+    "Roll Number": "MSA25019",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25024@iiitl.ac.in",
+    "Full Name": "Rapaka Karthik",
+    "Roll Number": "MSA25024",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25026@iiitl.ac.in",
+    "Full Name": "Satyam Kumar",
+    "Roll Number": "MSA25026",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa25020@iiitl.ac.in",
+    "Full Name": "Tejasvi Shukla",
+    "Roll Number": "MSA2520",
+    "Graduation Year": "2027",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26001@iiitl.ac.in",
+    "Full Name": "Sunny Sunil Thorve",
+    "Roll Number": "MSA26001",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26002@iiitl.ac.in",
+    "Full Name": "Biswajit Bhattacharjee",
+    "Roll Number": "MSA26002",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26003@iiitl.ac.in",
+    "Full Name": "Enakshi Sen",
+    "Roll Number": "MSA26003",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26004@iiitl.ac.in",
+    "Full Name": "Tanushka Sharma",
+    "Roll Number": "MSA26004",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26007@iiitl.ac.in",
+    "Full Name": "Sujit Kumar",
+    "Roll Number": "MSA26007",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26008@iiitl.ac.in",
+    "Full Name": "Sriman Narayana Dharuri",
+    "Roll Number": "MSA26008",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26009@iiitl.ac.in",
+    "Full Name": "Swati Dixit",
+    "Roll Number": "MSA26009",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26010@iiitl.ac.in",
+    "Full Name": "Aditya Kishore",
+    "Roll Number": "MSA26010",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26011@iiitl.ac.in",
+    "Full Name": "Yogesh Kumar Singh",
+    "Roll Number": "MSA26011",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26012@iiitl.ac.in",
+    "Full Name": "Sumedh Santosh Kute",
+    "Roll Number": "MSA26012",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26016@iiitl.ac.in",
+    "Full Name": "Harsha Vardhana U",
+    "Roll Number": "MSA26016",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26017@iiitl.ac.in",
+    "Full Name": "Aniket Kesharwani",
+    "Roll Number": "MSA26017",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26018@iiitl.ac.in",
+    "Full Name": "Harshita Singh",
+    "Roll Number": "MSA26018",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26019@iiitl.ac.in",
+    "Full Name": "Gyan Ranjan",
+    "Roll Number": "MSA26019",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26020@iiitl.ac.in",
+    "Full Name": "Rahul Bochalya",
+    "Roll Number": "MSA26020",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26021@iiitl.ac.in",
+    "Full Name": "Khushi Singh",
+    "Roll Number": "MSA26021",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26022@iiitl.ac.in",
+    "Full Name": "Murari Lal Prajapat",
+    "Roll Number": "MSA26022",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26024@iiitl.ac.in",
+    "Full Name": "Akash Pandey",
+    "Roll Number": "MSA26024",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26025@iiitl.ac.in",
+    "Full Name": "Raj Barman",
+    "Roll Number": "MSA26025",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26026@iiitl.ac.in",
+    "Full Name": "Naman Kumar",
+    "Roll Number": "MSA26026",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msa26027@iiitl.ac.in",
+    "Full Name": "Vinayak Parmeshwar Patil",
+    "Roll Number": "MSA26027",
+    "Graduation Year": "2028",
+    "Branch": "AI&ML",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25001@iiitl.ac.in",
+    "Full Name": "Avisweta De",
+    "Roll Number": "MSD25001",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25002@iiitl.ac.in",
+    "Full Name": "Durgesh Kumar",
+    "Roll Number": "MSD25002",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25003@iiitl.ac.in",
+    "Full Name": "Rohit Kumar Meena",
+    "Roll Number": "MSD25003",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25004@iiitl.ac.in",
+    "Full Name": "Samayita Mohanta",
+    "Roll Number": "MSD25004",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25006@iiitl.ac.in",
+    "Full Name": "Urmila Saini",
+    "Roll Number": "MSD25006",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25007@iiitl.ac.in",
+    "Full Name": "Rupsa Roy",
+    "Roll Number": "MSD25007",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25008@iiitl.ac.in",
+    "Full Name": "Sameer Singh",
+    "Roll Number": "MSD25008",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25009@iiitl.ac.in",
+    "Full Name": "Mohd Asif",
+    "Roll Number": "MSD25009",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25010@iiitl.ac.in",
+    "Full Name": "Biplov Singh",
+    "Roll Number": "MSD25010",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25011@iiitl.ac.in",
+    "Full Name": "Lipika Maji",
+    "Roll Number": "MSD25011",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25012@iiitl.ac.in",
+    "Full Name": "Shubham Arya",
+    "Roll Number": "MSD25012",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25013@iiitl.ac.in",
+    "Full Name": "Debayan Bandyopadhyay",
+    "Roll Number": "MSD25013",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25014@iiitl.ac.in",
+    "Full Name": "Aishrica",
+    "Roll Number": "MSD25014",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25015@iiitl.ac.in",
+    "Full Name": "Dimple Bhardwaj",
+    "Roll Number": "MSD25015",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25016@iiitl.ac.in",
+    "Full Name": "Shivali Gupta",
+    "Roll Number": "MSD25016",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25017@iiitl.ac.in",
+    "Full Name": "Gunjan Bansal",
+    "Roll Number": "MSD25017",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25018@iiitl.ac.in",
+    "Full Name": "Kajal Maurya",
+    "Roll Number": "MSD25018",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25019@iiitl.ac.in",
+    "Full Name": "Tarun Kumar Rai",
+    "Roll Number": "MSD25019",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25021@iiitl.ac.in",
+    "Full Name": "Shraddha Patel",
+    "Roll Number": "MSD25021",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25022@iiitl.ac.in",
+    "Full Name": "Shiva Singh",
+    "Roll Number": "MSD25022",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25023@iiitl.ac.in",
+    "Full Name": "Lavesh Jadon",
+    "Roll Number": "MSD25023",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25024@iiitl.ac.in",
+    "Full Name": "Aman Sharma",
+    "Roll Number": "MSD25024",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25026@iiitl.ac.in",
+    "Full Name": "Lokesh Prajapat",
+    "Roll Number": "MSD25026",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd25027@iiitl.ac.in",
+    "Full Name": "Manas Singh",
+    "Roll Number": "MSD25027",
+    "Graduation Year": "2027",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26002@iiitl.ac.in",
+    "Full Name": "Rishab Kashyap",
+    "Roll Number": "MSD26002",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26004@iiitl.ac.in",
+    "Full Name": "Tanisha Vinod Gulvi",
+    "Roll Number": "MSD26004",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26005@iiitl.ac.in",
+    "Full Name": "Garima Singh",
+    "Roll Number": "MSD26005",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26006@iiitl.ac.in",
+    "Full Name": "Kareena",
+    "Roll Number": "MSD26006",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26007@iiitl.ac.in",
+    "Full Name": "Aditi Kumari",
+    "Roll Number": "MSD26007",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26008@iiitl.ac.in",
+    "Full Name": "Shikha Sharma",
+    "Roll Number": "MSD26008",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26009@iiitl.ac.in",
+    "Full Name": "Binoy Ekka",
+    "Roll Number": "MSD26009",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26010@iiitl.ac.in",
+    "Full Name": "Nitin Kumar Choudhary",
+    "Roll Number": "MSD26010",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26011@iiitl.ac.in",
+    "Full Name": "Sapna Giri",
+    "Roll Number": "MSD26011",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26012@iiitl.ac.in",
+    "Full Name": "Anant Pratap Singh",
+    "Roll Number": "MSD26012",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26013@iiitl.ac.in",
+    "Full Name": "Mohammad Sofia Siddiqa",
+    "Roll Number": "MSD26013",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26016@iitl.ac.in",
+    "Full Name": "Omkar Prashant Salve",
+    "Roll Number": "MSD26016",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26017@iiitl.ac.in",
+    "Full Name": "Brijesh Yadav",
+    "Roll Number": "MSD26017",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26018@iiitl.ac.in",
+    "Full Name": "Suhana Mansoori",
+    "Roll Number": "MSD26018",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26019@iiitl.ac.in",
+    "Full Name": "Sonam Yadav",
+    "Roll Number": "MSD26019",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26020@iiitl.ac.in",
+    "Full Name": "Vishal Sharma",
+    "Roll Number": "MSD26020",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26021@iiitl.ac.in",
+    "Full Name": "Parth Pranjal Singh",
+    "Roll Number": "MSD26021",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26022@iiitl.ac.in",
+    "Full Name": "Rahul Kumar",
+    "Roll Number": "MSD26022",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26023@iiitl.ac.in",
+    "Full Name": "Pooja Gajanan Kashide",
+    "Roll Number": "MSD26023",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26024@iiitl.ac.in",
+    "Full Name": "Jitendra Sinha",
+    "Roll Number": "MSD26024",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "msd26025@iiitl.ac.in",
+    "Full Name": "Praveen Kumar S",
+    "Roll Number": "MSD26025",
+    "Graduation Year": "2028",
+    "Branch": "DS",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25001@iiitl.ac.in",
+    "Full Name": "Tanishq Singh",
+    "Roll Number": "MSE25001",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25002@iiitl.ac.in",
+    "Full Name": "Naveen",
+    "Roll Number": "MSE25002",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25003@iiitl.in.ac",
+    "Full Name": "Trivikram Panda",
+    "Roll Number": "MSE25003",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25004@iiitl.ac.in",
+    "Full Name": "Rohit Raj",
+    "Roll Number": "MSE25004",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25005@iiitl.ac.in",
+    "Full Name": "Nandini Jindal",
+    "Roll Number": "MSE25005",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25007@iiitl.ac.in",
+    "Full Name": "Shobhit Bhardwaj",
+    "Roll Number": "MSE25007",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25008@iiitl.ac.in",
+    "Full Name": "Saksham Purwar",
+    "Roll Number": "MSE25008",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25009@iiitl.ac.in",
+    "Full Name": "Dhaniklal Kumar",
+    "Roll Number": "MSE25009",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25010@iiitl.ac.in",
+    "Full Name": "Animes Saha",
+    "Roll Number": "MSE25010",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25012@iiitl.ac.in",
+    "Full Name": "Vedant Suresh Katekhaye",
+    "Roll Number": "MSE25012",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25013@iiitl.ac.in",
+    "Full Name": "Binori Behera",
+    "Roll Number": "MSE25013",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25014@iiitl.ac.in",
+    "Full Name": "Krishan Kumawat",
+    "Roll Number": "MSE25014",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25015@iiitl.ac.in",
+    "Full Name": "Nancy",
+    "Roll Number": "MSE25015",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25016@iiitl.ac.in",
+    "Full Name": "Arpita Singh",
+    "Roll Number": "MSE25016",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25018@iiitl.ac.in",
+    "Full Name": "Om Prasad Pani",
+    "Roll Number": "MSE25018",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25019@iiitl.ac.in",
+    "Full Name": "Anas Ahmad",
+    "Roll Number": "MSE25019",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25020@iiitl.ac.in",
+    "Full Name": "Radha Teli",
+    "Roll Number": "MSE25020",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25021@iiitl.ac.in",
+    "Full Name": "Manish Kumar",
+    "Roll Number": "MSE25021",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse25022@iiit.ac.in",
+    "Full Name": "Abhishek Singh Chauhan",
+    "Roll Number": "MSE25022",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26001@iiitl.ac.in",
+    "Full Name": "Prachi Saxena",
+    "Roll Number": "MSE26001",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26002@iiitl.ac.in",
+    "Full Name": "Jayanti",
+    "Roll Number": "MSE26002",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26003@iiitl.ac.in",
+    "Full Name": "Palak Bhardwaj",
+    "Roll Number": "MSE26003",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26004@iiitl.ac.in",
+    "Full Name": "Vishal Mittal",
+    "Roll Number": "MSE26004",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26005iiitl.ac.in",
+    "Full Name": "Jyoti Kumari",
+    "Roll Number": "MSE26005",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26006@iiitl.ac.in",
+    "Full Name": "Priyanka Neupaney",
+    "Roll Number": "MSE26006",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26007@iiitl.ac.in",
+    "Full Name": "Rinki Jangid",
+    "Roll Number": "MSE26007",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26008@iiitl.ac.in",
+    "Full Name": "Pooja Kumari",
+    "Roll Number": "MSE26008",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26009@iiitl.ac.in",
+    "Full Name": "Hemanshi Rathore",
+    "Roll Number": "MSE26009",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26010@iiitl.ac.in",
+    "Full Name": "Sahil Gopal Sao",
+    "Roll Number": "MSE26010",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26011@iiitl.ac.in",
+    "Full Name": "Annie Besant Pippal",
+    "Roll Number": "MSE26011",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26012@iiitl.ac.in",
+    "Full Name": "Vinesh Kumar",
+    "Roll Number": "MSE26012",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
+  },
+  {
+    "Institute Email ID": "mse26013@iiitl.ac.in",
+    "Full Name": "Tannu Gola",
+    "Roll Number": "MSE26013",
+    "Graduation Year": "2027",
+    "Branch": "E&M",
+    "Degree": "M.Sc",
+    "Password": "student@1234"
   }
 ]

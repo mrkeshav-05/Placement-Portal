@@ -1,15 +1,15 @@
 [
   {
     "slug": "cgpa-cutoff-query",
-    "studentSlug": "rohan-mehta",
+    "studentRollNumber": "LCS2023002",
     "feedbackType": "QUERY",
-    "content": "My CGPA is 7.4 and the Zoho drive lists a 7.0 cutoff, but the portal still shows me as ineligible for one profile. Could you check whether the backlog count is being applied correctly?",
+    "content": "My CGPA is 7.4 and the Zoho drive lists a 7.0 cutoff, but the portal still shows me as ineligible. Could you check whether my backlog count is being applied correctly?",
     "resolved": false,
     "createdDaysAgo": 4
   },
   {
     "slug": "portal-praise",
-    "studentSlug": "isha-verma",
+    "studentRollNumber": "LCI2023002",
     "feedbackType": "FEEDBACK",
     "content": "The new application tracker is a big improvement. Being able to see the shortlist status without emailing the coordinators saves a lot of time.",
     "resolved": true,
@@ -19,7 +19,7 @@
   },
   {
     "slug": "slot-clash-complaint",
-    "studentSlug": "vivaan-gupta",
+    "studentRollNumber": "MSE25001",
     "feedbackType": "COMPLAINT",
     "content": "Two interview slots were scheduled at the same time on the same day and I was marked absent for one of them. Requesting a review of the attendance record.",
     "resolved": false,
@@ -27,12 +27,48 @@
   },
   {
     "slug": "noc-turnaround-query",
-    "studentSlug": "arjun-desai",
+    "studentRollNumber": "LCB2024001",
     "feedbackType": "QUERY",
     "content": "How long does an NOC request usually take to be approved? I need it before the offer deadline at the end of the month.",
     "resolved": true,
     "adminResponse": "NOC requests are processed within three working days of submission.",
     "createdDaysAgo": 15,
-    "resolvedDaysAgo": 13
+    "resolvedDaysAgo": 14
+  },
+  {
+    "slug": "resume-upload-bug",
+    "studentRollNumber": "MCS25001",
+    "feedbackType": "COMPLAINT",
+    "content": "The resume upload kept failing with a generic error for a file under the size limit. Had to retry six or seven times before it went through.",
+    "resolved": true,
+    "adminResponse": "This was a transient storage issue on our end and has since been fixed. Thanks for flagging it.",
+    "createdDaysAgo": 20,
+    "resolvedDaysAgo": 18
+  },
+  {
+    "slug": "internship-stipend-query",
+    "studentRollNumber": "MSD25001",
+    "feedbackType": "QUERY",
+    "content": "Does the internship stipend for the Fractal Analytics role get taxed at source, or do we need to handle that ourselves at filing time?",
+    "resolved": false,
+    "createdDaysAgo": 1
+  },
+  {
+    "slug": "dashboard-suggestion",
+    "studentRollNumber": "LCS2024001",
+    "feedbackType": "FEEDBACK",
+    "content": "It would help to see the number of days left before a drive's registration deadline directly on the dashboard cards instead of only on the detail page.",
+    "resolved": false,
+    "createdDaysAgo": 6
+  },
+  {
+    "slug": "eligibility-mismatch-complaint",
+    "studentRollNumber": "MSA26001",
+    "feedbackType": "COMPLAINT",
+    "content": "The Amazon internship listing states it is open to all branches, but I could not find an apply button on my end. Please check the eligibility configuration.",
+    "resolved": true,
+    "adminResponse": "This was a caching issue on the eligibility check; refreshing the page resolves it. Confirmed fixed.",
+    "createdDaysAgo": 3,
+    "resolvedDaysAgo": 2
   }
 ]

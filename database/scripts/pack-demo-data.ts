@@ -1,5 +1,8 @@
 /**
- * Packs database/seed-data/*.json into database/seed-data.zip.
+ * Packs database/seed-data/*.json into database/seed-data.zip, except
+ * students.json: that file is the real roster that `npm run db:import-students`
+ * reads directly from seed-data/, not part of the demo dataset, and would only
+ * bloat the archive.
  *
  * The JSON folder is the editable source of truth; the archive is the artifact
  * that `npm run db:seed:demo` reads. Re-run this after editing any dataset file.
@@ -11,6 +14,7 @@ import AdmZip from "adm-zip";
 const packageRoot = resolve(__dirname, "..");
 const dataDir = resolve(packageRoot, "seed-data");
 const archivePath = resolve(packageRoot, "seed-data.zip");
+const EXCLUDED = new Set(["students.json"]);
 
 function main() {
   if (!existsSync(dataDir)) {
@@ -18,7 +22,7 @@ function main() {
   }
 
   const files = readdirSync(dataDir)
-    .filter((name) => name.endsWith(".json"))
+    .filter((name) => name.endsWith(".json") && !EXCLUDED.has(name))
     .sort();
 
   if (files.length === 0) {

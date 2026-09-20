@@ -1,7 +1,7 @@
 [
   {
-    "slug": "arjun-offcampus-noc",
-    "studentSlug": "arjun-desai",
+    "slug": "offcampus-postman-noc",
+    "studentRollNumber": "LCB2024001",
     "company": "Postman",
     "address": "Ground Floor, Tower B, Golf Course Road",
     "city": "Bengaluru",
@@ -9,12 +9,13 @@
     "pincode": "560103",
     "startDaysFromNow": 30,
     "durationDays": 180,
-    "status": "PENDING",
-    "message": "Off-campus internship offer received. Requesting an NOC so I can accept before the deadline."
+    "status": "APPROVED",
+    "message": "Off-campus internship offer received. Requesting an NOC so I can accept before the deadline.",
+    "adminRemarks": "Approved. Submit the joining letter to the placement cell once you accept."
   },
   {
-    "slug": "meera-research-noc",
-    "studentSlug": "meera-krishnan",
+    "slug": "research-internship-noc",
+    "studentRollNumber": "MSD25002",
     "company": "Indian Institute of Science",
     "address": "CV Raman Road",
     "city": "Bengaluru",
@@ -24,11 +25,11 @@
     "durationDays": 90,
     "status": "APPROVED",
     "message": "Summer research internship with the systems lab.",
-    "adminRemarks": "Approved. Academic calendar is unaffected; submit the joining letter to the placement cell."
+    "adminRemarks": "Approved. Academic calendar is unaffected."
   },
   {
-    "slug": "vivaan-startup-noc",
-    "studentSlug": "vivaan-gupta",
+    "slug": "unregistered-startup-noc",
+    "studentRollNumber": "LCS2024002",
     "company": "Unregistered Startup",
     "address": "Sector 62",
     "city": "Noida",
@@ -38,61 +39,73 @@
     "durationDays": 120,
     "status": "REJECTED",
     "message": "Requesting NOC for an off-campus role.",
-    "adminRemarks": "Rejected. The engagement overlaps the placement drive window and the organisation is unregistered with the institute.",
-    "documentUrl": null
+    "adminRemarks": "Rejected. The engagement overlaps the placement drive window and the organisation is unregistered with the institute."
   },
   {
-    "slug": "rohan-fintech-noc",
-    "studentSlug": "rohan-mehta",
+    "slug": "fintech-noc",
+    "studentRollNumber": "LIT2024002",
     "company": "Razorpay",
-    "address": "SJR Cyber, Laskar Hosur Road",
+    "address": "1st Cross, Koramangala 4th Block",
     "city": "Bengaluru",
     "state": "Karnataka",
-    "pincode": "560030",
+    "pincode": "560034",
     "startDaysFromNow": 60,
-    "durationDays": 180,
-    "status": "PENDING",
-    "message": "Six-month off-campus internship in the payments team, starting after end-semester examinations."
-  },
-  {
-    "slug": "diya-remote-noc",
-    "studentSlug": "diya-chatterjee",
-    "company": "GitLab",
-    "address": "Remote engagement, reporting to the Bengaluru entity",
-    "city": "Kolkata",
-    "state": "West Bengal",
-    "pincode": "700091",
-    "startDaysFromNow": 25,
     "durationDays": 150,
-    "status": "APPROVED",
-    "message": "Fully remote internship. No relocation required and coursework is unaffected.",
-    "adminRemarks": "Approved for the remote engagement. Attendance in core courses must be maintained."
+    "status": "PENDING",
+    "message": "Off-campus internship offer through a hackathon win; requesting an NOC ahead of the joining date."
   },
   {
-    "slug": "aditya-summer-noc",
-    "studentSlug": "aditya-joshi",
-    "company": "Zerodha",
-    "address": "153/154 4th Cross, JP Nagar 4th Phase",
+    "slug": "hardware-lab-noc",
+    "studentRollNumber": "MSE25002",
+    "company": "Texas Instruments",
+    "address": "Shantiniketan Techpark, Whitefield",
     "city": "Bengaluru",
     "state": "Karnataka",
-    "pincode": "560078",
-    "startDaysFromNow": 40,
+    "pincode": "560048",
+    "startDaysFromNow": 15,
     "durationDays": 60,
     "status": "PENDING",
-    "message": "Short summer engagement between semesters."
+    "message": "Requesting an NOC for a short-term lab attachment ahead of the full drive."
   },
   {
-    "slug": "navya-research-noc",
-    "studentSlug": "navya-reddy",
-    "company": "Microsoft Research India",
-    "address": "Vigyan, 9 Lavelle Road",
+    "slug": "exchange-program-noc",
+    "studentRollNumber": "LCI2024002",
+    "company": "National University of Singapore",
+    "address": "21 Lower Kent Ridge Road",
+    "city": "Singapore",
+    "state": "Singapore",
+    "pincode": "119077",
+    "startDaysFromNow": 90,
+    "durationDays": 120,
+    "status": "APPROVED",
+    "message": "Selected for a semester exchange programme; requesting an NOC for the travel and academic clearance.",
+    "adminRemarks": "Approved by the academic office as well; carry a copy of this approval for visa paperwork."
+  },
+  {
+    "slug": "withdrawn-startup-noc",
+    "studentRollNumber": "MCS25002",
+    "company": "Early-stage Startup",
+    "address": "HSR Layout, Sector 2",
     "city": "Bengaluru",
     "state": "Karnataka",
-    "pincode": "560001",
-    "startDaysFromNow": 70,
-    "durationDays": 90,
-    "status": "APPROVED",
-    "message": "Research internship offer in the machine learning group.",
-    "adminRemarks": "Approved. Certificate issued by the placement cell."
+    "pincode": "560102",
+    "startDaysFromNow": 10,
+    "durationDays": 180,
+    "status": "REJECTED",
+    "message": "Requesting NOC for a founding engineer role.",
+    "adminRemarks": "Rejected pending incorporation documents from the organisation; resubmit once available."
+  },
+  {
+    "slug": "analyst-noc",
+    "studentRollNumber": "LCB2023002",
+    "company": "Deutsche Bank",
+    "address": "Nyati Empire, Viman Nagar",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": "411014",
+    "startDaysFromNow": 200,
+    "durationDays": 730,
+    "status": "PENDING",
+    "message": "Requesting an NOC ahead of the full-time joining date, since it falls after the academic session ends."
   }
 ]

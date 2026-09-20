@@ -176,26 +176,34 @@ uvicorn main:app --reload    # backend on :8000
 
 ## Demonstration data
 
-A sample dataset ships as `database/seed-data.zip` so the portal can be reviewed
-with realistic content instead of empty tables. `make seed` loads it along with
-the student roster; to load only this part:
+The real student roster lives in `database/seed-data/students.json`, one row per
+student with a `Password` column, and is loaded with `make db-seed-students`
+(part of `make seed`). That column is re-applied to `passwordHash` on every run,
+not just when an account has none — rotating a student's password in production
+is: edit their row, reseed, then email them the new password from that same row.
+A sample dataset of companies, job profiles, applications, offers, announcements,
+and more ships as `database/seed-data.zip` so the portal can be reviewed with
+realistic content instead of empty tables — attached directly to roll numbers
+drawn from that real roster rather than to synthetic accounts, so it looks
+populated for whoever signs in. `make seed` loads both, in that order, since the
+demo dataset depends on the roster accounts already existing; to load only the
+demo part:
 
 ```bash
 make db-seed-demo
 ```
 
-That adds 6 companies, 12 students, 8 events across active, ended, and
-draft states, 29 applications, 11 announcements, 15 offers, 7 NOC requests,
-feedback, and placement team members. The roster in `students_data.json` is a
-separate step, `make db-seed-students`, and accounts for the other 445 students.
-Run `make db-remove-demo` to take the demonstration rows out again.
+That adds 12 companies, 11 job profiles across active, ended, and draft states,
+82 applications, 11 announcements, 13 offers, 8 NOC requests, 8 feedback entries,
+and the placement team roster, all referencing about 32 of the real students. Run
+`make db-remove-demo` to take the demonstration rows out again; it never touches
+real accounts, including the ones the demo data is attached to.
 
 ### Populating your own account
 
-The generated students have no Google account behind them, so they fill the admin
-views but cannot sign in. Browse the student portal as yourself and Applications,
-NOC requests, and My feedbacks are all empty, because that activity belongs to
-students who do not exist as logins.
+The demo dataset only reaches a handful of real accounts, so signing in as
+yourself and browsing the student portal will usually show empty Applications,
+NOC requests, and My feedbacks, because that activity belongs to other students.
 
 Pass your own address to attach a slice of the activity to your account:
 
@@ -326,7 +334,7 @@ Student profiles appear under `/admin/students` after their first institute Goog
 | `make seed` | Migrations, administrators, the roster, and demonstration data |
 | `make db-migrate` | Apply pending migrations |
 | `make db-migrate-new NAME=add_field` | Create a migration from schema changes |
-| `make db-seed-students` | Import the roster from `students_data.json` |
+| `make db-seed-students` | Import the roster from `database/seed-data/students.json` |
 | `make db-seed-demo [EMAIL=…]` | Load the demonstration dataset, optionally onto your account |
 | `make db-remove-demo` | Delete everything the demonstration seed created |
 | `make db-pack-demo` | Rebuild `seed-data.zip` after editing `database/seed-data/` (host) |

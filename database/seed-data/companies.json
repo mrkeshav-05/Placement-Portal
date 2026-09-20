@@ -3,36 +3,96 @@
     "slug": "atlassian",
     "name": "Atlassian",
     "website": "https://www.atlassian.com",
-    "description": "Collaboration software for teams, including Jira and Confluence."
+    "description": "Collaboration software for teams, including Jira and Confluence.",
+    "category": "Dream",
+    "turnover": "USD 3.5 billion annual revenue (FY2024)."
   },
   {
     "slug": "zoho",
     "name": "Zoho Corporation",
     "website": "https://www.zoho.com",
-    "description": "Privately held business software suite spanning CRM, finance, and productivity."
+    "description": "Privately held business software suite spanning CRM, finance, and productivity.",
+    "category": "First Round",
+    "turnover": "Privately held; not publicly disclosed."
   },
   {
     "slug": "deutsche-bank",
     "name": "Deutsche Bank",
     "website": "https://www.db.com",
-    "description": "Global investment bank with a large technology centre in Pune and Bengaluru."
+    "description": "Global investment bank with a large technology centre in Pune and Bengaluru.",
+    "category": "First Round",
+    "turnover": "EUR 28.9 billion net revenue (FY2023)."
   },
   {
     "slug": "texas-instruments",
     "name": "Texas Instruments",
     "website": "https://www.ti.com",
-    "description": "Analog and embedded processing semiconductor company."
+    "description": "Analog and embedded processing semiconductor company.",
+    "category": "First Round",
+    "turnover": "USD 17.5 billion annual revenue (FY2023)."
   },
   {
     "slug": "sprinklr",
     "name": "Sprinklr",
     "website": "https://www.sprinklr.com",
-    "description": "Unified customer experience management platform."
+    "description": "Unified customer experience management platform.",
+    "category": "First Round",
+    "turnover": "USD 745 million annual revenue (FY2024)."
   },
   {
     "slug": "cisco",
     "name": "Cisco Systems",
     "website": "https://www.cisco.com",
-    "description": "Networking hardware, software, and security infrastructure."
+    "description": "Networking hardware, software, and security infrastructure.",
+    "category": "First Round",
+    "turnover": "USD 57 billion annual revenue (FY2023)."
+  },
+  {
+    "slug": "fractal-analytics",
+    "name": "Fractal Analytics",
+    "website": "https://fractal.ai",
+    "description": "AI and analytics consulting for Fortune 500 companies, with a strong data science practice.",
+    "category": "First Round",
+    "turnover": "Privately held; not publicly disclosed."
+  },
+  {
+    "slug": "qualcomm",
+    "name": "Qualcomm",
+    "website": "https://www.qualcomm.com",
+    "description": "Semiconductor and wireless technology company, with a large VLSI and chip-design presence in India.",
+    "category": "Dream",
+    "turnover": "USD 35.8 billion annual revenue (FY2023)."
+  },
+  {
+    "slug": "amazon",
+    "name": "Amazon",
+    "website": "https://www.amazon.jobs",
+    "description": "E-commerce and cloud infrastructure company recruiting for both software development internships and full-time roles.",
+    "category": "Dream",
+    "turnover": "USD 574.8 billion annual revenue (FY2023)."
+  },
+  {
+    "slug": "microsoft",
+    "name": "Microsoft",
+    "website": "https://careers.microsoft.com",
+    "description": "Software, cloud, and devices company. This drive is still being finalised by the placement cell.",
+    "category": "Dream",
+    "turnover": "USD 211.9 billion annual revenue (FY2023)."
+  },
+  {
+    "slug": "postman",
+    "name": "Postman",
+    "website": "https://www.postman.com",
+    "description": "API platform for building and testing software. Not currently running an on-campus drive; recorded here for an off-campus offer.",
+    "category": "First Round",
+    "turnover": "Privately held; not publicly disclosed."
+  },
+  {
+    "slug": "razorpay",
+    "name": "Razorpay",
+    "website": "https://razorpay.com",
+    "description": "Payments and business banking platform. Not currently running an on-campus drive; recorded here for a hackathon-sourced offer.",
+    "category": "First Round",
+    "turnover": "Privately held; not publicly disclosed."
   }
 ]

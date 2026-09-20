@@ -15,7 +15,5 @@ COPY frontend/package.json ./frontend/
 COPY database/package.json ./database/
 RUN npm ci --workspace @tnp/database --include-workspace-root
 COPY database ./database
-# The student roster the import script reads, resolved from the repository root.
-COPY students_data.json ./students_data.json
 RUN npm run db:generate
 CMD ["sh", "-c", "npm run db:deploy && npm run db:seed"]

@@ -231,9 +231,9 @@ What to know before touching it:
 - **`make db-*` runs in the `tools` service**, which shares the `migrate` image
   and sits behind a Compose profile. A profile is the only thing keeping it out
   of `up`; remove it and every `docker compose up` would run a seed container.
-- **The image bakes in `database/` and `students_data.json`.** A new migration
-  or an edited roster needs a rebuild (`make build`), the same trap the
-  `migrate` container has always had.
+- **The image bakes in `database/`, which includes `seed-data/students.json`.**
+  A new migration or an edited roster needs a rebuild (`make build`), the same
+  trap the `migrate` container has always had.
 - **`make password` must not pass `-T`.** The script prompts on stdin, so it
   needs the TTY that `docker compose run` allocates by default.
 - **`make env` never invents an administrator.** `ADMIN_EMAILS` stays empty

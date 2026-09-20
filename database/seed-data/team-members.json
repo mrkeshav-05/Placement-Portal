@@ -1,7 +1,7 @@
 [
   {
     "slug": "faculty-incharge",
-    "name": "Dr. Rajesh Kumar",
+    "name": "Faculty In-charge, Training & Placement",
     "role": "Faculty In-charge, Training & Placement",
     "email": "tnp.faculty@iiitl.ac.in",
     "phone": "9000001001",
@@ -9,26 +9,34 @@
   },
   {
     "slug": "placement-officer",
-    "name": "Sunita Menon",
+    "name": "Placement Officer",
     "role": "Placement Officer",
     "email": "tnp.officer@iiitl.ac.in",
     "phone": "9000001002",
     "displayOrder": 2
   },
   {
-    "slug": "student-coordinator-lead",
-    "name": "Aarav Sharma",
-    "role": "Student Placement Coordinator (Lead)",
-    "email": "demo.aarav.sharma@iiitl.ac.in",
+    "slug": "student-coordinator-software",
+    "name": "Student Placement Coordinator (Software Track)",
+    "role": "Student Placement Coordinator",
+    "email": "tnp.software@iiitl.ac.in",
     "phone": "9000000001",
     "displayOrder": 3
   },
   {
     "slug": "student-coordinator-internships",
-    "name": "Isha Verma",
-    "role": "Student Placement Coordinator (Internships)",
-    "email": "demo.isha.verma@iiitl.ac.in",
-    "phone": "9000000002",
+    "name": "Student Placement Coordinator (Internships)",
+    "role": "Student Placement Coordinator",
+    "email": "tnp.internships@iiitl.ac.in",
+    "phone": "9000000003",
     "displayOrder": 4
+  },
+  {
+    "slug": "student-coordinator-hardware",
+    "name": "Student Placement Coordinator (Hardware Track)",
+    "role": "Student Placement Coordinator",
+    "email": "tnp.hardware@iiitl.ac.in",
+    "phone": "9000000004",
+    "displayOrder": 5
   }
 ]
