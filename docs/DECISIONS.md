@@ -862,3 +862,118 @@ line that clears the floor. Not `node:24-alpine`: 22 is a smaller version
 jump off the LTS the project already had, and this fix is about clearing the
 engine floor, not about picking the newest available runtime. Revisit if a
 future dependency needs 24 or later.
+
+## 2026-09-20 — An event's additional questions are authored, not yet answered
+
+The 2026-09-17 events entry listed the per-event question builder as
+deliberately not built. This builds the authoring half only — a company's
+extra screening questions (a cover letter, a portfolio link, "why us") on
+top of the resume every applicant already attaches.
+
+- **`JobProfile.questions Json?`** is the first `Json` column in the schema
+  (migration `20260920120458_add_job_profile_questions`, nullable and
+  additive, no backfill). Each element is
+  `{ id, type: "TEXT" | "MCQ" | "CHECKBOX" | "FILE", question, options? }`;
+  `options` only applies to MCQ and Checkbox. A JSON array was chosen over a
+  child table because nothing needs to query *into* individual questions —
+  the whole list is read and written together, once, by the one form that
+  owns it — and a child table would need its own migration for something
+  that is still just draft-shaped. Revisit if per-question analytics or
+  reordering-with-history is ever asked for.
+- **`Prisma.JsonNull`, not a bare `null`.** Prisma cannot tell a SQL `NULL`
+  from the JSON literal `null` unless told which one is meant; passing a
+  bare `null` for a `Json?` field is a type error for exactly this reason.
+  `frontend/src/app/admin/events/actions.ts` writes `Prisma.JsonNull` when
+  the office removes every question, so an event that used to carry
+  questions and now carries none stores SQL `NULL`, not `[{}]`-shaped noise.
+- **No student answer is stored anywhere.** Collecting one needs its own
+  column on `Application`, plus apply-flow UI to render the right control
+  per question type and validate a required one was answered — deliberately
+  separate work, so the schema doesn't grow past what has a consumer yet.
+  `backend/app/schemas/job.py` and the FastAPI job router are untouched for
+  the same reason: nothing reads `questions` there yet.
+- `backend/app/models/db.py` mirrors the column as `JSONB` per the standing
+  rule, even though the only writer is the Prisma-direct admin action, so a
+  future FastAPI reader does not have to catch the mirror up first.
+- The builder (`EventQuestionBuilder`) is plain shadcn — `Select`, `Input`,
+  `Button`, `Label` — reusing the same "controlled state, `FormData` on
+  submit" pattern the rest of `event-form.tsx` already follows, so it needed
+  no new state-management approach. A question missing its text, or an
+  MCQ/Checkbox short of two non-empty options, joins the form's existing
+  "Still needed: …" hint and blocks Save, the same validation UX every other
+  required field on this form already uses — no separate error-styling
+  pattern was introduced.
+
+## 2026-09-20 — The event composer widens, and Job Description becomes rich text
+
+Two changes to `/admin/events/add` and `/admin/events/[id]/edit`, on request.
+
+- **`admin-page` gains the `composer-page` class**, the same 1560px widening
+  `/admin/announcements/company-event` and `/admin/announcements/general`
+  already use, for the same reason: a long single-column form reads better
+  with more room than the 1280px every table page wants. No new CSS — the
+  rule already existed for exactly this case.
+- **`Description` is now `RichTextEditor`, not a plain `Textarea`.** The
+  sanitizer the announcement composer already used was generalized rather
+  than duplicated: `sanitizeAnnouncementHtml` in `frontend/src/lib/rich-text.ts`
+  is renamed `sanitizeRichText` (the allow-list and `stripHtmlToText` were
+  already feature-agnostic; only the name was announcement-specific), and
+  every caller — `announcement-schema.ts`, `announcements-manager.tsx`,
+  `dashboard-feed.tsx`, the test file — moved with it in the same change.
+  `job-profile-schema.ts`'s `description` field now sanitizes on the way in
+  and checks its length against the stripped text, the same rule
+  `Announcement.content` follows. No column migration: `JobProfile.description`
+  was already an unbounded `String?`, and an old plain-text row is still
+  valid HTML (a plain string with no tags), exactly as the announcement
+  migration noted for the same reason.
+- **Every render site was found and fixed, not just the editor.** The only
+  other place `JobProfile.description` reaches a screen is
+  `/company-events/[id]`'s "Opening overview" section, which used to print
+  it as an escaped plain string. It now renders sanitized HTML through
+  `.rte-content` (dangerouslySetInnerHTML) when `openingOverview` — a
+  separate, still-plain-text field — is absent. The admin events list does
+  not show `description` anywhere, so nothing else needed a fix.
+- `EventQuestionBuilder`'s validation check for an empty description
+  (`event-form.tsx`'s `missing` list) moved from `description.trim()` to
+  `stripHtmlToText(description)`, because an empty Tiptap document
+  serializes to `<p></p>`, which `.trim()` alone would have read as filled in.
+
+## 2026-09-20 — An event can carry attachments, and `JobProfile.attachments` becomes JSON
+
+The event composer's attachment uploader — the other half of the 2026-09-17
+"not built" list, alongside the question builder — is now built, on the same
+stage-before-save pattern the announcement composer's uploader already uses.
+
+- **`JobProfile.attachments` moved from `String[]` to `Json?`**
+  (migration `20260920124455_job_profile_attachments_json`), storing
+  `{ fileName, fileUrl, mimeType, sizeBytes }[]` — the same fields
+  `AnnouncementAttachment` carries as columns, as an inline array instead of
+  a child table, for the same reason `questions` is one: a handful of files
+  read and written together by the one form that owns them. The migration
+  drops and recreates the column; every row was confirmed empty first
+  (`SELECT COUNT(*) FILTER (WHERE array_length(attachments,1) > 0)` returned
+  0 of 8), so there was nothing to lose. `backend/app/models/db.py` mirrors
+  it as `JSONB`.
+- **A narrower type list than an announcement's: `.pdf` and `.png` only, 4 MB
+  each, 5 files.** A drive attaches a job description or a poster, not a
+  shortlist spreadsheet — `EVENT_ATTACHMENT_EXTENSIONS`/`EVENT_ATTACHMENT_MAX_MB`
+  in `backend/app/routers/uploads.py`, mirrored in
+  `frontend/src/lib/job-profile-schema.ts`. The new
+  `POST /uploads/admin/event-attachment` endpoint calls the same
+  `validate_attachment()` the announcement endpoint does (magic-byte checked,
+  not just the extension) and then narrows the result to that pair, rather
+  than forking the validator.
+- **`GET /uploads/files/{path}` gained a matching visibility rule for
+  `event_docs/`**: readable once the owning `JobProfile.status` is not
+  `DRAFT`, private while it still is — the same rule an announcement
+  attachment follows, checked with a cast-to-text `LIKE` over the JSON
+  column since there is no child table to join here.
+- **The dropzone (`EventAttachmentUploader`) is plain shadcn/Tailwind**, not
+  a port of the announcement composer's hand-rolled `.dropzone`/
+  `.composer-attachments` CSS — a dashed-border div, `Label`, and native
+  drag/drop handlers, matching the rest of this session's shadcn work rather
+  than the composer's older, not-yet-migrated styling.
+- Not built: an attachment's own permission story beyond "visible once
+  published" — there is no separate grant for who may see a drive's
+  attachments versus the drive itself, matching how an announcement's
+  attachments already work.

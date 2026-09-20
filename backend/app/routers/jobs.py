@@ -105,13 +105,17 @@ async def get_job_detail(
             backlogs=profile["backlogs"],
             bans=profile["bans"],
             documents_complete=profile["documents_complete"],
+            class10_percent=profile["class10_percent"],
+            class12_percent=profile["class12_percent"],
             min_cgpa=job["minCGPA"],
             job_batch=job["batch"],
             allowed_branches=job["allowedBranches"],
             allowed_degrees=job["allowedDegrees"],
             allowed_genders=job["allowedGenders"],
             max_backlogs=job["maxBacklogs"],
-            max_bans=job["maxBans"]
+            max_bans=job["maxBans"],
+            min_10_percent=job.get("min10Percent"),
+            min_12_percent=job.get("min12Percent"),
         )
         eligible = is_eligible(eligibility_checks)
 

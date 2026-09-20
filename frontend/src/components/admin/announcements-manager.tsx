@@ -45,7 +45,7 @@ import {
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { AnnouncementStatus } from "@/lib/announcement-schema";
-import { sanitizeAnnouncementHtml, stripHtmlToText } from "@/lib/rich-text";
+import { sanitizeRichText, stripHtmlToText } from "@/lib/rich-text";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminAnnouncementItem = {
@@ -829,7 +829,7 @@ export function AnnouncementsManager({
                 written before that existed gets the same treatment here. */}
             <div
               className="rte-content rte-content--preview rounded-[10px] border p-4"
-              dangerouslySetInnerHTML={{ __html: sanitizeAnnouncementHtml(previewing.content) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeRichText(previewing.content) }}
             />
 
             {previewing.attachments.length ? (

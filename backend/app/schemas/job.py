@@ -13,8 +13,14 @@ _LIST_COLUMNS = (
     "allowedBranches",
     "allowedDegrees",
     "allowedGenders",
-    "attachments",
 )
+
+
+class JobAttachment(BaseModel):
+    fileName: str
+    fileUrl: str
+    mimeType: str
+    sizeBytes: int
 
 
 class JobBase(BaseModel):
@@ -25,6 +31,10 @@ class JobBase(BaseModel):
     ctcStipend: Optional[float] = None
     ctcStipendInfo: Optional[str] = None
     minCGPA: float = 0.0
+    # Unset means no threshold, the same convention `minCGPA`'s default
+    # already follows, rather than a separate "restricted?" flag.
+    min10Percent: Optional[float] = None
+    min12Percent: Optional[float] = None
     maxBacklogs: int = 0
     maxBans: int = 0
     allowedBranches: list[str] = []
@@ -40,9 +50,9 @@ class JobBase(BaseModel):
     companyBond: Optional[str] = None
     duration: Optional[str] = None
     redirectUrl: Optional[str] = None
-    attachments: list[str] = []
+    attachments: list[JobAttachment] = []
 
-    @field_validator(*_LIST_COLUMNS, mode="before")
+    @field_validator(*_LIST_COLUMNS, "attachments", mode="before")
     @classmethod
     def empty_when_null(cls, value: Any) -> Any:
         return [] if value is None else value
@@ -57,6 +67,8 @@ class JobUpdate(BaseModel):
     ctcStipend: Optional[float] = None
     ctcStipendInfo: Optional[str] = None
     minCGPA: Optional[float] = None
+    min10Percent: Optional[float] = None
+    min12Percent: Optional[float] = None
     maxBacklogs: Optional[int] = None
     maxBans: Optional[int] = None
     allowedBranches: Optional[list[str]] = None
@@ -72,7 +84,7 @@ class JobUpdate(BaseModel):
     companyBond: Optional[str] = None
     duration: Optional[str] = None
     redirectUrl: Optional[str] = None
-    attachments: Optional[list[str]] = None
+    attachments: Optional[list[JobAttachment]] = None
 
 class JobStatusUpdate(BaseModel):
     status: str

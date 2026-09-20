@@ -5,14 +5,16 @@ import { useState, useMemo, useTransition } from "react";
 import {
   Download,
   CheckCircle2,
+  Check,
+  ChevronsUpDown,
   Clock3,
   Users,
   Briefcase,
   FileText,
   ExternalLink,
-  CalendarRange,
-  Building2,
-  ClipboardList,
+  Calendar,
+  Landmark,
+  Rocket,
   SlidersHorizontal,
   FileSpreadsheet,
   Award,
@@ -35,6 +37,17 @@ import {
 } from "@/components/admin/export-columns-dialog";
 import { RecordPlacementDialog } from "@/components/admin/record-placement-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -42,6 +55,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "cn";
 import { APPLICATION_STATUSES, APPLICATION_STATUS_LABELS, isHiredStatus } from "@/lib/application-status";
 
 export type AdminApplicationRow = {
@@ -108,12 +122,88 @@ const NO_SELECTION = "__none";
 /** The cascading pickers keep the `.season-picker` shell as the visible
  *  control, so each trigger is transparent inside it. */
 const FILTER_TRIGGER =
-  "h-auto w-auto border-0 bg-transparent p-0 text-[13px] font-extrabold text-[var(--ink)] normal-case shadow-none focus-visible:ring-0 data-[size=default]:h-auto";
+  "h-auto w-auto gap-2 border-0 bg-transparent p-0 text-[13px] font-extrabold text-[var(--ink)] normal-case shadow-none hover:transform-none focus-visible:ring-0 data-[size=default]:h-auto";
 
 /** The filter ids the backend export understands, matched one to one below. */
 const JOB_FILTER = "job";
 const STATUS_FILTER = "status";
 const BRANCH_FILTER = "branch";
+
+/**
+ * The "Select Company" cascading picker, as a searchable combobox
+ * (`Popover` + `Command`, cmdk's own filtering) rather than a plain `Select`
+ * list — the company list can run long, and scrolling one to find a name is
+ * worse than typing it. Sits inside the same `.season-picker` shell and
+ * reads `FILTER_TRIGGER` so it stays visually identical to the season and
+ * event pickers beside it.
+ */
+function CompanyFilterCombobox({
+  options,
+  value,
+  onChange,
+  disabled,
+}: {
+  options: { id: string; name: string }[];
+  value: string | null;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find((option) => option.id === value);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn(FILTER_TRIGGER, "hover:bg-transparent hover:text-inherit")}
+        >
+          <Landmark />
+          <span>Select Company</span>
+          <span className={cn(!selected && "text-muted-foreground")}>{selected?.name ?? "--"}</span>
+          <ChevronsUpDown className="opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[240px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search company..." />
+          <CommandList>
+            <CommandEmpty>No company matches.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                value="--"
+                onSelect={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
+              >
+                <Check className={cn(!value ? "opacity-100" : "opacity-0")} />
+                --
+              </CommandItem>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.id}
+                  value={option.name}
+                  onSelect={() => {
+                    onChange(option.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn(option.id === value ? "opacity-100" : "opacity-0")} />
+                  {option.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function ApplicationsManager({
   applications: initialApplications,
@@ -669,14 +759,14 @@ export function ApplicationsManager({
 
       <div className="registrations-filters">
         <div className="season-picker">
-          <CalendarRange />
-          <span>Select Season</span>
           <Select
             value={season === null ? "" : String(season)}
             onValueChange={handleSeasonChange}
             disabled={!seasons.length}
           >
             <SelectTrigger aria-label="Select season" className={FILTER_TRIGGER}>
+              <Calendar />
+              <span>Select Season</span>
               <SelectValue placeholder="No seasons yet" />
             </SelectTrigger>
             <SelectContent>
@@ -690,36 +780,23 @@ export function ApplicationsManager({
         </div>
 
         <div className="season-picker">
-          <Building2 />
-          <span>Select Company</span>
-          <Select
-            value={companyId ?? NO_SELECTION}
-            onValueChange={(value) => handleCompanyChange(value === NO_SELECTION ? "" : value)}
+          <CompanyFilterCombobox
+            options={companiesForSeason}
+            value={companyId}
+            onChange={handleCompanyChange}
             disabled={!companiesForSeason.length}
-          >
-            <SelectTrigger aria-label="Select company" className={FILTER_TRIGGER}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NO_SELECTION}>--</SelectItem>
-              {companiesForSeason.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
 
         <div className="season-picker">
-          <ClipboardList />
-          <span>Select Company Event</span>
           <Select
             value={jobId ?? NO_SELECTION}
             onValueChange={(value) => setJobId(value === NO_SELECTION ? null : value)}
             disabled={!companyId}
           >
             <SelectTrigger aria-label="Select company event" className={FILTER_TRIGGER}>
+              <Rocket />
+              <span>Select Company Event</span>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -740,29 +817,30 @@ export function ApplicationsManager({
         title="Registered Students"
         actions={
           <>
-            <button type="button" className="dt-view-button" onClick={() => setExportDialogOpen(true)}>
+            <Button type="button" variant="outline" onClick={() => setExportDialogOpen(true)}>
               <SlidersHorizontal />
               Customize Export
-              <b>{exportColumns.size}</b>
-            </button>
-            <button
+              <Badge variant="secondary" className="rounded-full px-2">
+                {exportColumns.size}
+              </Badge>
+            </Button>
+            <Button
               type="button"
-              className="dt-view-button"
+              variant="outline"
               onClick={handleDownloadResumes}
               disabled={!jobId || !scopedApplications.length || downloadingResumes}
             >
               <Download />
               {downloadingResumes ? "Preparing…" : "Download Resumes"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="primary"
               onClick={handleExportExcel}
               disabled={!jobId || !scopedApplications.length}
             >
               <FileSpreadsheet />
               Export Excel
-            </button>
+            </Button>
           </>
         }
         data={scopedApplications}
@@ -901,10 +979,12 @@ export function ApplicationsManager({
       <DataTable
         title="Candidates"
         actions={
-          <a className="dt-view-button" href={exportHref} download>
-            <Download />
-            Export CSV
-          </a>
+          <Button asChild variant="outline">
+            <a href={exportHref} download>
+              <Download />
+              Export CSV
+            </a>
+          </Button>
         }
         data={applications}
         columns={columns}

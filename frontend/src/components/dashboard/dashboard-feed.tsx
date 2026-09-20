@@ -20,7 +20,7 @@ import { Card } from "@/components/ui/card";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { sanitizeAnnouncementHtml, stripHtmlToText } from "@/lib/rich-text";
+import { sanitizeRichText, stripHtmlToText } from "@/lib/rich-text";
 
 export type DashboardAnnouncement = {
   id: string;
@@ -271,7 +271,7 @@ export function DashboardFeed({ data }: { data: DashboardFeedData }) {
             <Card
               className="rte-content rte-content--preview bg-card text-foreground rounded-[10px] p-4 shadow-none"
               dangerouslySetInnerHTML={{
-                __html: sanitizeAnnouncementHtml(selectedAnnouncement.summary),
+                __html: sanitizeRichText(selectedAnnouncement.summary),
               }}
             />
 

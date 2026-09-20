@@ -50,6 +50,17 @@ def _matches_restriction(value: str | None, allowed: list[str]) -> bool:
     return normalized in {_normalize_token(a) for a in allowed}
 
 
+def _meets_percent_floor(value: float | None, floor: float | None) -> bool:
+    """
+    An unset floor restricts nothing, the same convention every other
+    optional criterion here follows. A set floor the student's profile
+    cannot answer fails it, rather than silently passing an unset field.
+    """
+    if floor is None:
+        return True
+    return value is not None and value >= floor
+
+
 def evaluate_eligibility(
     *,
     cgpa: float,
@@ -60,6 +71,8 @@ def evaluate_eligibility(
     backlogs: int,
     bans: int,
     documents_complete: bool,
+    class10_percent: float | None = None,
+    class12_percent: float | None = None,
     min_cgpa: float,
     job_batch: int,
     allowed_branches: list[str],
@@ -67,12 +80,32 @@ def evaluate_eligibility(
     allowed_genders: list[str],
     max_backlogs: int,
     max_bans: int = 0,
+    min_10_percent: float | None = None,
+    min_12_percent: float | None = None,
 ) -> list[EligibilityCheck]:
     return [
         EligibilityCheck(
             key="cgpa",
             label=f"CGPA {cgpa} >= {min_cgpa}",
             passed=cgpa >= min_cgpa,
+        ),
+        EligibilityCheck(
+            key="class10Percent",
+            label=(
+                "10th percentage: no minimum"
+                if min_10_percent is None
+                else f"10th percentage {class10_percent if class10_percent is not None else 'not set'} >= {min_10_percent}"
+            ),
+            passed=_meets_percent_floor(class10_percent, min_10_percent),
+        ),
+        EligibilityCheck(
+            key="class12Percent",
+            label=(
+                "12th percentage: no minimum"
+                if min_12_percent is None
+                else f"12th percentage {class12_percent if class12_percent is not None else 'not set'} >= {min_12_percent}"
+            ),
+            passed=_meets_percent_floor(class12_percent, min_12_percent),
         ),
         EligibilityCheck(
             key="batch",
@@ -174,6 +207,8 @@ def to_eligibility_profile(user, resume_count: int) -> dict | None:
         "gender": user.gender,
         "backlogs": user.backlogs,
         "bans": user.bans,
+        "class10_percent": user.class10Percent,
+        "class12_percent": user.class12Percent,
         "documents_complete": bool(
             user.aadhaarEncrypted and user.panCardEncrypted and resume_count > 0
         ),

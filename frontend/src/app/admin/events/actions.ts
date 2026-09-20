@@ -1,9 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
+import { backendAuthHeader, backendBaseUrl } from "@/lib/api-client";
 import { requirePermission } from "@/lib/admin-session";
 import { db } from "@/lib/db";
-import { jobProfileDeleteSchema, jobProfileFormSchema } from "@/lib/job-profile-schema";
+import {
+  EVENT_ATTACHMENT_EXTENSIONS,
+  MAX_EVENT_ATTACHMENT_MB,
+  jobProfileDeleteSchema,
+  jobProfileFormSchema,
+} from "@/lib/job-profile-schema";
 import {
   PERM_JOBS_CREATE,
   PERM_JOBS_DELETE,
@@ -13,6 +20,69 @@ import {
 import { invalidateBackendCache } from "@/lib/cache-invalidation";
 
 export type JobProfileActionResult = { error?: string; success?: string };
+
+export type EventAttachmentUploadResult = {
+  error?: string;
+  attachment?: { fileName: string; fileUrl: string; mimeType: string; sizeBytes: number };
+};
+
+/**
+ * Stores one file for an event that may not exist yet, the same
+ * stage-before-save flow the announcement composer uses: the file lands in
+ * storage first, and the row that owns it is written when the event is saved.
+ */
+export async function uploadEventAttachmentAction(
+  formData: FormData,
+): Promise<EventAttachmentUploadResult> {
+  await requirePermission(PERM_JOBS_CREATE);
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "No file was selected." };
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!(EVENT_ATTACHMENT_EXTENSIONS as readonly string[]).includes(extension)) {
+    return {
+      error: `"${file.name}" is not an accepted file type. Allowed: ${EVENT_ATTACHMENT_EXTENSIONS.map((e) => `.${e}`).join(", ")}.`,
+    };
+  }
+  if (file.size > MAX_EVENT_ATTACHMENT_MB * 1024 * 1024) {
+    return { error: `"${file.name}" exceeds the ${MAX_EVENT_ATTACHMENT_MB} MB limit.` };
+  }
+
+  const body = new FormData();
+  body.set("file", file);
+
+  try {
+    const response = await fetch(`${backendBaseUrl()}/api/v1/uploads/admin/event-attachment`, {
+      method: "POST",
+      body,
+      headers: await backendAuthHeader(),
+    });
+
+    const text = await response.text();
+    if (!response.ok) {
+      try {
+        return { error: JSON.parse(text).detail ?? "The upload failed." };
+      } catch {
+        return { error: "The upload failed." };
+      }
+    }
+
+    const result = JSON.parse(text);
+    return {
+      attachment: {
+        fileName: result.fileName,
+        fileUrl: result.url,
+        mimeType: result.mimeType,
+        sizeBytes: result.sizeBytes,
+      },
+    };
+  } catch {
+    return { error: "Attachments need the API, which is unreachable right now." };
+  }
+}
 
 async function revalidateEventPages() {
   // Two caches, and both have to let go. Next's route cache holds the
@@ -48,6 +118,8 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     allowedBranches: formData.get("allowedBranches"),
     allowedDegrees: formData.get("allowedDegrees"),
     allowedGenders: formData.get("allowedGenders"),
+    questions: formData.get("questions") ?? "[]",
+    attachments: formData.get("attachments") ?? "[]",
     jobCategory: formData.get("jobCategory"),
     batch: formData.get("batch"),
     placementYear: formData.get("placementYear"),
@@ -84,6 +156,15 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     allowedBranches: parsed.data.allowedBranches,
     allowedDegrees: parsed.data.allowedDegrees,
     allowedGenders: parsed.data.allowedGenders,
+    // A plain `null` is ambiguous for a `Json?` column — Prisma needs the
+    // explicit `Prisma.JsonNull` sentinel to write SQL NULL rather than the
+    // JSON literal `null`.
+    questions: parsed.data.questions.length
+      ? (parsed.data.questions as unknown as Prisma.InputJsonValue)
+      : Prisma.JsonNull,
+    attachments: parsed.data.attachments.length
+      ? (parsed.data.attachments as unknown as Prisma.InputJsonValue)
+      : Prisma.JsonNull,
     jobCategory: parsed.data.jobCategory,
     batch: parsed.data.batch,
     placementYear: parsed.data.placementYear,
@@ -101,7 +182,7 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     const updated = await db.jobProfile.updateMany({ where: { id }, data });
     if (!updated.count) return { error: "Event not found." };
   } else {
-    await db.jobProfile.create({ data: { ...data, attachments: [], createdById: user.id } });
+    await db.jobProfile.create({ data: { ...data, createdById: user.id } });
   }
 
   await revalidateEventPages();

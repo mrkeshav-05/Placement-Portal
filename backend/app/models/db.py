@@ -25,7 +25,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -231,7 +231,11 @@ class JobProfile(Base):
     companyBond: Mapped[str | None] = mapped_column(String, nullable=True)
     duration: Mapped[str | None] = mapped_column(String, nullable=True)
     redirectUrl: Mapped[str | None] = mapped_column(String, nullable=True)
-    attachments: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
+    # `{ fileName, fileUrl, mimeType, sizeBytes }[]`.
+    attachments: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    # `{ id, type: "TEXT" | "MCQ" | "CHECKBOX" | "FILE", question, options? }[]`.
+    # No student answer is stored anywhere yet — see the schema.prisma comment.
+    questions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     createdById: Mapped[str] = mapped_column(String, ForeignKey("User.id"))
 

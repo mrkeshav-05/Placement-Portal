@@ -12,13 +12,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
-from sqlalchemy import func, select
+from sqlalchemy import cast, func, select, String as SqlString
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.security import (
     PERM_ANNOUNCEMENTS_CREATE,
     PERM_APPLICATIONS_VIEW,
+    PERM_JOBS_CREATE,
     PERM_NOC_APPROVE,
     PERM_STUDENTS_VIEW,
     has_permission,
@@ -36,7 +37,15 @@ from app.core.storage import (
     validate_pdf,
 )
 from app.dependencies import get_current_user, get_db, require_permission, require_student
-from app.models.db import Announcement, AnnouncementAttachment, AnnouncementStatus, NocRequest, Resume
+from app.models.db import (
+    Announcement,
+    AnnouncementAttachment,
+    AnnouncementStatus,
+    JobProfile,
+    JobStatus,
+    NocRequest,
+    Resume,
+)
 from app.schemas.student import ResumeResponse
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
@@ -153,6 +162,46 @@ async def upload_announcement_attachment(
     }
 
 
+# Narrower than an announcement's: a company drive attaches a job description
+# or a poster, not a spreadsheet or a shortlist.
+EVENT_ATTACHMENT_EXTENSIONS = {"pdf", "png"}
+EVENT_ATTACHMENT_MAX_MB = 4
+
+
+@router.post("/admin/event-attachment")
+async def upload_event_attachment(
+    file: UploadFile = File(...),
+    token_payload: dict = Depends(require_permission(PERM_JOBS_CREATE)),
+):
+    """
+    Stage one file for a company event that may not exist yet, the same
+    stage-before-save flow the announcement composer uses.
+    """
+    content = await file.read()
+    filename = file.filename or "attachment"
+
+    try:
+        extension, media_type = validate_attachment(content, filename, EVENT_ATTACHMENT_MAX_MB)
+    except StorageError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if extension not in EVENT_ATTACHMENT_EXTENSIONS:
+        allowed = ", ".join(f".{name}" for name in sorted(EVENT_ATTACHMENT_EXTENSIONS))
+        raise HTTPException(status_code=400, detail=f"'{filename}' is not accepted here. Allowed: {allowed}.")
+
+    result = upload_document(
+        content,
+        folder="event_docs",
+        public_id=str(uuid.uuid4()),
+        extension=extension,
+    )
+    return {
+        "url": result["secure_url"],
+        "fileName": filename,
+        "mimeType": media_type,
+        "sizeBytes": len(content),
+    }
+
+
 @router.get("/files/{file_path:path}")
 async def get_uploaded_file(
     file_path: str,
@@ -214,7 +263,21 @@ async def get_uploaded_file(
                 )
                 is_published_attachment = owner_status == AnnouncementStatus.PUBLISHED
 
-            if not (is_own_resume or is_noc_doc or is_published_attachment):
+            # Same rule as an announcement's: visible once the drive is no
+            # longer a draft, private while it still is. `attachments` is a
+            # JSON array rather than a child table, so this is a text search
+            # over the cast column rather than a join.
+            is_visible_event_attachment = False
+            if resolved_rel.startswith("event_docs/"):
+                owner_status = await db.scalar(
+                    select(JobProfile.status).where(
+                        JobProfile.attachments.isnot(None),
+                        cast(JobProfile.attachments, SqlString).like(f"%{resolved_rel}%"),
+                    )
+                )
+                is_visible_event_attachment = owner_status is not None and owner_status != JobStatus.DRAFT
+
+            if not (is_own_resume or is_noc_doc or is_published_attachment or is_visible_event_attachment):
                 raise HTTPException(status_code=403, detail="Not authorized to access this file.")
         except ValueError:
             raise HTTPException(status_code=403, detail="Not authorized to access this file.")

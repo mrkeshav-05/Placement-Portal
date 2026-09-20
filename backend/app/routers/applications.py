@@ -173,6 +173,8 @@ async def apply_to_job(
         backlogs=profile["backlogs"],
         bans=profile["bans"],
         documents_complete=profile["documents_complete"],
+        class10_percent=profile["class10_percent"],
+        class12_percent=profile["class12_percent"],
         min_cgpa=job.minCGPA,
         job_batch=job.batch,
         allowed_branches=job.allowedBranches,
@@ -180,6 +182,8 @@ async def apply_to_job(
         allowed_genders=job.allowedGenders,
         max_backlogs=job.maxBacklogs,
         max_bans=job.maxBans,
+        min_10_percent=job.min10Percent,
+        min_12_percent=job.min12Percent,
     )
     if not is_eligible(checks):
         failed_checks = [c.label for c in checks if not c.passed]

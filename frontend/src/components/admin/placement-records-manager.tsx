@@ -447,15 +447,10 @@ export function PlacementRecordsManager({
         columns={columns}
         filters={filters}
         actions={
-          <button
-            type="button"
-            className="dt-view-button"
-            disabled={!offers.length}
-            onClick={downloadRecords}
-          >
+          <Button type="button" variant="outline" disabled={!offers.length} onClick={downloadRecords}>
             <Download />
             Download placement records
-          </button>
+          </Button>
         }
         getRowId={(offer) => offer.id}
         searchText={(offer) =>

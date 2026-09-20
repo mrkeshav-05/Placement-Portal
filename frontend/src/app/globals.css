@@ -240,6 +240,16 @@
    Button carries, so the component's own type scale never applied. */
 @layer base {
   * { box-sizing: border-box; }
+  html {
+    /* Reserves the vertical scrollbar's width whether or not the page is
+       currently tall enough to need one. Without this, a page that starts
+       shorter than the viewport (nothing to scroll) and then grows past it —
+       adding a question to the event form, for instance — gets a scrollbar
+       that suddenly claims 15-17px from the content area, and a centred,
+       max-width column visibly shifts and narrows at the exact moment
+       something was added to it. */
+    scrollbar-gutter: stable;
+  }
   html, body {
     margin: 0;
     min-height: 100%;

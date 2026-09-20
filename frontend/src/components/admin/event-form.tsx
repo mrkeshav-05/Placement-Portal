@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { saveJobProfile, type JobProfileActionResult } from "@/app/admin/events/actions";
+import { EventAttachmentUploader } from "@/components/admin/event-attachment-uploader";
+import { EventQuestionBuilder } from "@/components/admin/event-question-builder";
 import { PickerModal } from "@/components/common/picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -35,8 +38,11 @@ import {
   EMPLOYMENT_TYPES,
   EMPLOYMENT_TYPE_LABELS,
   JOB_CATEGORIES,
+  type EventAttachment,
+  type JobQuestion,
 } from "@/lib/job-profile-schema";
 import { GENDERS } from "@/lib/profile-schema";
+import { stripHtmlToText } from "@/lib/rich-text";
 
 export type EventCompanyOption = { id: string; name: string };
 /** Branches the roster actually holds, grouped by the degree that offers them. */
@@ -67,6 +73,8 @@ export type EventFormValues = {
   companyBond: string | null;
   duration: string | null;
   redirectUrl: string | null;
+  questions: JobQuestion[];
+  attachments: EventAttachment[];
 };
 
 const STATUS_LABELS: Record<EventFormValues["status"], string> = {
@@ -181,6 +189,8 @@ export function EventForm({
   const [openingOverview, setOpeningOverview] = useState(event?.openingOverview ?? "");
   const [redirectUrl, setRedirectUrl] = useState(event?.redirectUrl ?? "");
   const [status, setStatus] = useState<EventFormValues["status"]>(event?.status ?? "DRAFT");
+  const [questions, setQuestions] = useState<JobQuestion[]>(event?.questions ?? []);
+  const [attachments, setAttachments] = useState<EventAttachment[]>(event?.attachments ?? []);
 
   const [deadlineOpen, setDeadlineOpen] = useState(false);
   const [companyPickerOpen, setCompanyPickerOpen] = useState(false);
@@ -245,6 +255,8 @@ export function EventForm({
     formData.set("companyBond", companyBond);
     formData.set("duration", duration);
     formData.set("redirectUrl", redirectUrl);
+    formData.set("questions", JSON.stringify(questions));
+    formData.set("attachments", JSON.stringify(attachments));
 
     setSaving(true);
     const next = await saveJobProfile(formData);
@@ -256,16 +268,24 @@ export function EventForm({
     }
   }
 
+  const incompleteQuestion = questions.some(
+    (question) =>
+      !question.question.trim() ||
+      ((question.type === "MCQ" || question.type === "CHECKBOX") &&
+        (question.options ?? []).filter((option) => option.trim()).length < 2),
+  );
+
   const missing = [
     selectedCompany ? null : "company",
     title.trim() ? null : "job title",
-    description.trim() ? null : "description",
+    stripHtmlToText(description) ? null : "description",
     category ? null : "category",
     type ? null : "employment type",
     batch ? null : "batch",
     deadline ? null : "last date to apply",
     allowedDegrees.length ? null : "allowed degrees",
     allowedBranches.length ? null : "allowed branches",
+    incompleteQuestion ? "a finished additional question (text, and 2+ options for MCQ/Checkbox)" : null,
   ].filter(Boolean) as string[];
 
   const blockedReason = companies.length
@@ -277,7 +297,7 @@ export function EventForm({
     "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:hover:bg-primary/90";
 
   return (
-    <div className="mt-[18px] grid gap-4">
+    <div className="mt-4.5 grid gap-4">
       {blockedReason ? (
         <Alert>
           <AlertDescription>{blockedReason}</AlertDescription>
@@ -353,12 +373,10 @@ export function EventForm({
         <FieldLabel htmlFor="event-description" required>
           Description
         </FieldLabel>
-        <Textarea
+        <RichTextEditor
           id="event-description"
           value={description}
-          rows={4}
-          maxLength={5000}
-          onChange={(input) => setDescription(input.target.value)}
+          onChange={setDescription}
           placeholder="Description of the Job"
         />
       </div>
@@ -695,6 +713,10 @@ export function EventForm({
           placeholder="https://careers.example.com/apply"
         />
       </div>
+
+      <EventQuestionBuilder questions={questions} onChange={setQuestions} />
+
+      <EventAttachmentUploader attachments={attachments} onChange={setAttachments} />
 
       <div className="grid gap-2">
         <FieldLabel>Visibility</FieldLabel>

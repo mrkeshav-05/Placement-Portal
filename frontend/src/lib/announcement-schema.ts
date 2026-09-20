@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { sanitizeAnnouncementHtml, stripHtmlToText } from "@/lib/rich-text";
+import { sanitizeRichText, stripHtmlToText } from "@/lib/rich-text";
 
 const tagsSchema = z.preprocess((value) => {
   if (Array.isArray(value)) return value;
@@ -70,7 +70,7 @@ export const announcementFormSchema = z
     // "too long".
     content: z
       .string()
-      .transform((value) => sanitizeAnnouncementHtml(value))
+      .transform((value) => sanitizeRichText(value))
       .refine(
         (html) => stripHtmlToText(html).length >= 2,
         "Content must be at least 2 characters.",

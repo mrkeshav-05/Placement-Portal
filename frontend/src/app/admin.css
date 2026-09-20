@@ -530,6 +530,17 @@
   letter-spacing: 0.04em;
   color: var(--muted);
   box-shadow: var(--card-shadow);
+  transition: background 0.15s, border-color 0.15s;
+}
+/* The trigger inside (a `Select` or, for a searchable picker, a `Button`)
+   is sized to fit its own content, not the whole pill, so its own hover
+   background would only ever paint a patch around the text rather than the
+   full control. The shell owns the hover feedback instead, uniformly,
+   regardless of which trigger element lives inside it. */
+.season-picker:has(button:hover:not(:disabled)),
+.season-picker:has([data-slot="select-trigger"]:hover:not(:disabled)) {
+  background: var(--surface-alt);
+  border-color: var(--blue);
 }
 .season-picker svg { width: 14px; color: var(--blue); }
 .season-picker select {

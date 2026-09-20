@@ -241,7 +241,19 @@ model JobProfile {
   companyBond          String?
   duration             String?
   redirectUrl          String?
-  attachments          String[]
+  // `{ fileName, fileUrl, mimeType, sizeBytes }[]`, the same shape
+  // `AnnouncementAttachment` carries as columns — an inline JSON array
+  // instead of a child table for the same reason `questions` is one: a
+  // handful of files read and written together by the one form that owns
+  // them, nothing queried per-file. Every row predates this column and was
+  // always created with an empty array, so the type change carries no data.
+  attachments          Json?
+  // Extra questions the placement cell asks on top of the resume: each entry
+  // is `{ id, type: "TEXT" | "MCQ" | "CHECKBOX" | "FILE", question, options? }`.
+  // `options` only applies to MCQ/CHECKBOX. Nothing reads or writes a
+  // student's answer yet — that needs its own column on `Application` and is
+  // the deliberately separate next step.
+  questions            Json?
   createdAt            DateTime       @default(now())
   createdById          String
   company              Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)

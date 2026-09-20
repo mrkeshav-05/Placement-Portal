@@ -4,6 +4,7 @@ import { EventForm, type EventFormValues } from "@/components/admin/event-form";
 import { requirePermission } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import { loadEventFormOptions } from "@/lib/event-options";
+import type { EventAttachment, JobQuestion } from "@/lib/job-profile-schema";
 import { PERM_JOBS_UPDATE } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
@@ -45,11 +46,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     companyBond: event.companyBond,
     duration: event.duration,
     redirectUrl: event.redirectUrl,
+    questions: (event.questions as JobQuestion[] | null) ?? [],
+    attachments: (event.attachments as EventAttachment[] | null) ?? [],
   };
 
   return (
     <AuthenticatedAdminShell>
-      <div className="admin-page">
+      <div className="admin-page composer-page">
         <section className="admin-heading">
           <div>
             <span className="eyebrow">Opportunity management</span>
