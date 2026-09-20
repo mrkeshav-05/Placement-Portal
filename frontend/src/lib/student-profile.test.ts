@@ -29,6 +29,8 @@ test("eligibility remains unavailable until required academic fields exist", () 
     bans: 0,
     aadhaarEncrypted: null,
     panCardEncrypted: null,
+    class10Percent: null,
+    class12Percent: null,
   }, 0), null);
 });
 
@@ -43,6 +45,8 @@ test("a missing degree or gender does not block eligibility on its own", () => {
     bans: 0,
     aadhaarEncrypted: "encrypted-aadhaar",
     panCardEncrypted: "encrypted-pan",
+    class10Percent: null,
+    class12Percent: null,
   }, 1);
 
   assert.equal(profile?.degree, null);
@@ -60,6 +64,8 @@ test("eligibility document completeness reflects stored documents and resume", (
     bans: 0,
     aadhaarEncrypted: "encrypted-aadhaar",
     panCardEncrypted: "encrypted-pan",
+    class10Percent: 85,
+    class12Percent: 80,
   }, 1);
 
   assert.equal(profile?.documentsComplete, true);

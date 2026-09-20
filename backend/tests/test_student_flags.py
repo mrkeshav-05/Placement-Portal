@@ -14,6 +14,8 @@ BASE_PROFILE = {
     "backlogs": 0,
     "bans": 0,
     "documents_complete": True,
+    "class10_percent": 85.0,
+    "class12_percent": 80.0,
 }
 
 

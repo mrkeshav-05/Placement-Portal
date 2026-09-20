@@ -32,6 +32,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     registrationDeadline: event.registrationDeadline.toISOString(),
     status: event.status,
     minCGPA: event.minCGPA,
+    min10Percent: event.min10Percent,
+    min12Percent: event.min12Percent,
     maxBacklogs: event.maxBacklogs,
     maxBans: event.maxBans,
     allowedDegrees: event.allowedDegrees,

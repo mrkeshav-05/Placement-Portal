@@ -59,6 +59,8 @@ export type EventFormValues = {
   registrationDeadline: string;
   status: "DRAFT" | "ACTIVE" | "ENDED";
   minCGPA: number;
+  min10Percent: number | null;
+  min12Percent: number | null;
   maxBacklogs: number;
   maxBans: number;
   allowedDegrees: string[];
@@ -174,9 +176,18 @@ export function EventForm({
   const [allowedDegrees, setAllowedDegrees] = useState<string[]>(event?.allowedDegrees ?? []);
   const [allowedBranches, setAllowedBranches] = useState<string[]>(event?.allowedBranches ?? []);
   const [minCGPA, setMinCGPA] = useState(event ? String(event.minCGPA) : "");
+  const [min10Percent, setMin10Percent] = useState(event?.min10Percent != null ? String(event.min10Percent) : "");
+  const [min12Percent, setMin12Percent] = useState(event?.min12Percent != null ? String(event.min12Percent) : "");
   const [maxBacklogs, setMaxBacklogs] = useState(event ? String(event.maxBacklogs) : "");
   const [optionalOpen, setOptionalOpen] = useState(
-    Boolean(event && (event.allowedGenders.length > 0 || event.maxBans > 0)),
+    Boolean(
+      event &&
+        (event.allowedGenders.length > 0 ||
+          event.maxBans > 0 ||
+          event.minCGPA > 0 ||
+          event.min10Percent != null ||
+          event.min12Percent != null),
+    ),
   );
   const [allowedGenders, setAllowedGenders] = useState<string[]>(event?.allowedGenders ?? []);
   const [maxBans, setMaxBans] = useState(event ? String(event.maxBans) : "0");
@@ -242,7 +253,9 @@ export function EventForm({
     formData.set("status", status);
     formData.set("description", description);
     formData.set("openingOverview", openingOverview);
-    formData.set("minCGPA", minCGPA || "0");
+    formData.set("minCGPA", optionalOpen ? minCGPA || "0" : "0");
+    formData.set("min10Percent", optionalOpen ? min10Percent : "");
+    formData.set("min12Percent", optionalOpen ? min12Percent : "");
     formData.set("maxBacklogs", maxBacklogs || "0");
     formData.set("maxBans", optionalOpen ? maxBans || "0" : "0");
     formData.set("allowedDegrees", JSON.stringify(allowedDegrees));
@@ -549,32 +562,17 @@ export function EventForm({
         </Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <FieldLabel htmlFor="event-cgpa">CGPA</FieldLabel>
-          <Input
-            id="event-cgpa"
-            value={minCGPA}
-            type="number"
-            min={0}
-            max={10}
-            step="0.01"
-            onChange={(input) => setMinCGPA(input.target.value)}
-            placeholder="Minimum CGPA"
-          />
-        </div>
-        <div className="grid gap-2">
-          <FieldLabel htmlFor="event-backlogs">Backlogs</FieldLabel>
-          <Input
-            id="event-backlogs"
-            value={maxBacklogs}
-            type="number"
-            min={0}
-            step="1"
-            onChange={(input) => setMaxBacklogs(input.target.value)}
-            placeholder="Maximum Backlogs"
-          />
-        </div>
+      <div className="grid gap-2">
+        <FieldLabel htmlFor="event-backlogs">Backlogs</FieldLabel>
+        <Input
+          id="event-backlogs"
+          value={maxBacklogs}
+          type="number"
+          min={0}
+          step="1"
+          onChange={(input) => setMaxBacklogs(input.target.value)}
+          placeholder="Maximum Backlogs"
+        />
       </div>
 
       <div className="flex items-center gap-3">
@@ -587,27 +585,69 @@ export function EventForm({
       </div>
 
       {optionalOpen ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="grid gap-2">
-            <FieldLabel>Allowed Genders</FieldLabel>
-            <ToggleGroup
-              type="multiple"
-              variant="outline"
-              spacing={2}
-              value={allowedGenders}
-              onValueChange={setAllowedGenders}
-            >
-              {GENDERS.map((gender) => (
-                <ToggleGroupItem key={gender} value={gender} className={pillFill}>
-                  {gender}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-            <p className="text-muted-foreground text-xs">
-              Leave both unpicked to open the drive to everyone.
-            </p>
+        <div className="grid gap-3 rounded-lg border border-dashed p-4">
+          <FieldLabel>Optional Eligibility Criteria</FieldLabel>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-2">
+              <FieldLabel htmlFor="event-10th">10th Percentage</FieldLabel>
+              <Input
+                id="event-10th"
+                value={min10Percent}
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                onChange={(input) => setMin10Percent(input.target.value)}
+                placeholder="e.g. 75"
+              />
+            </div>
+            <div className="grid gap-2">
+              <FieldLabel htmlFor="event-12th">12th Percentage</FieldLabel>
+              <Input
+                id="event-12th"
+                value={min12Percent}
+                type="number"
+                min={0}
+                max={100}
+                step="0.01"
+                onChange={(input) => setMin12Percent(input.target.value)}
+                placeholder="e.g. 85"
+              />
+            </div>
+            <div className="grid gap-2">
+              <FieldLabel htmlFor="event-cgpa">Graduation GPA</FieldLabel>
+              <Input
+                id="event-cgpa"
+                value={minCGPA}
+                type="number"
+                min={0}
+                max={10}
+                step="0.01"
+                onChange={(input) => setMinCGPA(input.target.value)}
+                placeholder="e.g. 8.0"
+              />
+            </div>
+            <div className="grid gap-2">
+              <FieldLabel>Allowed Gender</FieldLabel>
+              <ToggleGroup
+                type="multiple"
+                variant="outline"
+                spacing={2}
+                value={allowedGenders}
+                onValueChange={setAllowedGenders}
+              >
+                {GENDERS.map((gender) => (
+                  <ToggleGroupItem key={gender} value={gender} className={pillFill}>
+                    {gender}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
           </div>
-          <div className="grid gap-2">
+          <p className="text-muted-foreground text-xs">
+            Leave a field blank for no minimum, and gender unpicked to open the drive to everyone.
+          </p>
+          <div className="grid gap-2 sm:w-1/4">
             <FieldLabel htmlFor="event-bans">Maximum Placement Bans</FieldLabel>
             <Input
               id="event-bans"

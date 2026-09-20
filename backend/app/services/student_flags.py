@@ -60,6 +60,8 @@ def compute_missed_streak(
             backlogs=profile["backlogs"],
             bans=profile["bans"],
             documents_complete=profile["documents_complete"],
+            class10_percent=profile["class10_percent"],
+            class12_percent=profile["class12_percent"],
             min_cgpa=job["minCGPA"],
             job_batch=job["batch"],
             allowed_branches=job["allowedBranches"],
@@ -67,6 +69,8 @@ def compute_missed_streak(
             allowed_genders=job["allowedGenders"],
             max_backlogs=job["maxBacklogs"],
             max_bans=job.get("maxBans", 0),
+            min_10_percent=job.get("min10Percent"),
+            min_12_percent=job.get("min12Percent"),
         )
         if not is_eligible(checks):
             continue

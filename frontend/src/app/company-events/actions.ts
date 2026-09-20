@@ -100,6 +100,8 @@ export async function applyToJob(
         genders: job.allowedGenders,
         maxBacklogs: job.maxBacklogs,
         maxBans: job.maxBans,
+        min10Percent: job.min10Percent,
+        min12Percent: job.min12Percent,
       }),
     );
     if (!eligible) return { error: "Your current profile does not meet this role’s criteria." };

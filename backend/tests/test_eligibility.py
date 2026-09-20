@@ -81,3 +81,21 @@ def test_gender_is_unrestricted_unless_the_job_lists_one():
     assert passed("gender", gender="female", allowed_genders=["Female"]) is True
     assert passed("gender", gender="Male", allowed_genders=["Female"]) is False
     assert passed("gender", gender=None, allowed_genders=["Female"]) is False
+
+
+def test_an_unset_percentage_floor_places_no_restriction():
+    assert passed("class10Percent", class10_percent=None) is True
+    assert passed("class12Percent", class12_percent=None) is True
+
+
+def test_a_percentage_floor_rejects_a_student_below_it():
+    assert passed("class10Percent", class10_percent=60, min_10_percent=75) is False
+    assert passed("class12Percent", class12_percent=60, min_12_percent=75) is False
+
+
+def test_a_percentage_floor_accepts_a_student_at_or_above_it():
+    assert passed("class10Percent", class10_percent=75, min_10_percent=75) is True
+
+
+def test_an_unset_student_percentage_fails_a_job_that_sets_a_floor():
+    assert passed("class10Percent", class10_percent=None, min_10_percent=75) is False

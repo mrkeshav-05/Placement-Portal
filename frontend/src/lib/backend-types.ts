@@ -83,6 +83,9 @@ export type BackendJob = {
   ctcStipend: number | null;
   ctcStipendInfo: string | null;
   minCGPA: number;
+  /** Unset means no threshold, the same convention `minCGPA`'s own default carries. */
+  min10Percent: number | null;
+  min12Percent: number | null;
   maxBacklogs: number;
   maxBans: number;
   allowedBranches: string[];
@@ -99,7 +102,7 @@ export type BackendJob = {
   companyBond: string | null;
   duration: string | null;
   redirectUrl: string | null;
-  attachments: string[];
+  attachments: { fileName: string; fileUrl: string; mimeType: string; sizeBytes: number }[];
   /** ISO-8601 timestamp. */
   createdAt: string;
   createdById: string;

@@ -194,6 +194,8 @@ export const jobProfileFormSchema = z
     ctcStipend: optionalNumber(z.number().nonnegative().max(100_000_000)),
     ctcStipendInfo: optionalText(500),
     minCGPA: requiredNumber(z.number().min(0).max(10)),
+    min10Percent: optionalNumber(z.number().min(0).max(100)),
+    min12Percent: optionalNumber(z.number().min(0).max(100)),
     maxBacklogs: requiredNumber(z.number().int().min(0).max(100)),
     maxBans: requiredNumber(z.number().int().min(0).max(100)),
     allowedBranches: jsonList("branch", true),

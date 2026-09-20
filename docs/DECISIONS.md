@@ -977,3 +977,58 @@ stage-before-save pattern the announcement composer's uploader already uses.
   published" — there is no separate grant for who may see a drive's
   attachments versus the drive itself, matching how an announcement's
   attachments already work.
+
+## 2026-09-20 — Optional eligibility gains a 10th/12th percentage floor, and CGPA moves into it
+
+Two decisions the office made when asked, before this was built: minimum CGPA
+moves from its own always-visible field into "Optional Eligibility Criteria"
+(relabelled "Graduation GPA" there) rather than gaining a second, separate
+field; and the new 10th/12th percentage minimums are real eligibility
+criteria, not informational-only text fields.
+
+- **New nullable `JobProfile.min10Percent`/`min12Percent`**
+  (migration `20260920153218_job_profile_percent_minimums`), following
+  `minCGPA`'s own convention: unset means no floor, not zero — a `Float?`
+  rather than reusing `minCGPA`'s `@default(0)`, since 0 is itself a
+  meaningful minimum here (a job could conceivably ask for "any 10th
+  percentage, but not literally negative"), and null is the only
+  unambiguous "not asked" value.
+- **Wired into both eligibility engines, not just stored.** `evaluate_eligibility`
+  (Python) and `evaluateEligibility` (TypeScript) each gained two criteria and
+  now thread `min10Percent`/`min12Percent` through every call site that
+  builds a job's criteria — `backend/app/routers/{applications,jobs}.py`,
+  `backend/app/services/student_flags.py`, `frontend/src/app/dashboard/page.tsx`,
+  `frontend/src/app/company-events/actions.ts`, and
+  `frontend/src/app/company-events/[id]/page.tsx` — the same "every criterion
+  is a named argument" discipline the existing ones already follow, so a call
+  site that forgets one gets a compiler or `KeyError` failure instead of a
+  silently-skipped check. `toEligibilityProfile`/`to_eligibility_profile`
+  gained `class10Percent`/`class12Percent` from the `User` row, which already
+  carried both columns for profile-completion percentage and needed no new
+  fetch.
+- **An unset floor passes everyone; a set floor fails a student whose profile
+  cannot answer it** — the same rule an unrestricted branch/degree/gender list
+  already follows, applied here via a small `meetsPercentFloor`/
+  `_meets_percent_floor` helper in each engine rather than inlining the
+  three-way null check at each of the two new criteria.
+- **A live regression from the attachments change earlier in this session was
+  caught and fixed while touching this file's neighbour.**
+  `backend/app/schemas/job.py`'s `JobBase.attachments` was still typed
+  `list[str]`, unchanged since the `String[]` days, so `GET /api/v1/jobs`
+  would have failed Pydantic validation against every row the moment
+  `JobProfile.attachments` became a JSON array of objects. Added a
+  `JobAttachment` model and moved `attachments` out of the plain
+  `empty_when_null` list-of-strings validator into its own call. Confirmed
+  fixed by validating `JobResponse` against every real row in the dev
+  database, not just the mocked test fixtures.
+- **`event-form.tsx`'s "Optional Eligibility Criteria" block now resets CGPA
+  and both percentages to "no minimum" when the toggle is switched off**,
+  matching how `allowedGenders`/`maxBans` already behaved — before this,
+  CGPA sat outside the toggle entirely and was never reset, which is exactly
+  why moving it inside without also gating its submitted value would have
+  been a silent behaviour change (a value typed once would keep applying
+  after the section was collapsed).
+- Not changed: `allowedGenders`'s control stays the existing multi-select
+  `ToggleGroup`, not a single dropdown, despite the reference image showing
+  one. Converting it would have dropped the ability to allow two genders
+  while excluding a third, which nothing asked for.

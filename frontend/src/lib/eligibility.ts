@@ -1,5 +1,5 @@
-export type StudentEligibility={cgpa:number;batch:number;branch:string;degree:string|null;gender:string|null;backlogs:number;bans:number;documentsComplete:boolean};
-export type JobEligibility={minCgpa:number;batch:number;branches:readonly string[];degrees:readonly string[];genders:readonly string[];maxBacklogs:number;maxBans?:number};
+export type StudentEligibility={cgpa:number;batch:number;branch:string;degree:string|null;gender:string|null;backlogs:number;bans:number;documentsComplete:boolean;class10Percent:number|null;class12Percent:number|null};
+export type JobEligibility={minCgpa:number;batch:number;branches:readonly string[];degrees:readonly string[];genders:readonly string[];maxBacklogs:number;maxBans?:number;min10Percent?:number|null;min12Percent?:number|null};
 export type EligibilityCheck={key:string;label:string;pass:boolean};
 
 function normalizeBranch(branch:string):string{return branch.trim().toUpperCase()}
@@ -38,9 +38,21 @@ function matchesRestriction(value:string|null,allowed:readonly string[]):boolean
   return allowed.map(normalizeToken).includes(normalized);
 }
 
+/**
+ * An unset floor restricts nothing, the same convention `minCgpa`'s own
+ * default of 0 already carries. A set floor the student's profile cannot
+ * answer fails it, rather than silently passing an unset field.
+ */
+function meetsPercentFloor(value:number|null,floor:number|null|undefined):boolean{
+  if(floor==null)return true;
+  return value!=null&&value>=floor;
+}
+
 export function evaluateEligibility(student:StudentEligibility,job:JobEligibility):EligibilityCheck[]{
   return[
     {key:"cgpa",label:`CGPA ${student.cgpa} ≥ ${job.minCgpa}`,pass:student.cgpa>=job.minCgpa},
+    {key:"class10Percent",label:job.min10Percent==null?"10th percentage: no minimum":`10th percentage ${student.class10Percent??"not set"} ≥ ${job.min10Percent}`,pass:meetsPercentFloor(student.class10Percent,job.min10Percent)},
+    {key:"class12Percent",label:job.min12Percent==null?"12th percentage: no minimum":`12th percentage ${student.class12Percent??"not set"} ≥ ${job.min12Percent}`,pass:meetsPercentFloor(student.class12Percent,job.min12Percent)},
     {key:"batch",label:`Batch ${student.batch}`,pass:student.batch===job.batch},
     {key:"branch",label:`Branch ${student.branch}`,pass:job.branches.map(normalizeBranch).includes(normalizeBranch(student.branch))},
     {key:"degree",label:unrestricted(job.degrees)?"Degree: open to all":`Degree ${student.degree||"not set"}`,pass:matchesRestriction(student.degree,job.degrees)},

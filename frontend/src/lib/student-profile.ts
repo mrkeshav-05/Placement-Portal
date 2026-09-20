@@ -7,6 +7,8 @@ export type EligibilityProfile = {
   backlogs: number;
   bans: number;
   documentsComplete: boolean;
+  class10Percent: number | null;
+  class12Percent: number | null;
 };
 
 export type ProfileCompletionInput = {
@@ -57,11 +59,15 @@ export function toEligibilityProfile(
     bans: number;
     aadhaarEncrypted: string | null;
     panCardEncrypted: string | null;
+    class10Percent: number | null;
+    class12Percent: number | null;
   },
   resumeCount: number,
 ): EligibilityProfile | null {
   // Degree and gender stay out of this guard: a job that does not restrict
-  // them must still be open to a student who has not filled them in.
+  // them must still be open to a student who has not filled them in. 10th
+  // and 12th percentage stay out for the same reason as those two — a job
+  // with no percentage floor must still be open to a student missing them.
   if (profile.cgpa === null || profile.batch === null || !profile.branch) {
     return null;
   }
@@ -74,6 +80,8 @@ export function toEligibilityProfile(
     gender: profile.gender,
     backlogs: profile.backlogs,
     bans: profile.bans,
+    class10Percent: profile.class10Percent,
+    class12Percent: profile.class12Percent,
     documentsComplete: Boolean(
       profile.aadhaarEncrypted && profile.panCardEncrypted && resumeCount > 0,
     ),

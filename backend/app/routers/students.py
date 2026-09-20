@@ -50,6 +50,8 @@ async def list_students_with_missed_streaks(
             "companyName": job.company.name if job.company else "Unknown company",
             "title": job.title,
             "minCGPA": job.minCGPA,
+            "min10Percent": job.min10Percent,
+            "min12Percent": job.min12Percent,
             "batch": job.batch,
             "allowedBranches": job.allowedBranches,
             "allowedDegrees": job.allowedDegrees,

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "JobProfile" ADD COLUMN     "min10Percent" DOUBLE PRECISION,
+ADD COLUMN     "min12Percent" DOUBLE PRECISION;

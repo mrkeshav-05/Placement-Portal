@@ -51,6 +51,8 @@ export default async function DashboardPage() {
             genders: job.allowedGenders,
             maxBacklogs: job.maxBacklogs,
             maxBans: job.maxBans,
+            min10Percent: job.min10Percent,
+            min12Percent: job.min12Percent,
           }),
         ),
       ).length

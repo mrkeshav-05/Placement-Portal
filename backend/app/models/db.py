@@ -215,6 +215,8 @@ class JobProfile(Base):
     ctcStipend: Mapped[float | None] = mapped_column(Float, nullable=True)
     ctcStipendInfo: Mapped[str | None] = mapped_column(String, nullable=True)
     minCGPA: Mapped[float] = mapped_column(Float, default=0)
+    min10Percent: Mapped[float | None] = mapped_column(Float, nullable=True)
+    min12Percent: Mapped[float | None] = mapped_column(Float, nullable=True)
     maxBacklogs: Mapped[int] = mapped_column(Integer, default=0)
     maxBans: Mapped[int] = mapped_column(Integer, default=0)
     allowedBranches: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)

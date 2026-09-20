@@ -221,6 +221,12 @@ model JobProfile {
   ctcStipend           Float?
   ctcStipendInfo       String?
   minCGPA              Float          @default(0)
+  // Unset means no threshold, the same convention `minCGPA`'s own default of
+  // 0 already carries. Optional eligibility criteria the event form's
+  // "Enable Optional Eligibility Criteria" toggle reveals, alongside gender
+  // and placement bans.
+  min10Percent         Float?
+  min12Percent         Float?
   maxBacklogs          Int            @default(0)
   maxBans              Int            @default(0)
   allowedBranches      String[]
