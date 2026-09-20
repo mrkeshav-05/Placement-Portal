@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Check,
   ChevronDown,
   ChevronFirst,
   ChevronLast,
@@ -353,14 +354,14 @@ function FilterMenu<T>({
 
       {open ? (
         <div className="dt-popover" id={menuId} role="group" aria-label={filter.label}>
-          {filter.searchable !== false && filter.options.length > 6 ? (
+          {filter.searchable !== false ? (
             <label className="dt-popover-search">
               <Search />
               <input
                 autoFocus
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={filter.label}
+                placeholder={`Search ${filter.label.toLowerCase()}...`}
                 aria-label={`Search ${filter.label} options`}
               />
             </label>
@@ -385,6 +386,75 @@ function FilterMenu<T>({
               Clear {filter.label.toLowerCase()}
             </button>
           ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Rows-per-page control, styled like every other picker on the table rather
+ * than left as a native `<select>`. A native select's popup is drawn by the
+ * OS, not the page — on macOS it renders with the system's own highlight
+ * colour, which fights this table's own dropdowns instead of matching them.
+ * It opens upward: this control always sits at the bottom of the card, so a
+ * downward popover would usually run past the viewport.
+ */
+function RowsPerPageMenu({
+  value,
+  options,
+  onChange,
+  id,
+}: {
+  value: number;
+  options: number[];
+  onChange: (value: number) => void;
+  id: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useDismiss(open, useCallback(() => setOpen(false), []));
+  const menuId = useId();
+
+  return (
+    <div className="dt-menu" ref={ref}>
+      <label htmlFor={id}>Rows per page</label>
+      <button
+        type="button"
+        id={id}
+        className="dt-rows-button"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        onClick={() => setOpen((current) => !current)}
+      >
+        {value}
+        <ChevronDown />
+      </button>
+
+      {open ? (
+        <div
+          className="dt-popover align-top align-end"
+          id={menuId}
+          role="listbox"
+          aria-label="Rows per page"
+        >
+          <div className="dt-popover-list">
+            {options.map((option) => (
+              <button
+                key={option}
+                type="button"
+                role="option"
+                aria-selected={option === value}
+                className={option === value ? "dt-option active" : "dt-option"}
+                onClick={() => {
+                  onChange(option);
+                  setOpen(false);
+                }}
+              >
+                {option}
+                {option === value ? <Check /> : null}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>
@@ -781,21 +851,15 @@ export function DataTable<T>({
       {pagination && !loading ? (
         <div className="dt-pagination">
           <div className="dt-rows-per-page">
-            <label htmlFor={`${caption ?? "table"}-page-size`}>Rows per page</label>
-            <select
+            <RowsPerPageMenu
               id={`${caption ?? "table"}-page-size`}
               value={pageSize}
-              onChange={(event) => {
-                setPageSize(Number(event.target.value));
+              options={pageSizeOptions}
+              onChange={(value) => {
+                setPageSize(value);
                 setPage(1);
               }}
-            >
-              {pageSizeOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <span className="dt-page-label">

@@ -760,50 +760,55 @@
   align-items: center;
   gap: 10px;
   flex: 0 1 440px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--surface-alt);
+  border: 1px solid transparent;
+  border-radius: 10px;
   padding: 0 14px;
-  height: 44px;
+  height: 40px;
   transition: all 0.18s ease;
 }
-.dt-search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.14); }
-.dt-search svg { width: 18px; color: var(--muted); flex: none; }
+.dt-search:hover { border-color: var(--border); }
+.dt-search:focus-within {
+  background: var(--card-bg);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.14);
+}
+.dt-search svg { width: 16px; color: var(--muted); flex: none; }
 .dt-search input {
   width: 100%;
   border: 0;
   outline: 0;
   background: transparent;
   color: var(--ink);
-  font-size: 16px;
+  font-size: 14px;
 }
 .dt-search input::placeholder { color: var(--muted); }
 .dt-search input::-webkit-search-cancel-button { cursor: pointer; }
 
-.dt-menu { position: relative; }
+.dt-menu { position: relative; display: inline-flex; align-items: center; gap: 8px; }
 .dt-filter-button, .dt-view-button, .dt-reset {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 16px;
+  gap: 7px;
+  height: 38px;
+  padding: 0 14px;
   border-radius: 8px;
   background: var(--card-bg);
   color: var(--ink);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
-/* The heading-row buttons are the page's primary actions, so they carry the
-   full 46px the reference gives them. */
+/* The heading-row buttons are the page's primary actions, so they stay a
+   notch taller than the toolbar's filter chips. */
 .dt-actions .dt-view-button,
 .dt-actions button,
-.dt-actions .primary { height: 46px; font-size: 16px; }
+.dt-actions .primary { height: 40px; font-size: 14px; }
 /* A dashed edge reads as "nothing chosen yet", which is what the filter
    buttons in the reference are saying. */
 .dt-filter-button { border: 1px dashed var(--border); }
-.dt-filter-button svg { width: 13px; color: var(--muted); }
+.dt-filter-button svg { width: 12px; color: var(--muted); }
 /* A filter with a value chosen reads as "on", so it takes the same filled
    treatment as a primary action rather than just a highlighted border. */
 .dt-filter-button.active {
@@ -826,7 +831,7 @@
   color: var(--badge-blue-text);
 }
 .dt-view-button { border: 1px solid var(--border); }
-.dt-view-button svg { width: 17px; color: var(--muted); }
+.dt-view-button svg { width: 15px; color: var(--muted); }
 .dt-reset { border: 1px solid transparent; color: var(--muted); }
 .dt-filter-button:hover, .dt-view-button:hover { border-color: var(--blue); background: var(--surface-alt); }
 /* Same specificity as the plain hover rule above, so source order alone would
@@ -847,6 +852,9 @@
   box-shadow: var(--card-hover-shadow);
 }
 .dt-popover.align-end { left: auto; right: 0; }
+/* Opens upward: this variant is for controls pinned to the bottom of the
+   card, where a downward popover would usually run past the viewport. */
+.dt-popover.align-top { top: auto; bottom: calc(100% + 6px); }
 .dt-popover-title {
   margin: 0;
   padding: 8px 10px;
@@ -901,6 +909,26 @@
 .dt-check input:disabled { cursor: not-allowed; }
 .dt-check input:disabled + span { color: var(--muted); }
 
+/* A single-select list item, e.g. one rows-per-page value. */
+.dt-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.dt-option:hover { background: var(--surface-alt); }
+.dt-option.active { font-weight: 600; }
+.dt-option svg { width: 14px; color: var(--blue); }
+
 /* The card owns the border; this owns the scrolling, in both directions. A
    wide grid scrolls sideways rather than squeezing 20 columns into the
    viewport, which is the whole point of a data grid over a list. */
@@ -944,10 +972,10 @@
   background: var(--card-bg);
   color: var(--ink);
   text-align: left;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
-  height: 50px;
+  height: 44px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
 }
@@ -1024,31 +1052,42 @@
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-top: 1px solid var(--border-subtle);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--muted);
 }
 .dt-rows-per-page { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-.dt-rows-per-page select {
-  height: 38px;
+.dt-rows-per-page label { color: var(--muted); }
+/* Custom, not a native `<select>`: a native popup is drawn by the OS and
+   carries its own accent colour (a red hover ring on macOS), which clashes
+   with the rest of this table's hand-styled dropdowns. */
+.dt-rows-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card-bg);
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 0 10px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
+.dt-rows-button svg { width: 14px; color: var(--muted); }
+.dt-rows-button:hover { border-color: var(--blue); background: var(--surface-alt); }
+.dt-rows-per-page .dt-popover { min-width: 96px; }
 .dt-page-label { display: flex; align-items: baseline; gap: 8px; font-weight: 700; color: var(--ink); }
 .dt-page-label small { font-weight: 600; color: var(--muted); }
 .dt-page-buttons { display: flex; gap: 6px; }
 .dt-page-buttons button {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card-bg);
@@ -1056,7 +1095,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.dt-page-buttons svg { width: 15px; }
+.dt-page-buttons svg { width: 14px; }
 .dt-page-buttons button:hover:not(:disabled) { background: var(--surface-alt); border-color: var(--blue); }
 .dt-page-buttons button:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -1127,7 +1166,7 @@
   .dt-title { font-size: 22px; }
   .dt-title span { font-size: 18px; }
   .dt-table { font-size: 14px; }
-  .dt-table thead th { font-size: 14px; }
+  .dt-table thead th { font-size: 13px; }
   .dt-actions { width: 100%; }
 }
 
