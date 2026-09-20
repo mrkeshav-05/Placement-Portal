@@ -115,6 +115,60 @@ def test_announcement_manage_permission_hierarchy():
     assert PERM_ANNOUNCEMENTS_CREATE in custom_student
 
 
+def test_announcement_create_sanitizes_content_html():
+    """The frontend's composer already sanitizes with the same allow-list;
+    this covers a request built by hand rather than through the editor."""
+    schema = AnnouncementCreate(
+        title="Google Placement Drive 2026",
+        content='<p onclick="x()">Round <strong>2</strong> starts <em>Monday</em>.</p>'
+        '<script>alert(1)</script><img src="x" onerror="alert(1)" />',
+        category="COMPANY_EVENT",
+    )
+    assert "onclick" not in schema.content
+    assert "<script" not in schema.content
+    assert "<img" not in schema.content
+    assert "<strong>2</strong>" in schema.content
+    assert "<em>Monday</em>" in schema.content
+
+
+def test_announcement_create_content_length_checks_visible_text_not_markup():
+    # Heavy formatting can push the raw HTML well past 10,000 characters
+    # while the text it wraps stays short; the limit is on the text.
+    heavy_markup = "<p>" + ("<strong><em>hi</em></strong> " * 400) + "</p>"
+    schema = AnnouncementCreate(
+        title="Formatting-heavy notice",
+        content=heavy_markup,
+        category="GENERAL",
+    )
+    assert schema.content
+
+    with pytest.raises(ValidationError):
+        AnnouncementCreate(
+            title="Too short",
+            content="<p><br></p>",  # No visible text at all
+            category="GENERAL",
+        )
+
+    with pytest.raises(ValidationError):
+        AnnouncementCreate(
+            title="Way too long",
+            content=f"<p>{'a' * 10001}</p>",
+            category="GENERAL",
+        )
+
+
+def test_announcement_update_sanitizes_content_when_provided():
+    update = AnnouncementUpdate(content='<p>Safe</p><script>alert(1)</script>')
+    assert update.content is not None
+    assert "<p>Safe</p>" in update.content
+    assert "<script" not in update.content
+
+    # Omitted stays omitted, so an edit that only changes the title never
+    # touches the stored content.
+    unrelated_update = AnnouncementUpdate(title="New Title")
+    assert unrelated_update.content is None
+
+
 def test_announcement_update_fields_set_detection():
     # When companyId is explicitly passed as None vs omitted
     update_with_none = AnnouncementUpdate(companyId=None)

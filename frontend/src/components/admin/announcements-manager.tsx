@@ -42,9 +42,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { AnnouncementStatus } from "@/lib/announcement-schema";
+import { sanitizeAnnouncementHtml, stripHtmlToText } from "@/lib/rich-text";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export type AdminAnnouncementItem = {
@@ -127,6 +128,10 @@ export function AnnouncementsManager({
   // picker shows NO_COMPANY instead and `submitForm` posts the empty string
   // the action already reads as null.
   const [formCompanyId, setFormCompanyId] = useState("");
+  // The rich text editor is a controlled React component, not a native form
+  // field, so its value can't ride along on a `name` attribute the way the
+  // textarea it replaced did — it is mirrored into a hidden input instead.
+  const [formContent, setFormContent] = useState("");
   // Which footer button was pressed. A ref, not state, because the value has
   // to be readable inside the submit handler of the same click.
   const submitStatus = useRef<AnnouncementStatus>("PUBLISHED");
@@ -153,6 +158,7 @@ export function AnnouncementsManager({
     setFormTags([...item.tags]);
     setCustomTagInput("");
     setFormCompanyId(item.companyId ?? "");
+    setFormContent(item.content);
     // Editing keeps the announcement where it is: saving a live announcement
     // must not quietly withdraw it, and saving a draft must not publish it.
     submitStatus.current = item.status;
@@ -261,7 +267,7 @@ export function AnnouncementsManager({
                   maxWidth: 320,
                 }}
               >
-                {item.content}
+                {stripHtmlToText(item.content)}
               </span>
             </span>
           </span>
@@ -555,7 +561,7 @@ export function AnnouncementsManager({
         columns={columns}
         getRowId={(item) => item.id}
         searchText={(item) =>
-          `${item.title} ${item.content} ${item.companyName ?? ""} ${item.tags.join(" ")} ${item.createdByName ?? ""}`
+          `${item.title} ${stripHtmlToText(item.content)} ${item.companyName ?? ""} ${item.tags.join(" ")} ${item.createdByName ?? ""}`
         }
         searchPlaceholder="Search by title, content, company, or tags…"
         filters={filters}
@@ -722,16 +728,13 @@ export function AnnouncementsManager({
             {/* Content / Body */}
             <div className="grid gap-2">
               <Label htmlFor="announcement-content">Announcement Content *</Label>
-              <Textarea
+              <RichTextEditor
                 id="announcement-content"
-                name="content"
-                required
-                rows={8}
-                minLength={2}
-                maxLength={10000}
-                defaultValue={editing?.content ?? ""}
+                value={formContent}
+                onChange={setFormContent}
                 placeholder="Enter the full announcement details, test links, shortlist instructions, eligibility criteria, etc."
               />
+              <input type="hidden" name="content" value={formContent} />
             </div>
 
             <DialogFooter>
@@ -743,7 +746,7 @@ export function AnnouncementsManager({
               <Button
                 type="submit"
                 variant="outline"
-                disabled={saving}
+                disabled={saving || !stripHtmlToText(formContent)}
                 onClick={() => {
                   submitStatus.current = "DRAFT";
                 }}
@@ -752,7 +755,7 @@ export function AnnouncementsManager({
               </Button>
               <Button
                 type="submit"
-                disabled={saving}
+                disabled={saving || !stripHtmlToText(formContent)}
                 onClick={() => {
                   submitStatus.current = "PUBLISHED";
                 }}
@@ -820,10 +823,14 @@ export function AnnouncementsManager({
               </div>
             ) : null}
 
-            {/* Body text with whitespace preservation */}
-            <div className="rounded-[10px] border p-4 text-[13px] leading-relaxed whitespace-pre-wrap">
-              {previewing.content}
-            </div>
+            {/* Body: this is the same HTML the composer produced, run back
+                through the sanitizer before it touches the DOM — the
+                schema already sanitized it once on the way in, but a row
+                written before that existed gets the same treatment here. */}
+            <div
+              className="rte-content rte-content--preview rounded-[10px] border p-4"
+              dangerouslySetInnerHTML={{ __html: sanitizeAnnouncementHtml(previewing.content) }}
+            />
 
             {previewing.attachments.length ? (
               <div className="grid gap-2">

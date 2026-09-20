@@ -32,7 +32,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { stripHtmlToText } from "@/lib/rich-text";
 
 type StagedAttachment = {
   fileName: string;
@@ -392,14 +393,11 @@ export function AnnouncementComposer({
         {editorReady ? (
           <div className="grid gap-2">
             <Label htmlFor="announcement-content">Announcement</Label>
-            <Textarea
+            <RichTextEditor
               id="announcement-content"
               value={content}
-              maxLength={10000}
-              rows={9}
-              onChange={(event) => setContent(event.target.value)}
-              placeholder="Write the announcement. Students see this text exactly as typed."
-              className="min-h-[200px] resize-y"
+              onChange={setContent}
+              placeholder="Write the announcement. Students see this formatting exactly as written."
             />
           </div>
         ) : (
@@ -488,14 +486,14 @@ export function AnnouncementComposer({
           <Button
             type="button"
             variant="outline"
-            disabled={saving || !editorReady || !content.trim()}
+            disabled={saving || !editorReady || !stripHtmlToText(content)}
             onClick={() => submit("DRAFT")}
           >
             {saving ? "Saving…" : "Save as draft"}
           </Button>
           <Button
             type="button"
-            disabled={saving || !editorReady || !content.trim()}
+            disabled={saving || !editorReady || !stripHtmlToText(content)}
             onClick={() => submit("PUBLISHED")}
             // Publishing is the one action here that can't be undone from
             // this screen (a draft can sit unpublished indefinitely), so it

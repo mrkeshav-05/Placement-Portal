@@ -20,6 +20,7 @@ import { Card } from "@/components/ui/card";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { sanitizeAnnouncementHtml, stripHtmlToText } from "@/lib/rich-text";
 
 export type DashboardAnnouncement = {
   id: string;
@@ -199,7 +200,7 @@ export function DashboardFeed({ data }: { data: DashboardFeedData }) {
                   <span>{item.date}</span>
                 </div>
                 <h3>{item.title}</h3>
-                <p>{item.summary}</p>
+                <p>{stripHtmlToText(item.summary)}</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <span className={`tag ${item.type.toLowerCase().replaceAll(" ", "-")}`}>
                     {item.type}
@@ -267,9 +268,12 @@ export function DashboardFeed({ data }: { data: DashboardFeedData }) {
               </div>
             ) : null}
 
-            <Card className="bg-card text-foreground rounded-[10px] p-4 text-[13px] leading-relaxed whitespace-pre-wrap shadow-none">
-              {selectedAnnouncement.summary}
-            </Card>
+            <Card
+              className="rte-content rte-content--preview bg-card text-foreground rounded-[10px] p-4 shadow-none"
+              dangerouslySetInnerHTML={{
+                __html: sanitizeAnnouncementHtml(selectedAnnouncement.summary),
+              }}
+            />
 
             {selectedAnnouncement.attachments?.length ? (
               <div className="grid gap-2">

@@ -745,3 +745,32 @@ falls through to the loader and returns the same answer. An empty `REDIS_URL`
 is the same code path, so "off" is a state the tests exercise rather than an
 untried one. The client is given a 250 ms timeout and no retries, because a
 Redis slower than that is slower than the query it stands in front of.
+
+## 2026-09-20 — Announcement content is sanitized HTML, not plain text
+
+`Announcement.content` moves from a plain string to sanitized HTML, so the
+composer can offer formatting (bold, headings, lists, links) instead of a
+bare `<textarea>`. No schema migration: the Prisma column was already an
+unbounded `String`, and existing plain-text rows remain valid HTML (a plain
+string with no tags).
+
+- The editor (`frontend/src/components/ui/rich-text-editor.tsx`) is a Tiptap
+  instance wrapped in the portal's own shadcn primitives (`Toggle`, `Button`,
+  `Popover`, `Separator`) rather than a themed third-party toolbar or a
+  registry component — no such component exists in the shadcn registry as of
+  this date (`npx shadcn view editor` 404s).
+- `frontend/src/lib/rich-text.ts` and `backend/app/core/rich_text.py` each
+  carry the same closed tag/attribute allow-list (`p, br, strong, em, u, s,
+  h2, h3, ul, ol, li, blockquote, a[href|target|rel]`) and run it through
+  DOMPurify (frontend) or bleach (backend). Both the Zod schema
+  (`announcementFormSchema`) and the Pydantic schema (`AnnouncementCreate` /
+  `AnnouncementUpdate`) sanitize on the way in, and every render site
+  (`announcements-manager.tsx`, `dashboard-feed.tsx`) sanitizes again on the
+  way out, so a row written before this allow-list existed, or by a caller
+  that bypassed one schema, still renders safely.
+- The 2-10,000 character bounds on `content` now apply to the sanitized
+  text (tags stripped), not the raw HTML, since formatting overhead has
+  nothing to do with "too long". The raw field still carries a generous
+  hard ceiling (50,000 characters server-side) as a byte-size backstop.
+- Search indexing and one-line table previews strip tags back to plain text
+  first (`stripHtmlToText`); nothing searches or truncates raw HTML.

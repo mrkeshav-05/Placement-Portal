@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeAnnouncementHtml, stripHtmlToText } from "@/lib/rich-text";
 
 const tagsSchema = z.preprocess((value) => {
   if (Array.isArray(value)) return value;
@@ -62,7 +63,22 @@ export const announcementFormSchema = z
   .object({
     id: z.string().optional(),
     title: z.string().trim().min(2, "Title must be at least 2 characters.").max(200, "Title cannot exceed 200 characters."),
-    content: z.string().trim().min(2, "Content must be at least 2 characters.").max(10000, "Content cannot exceed 10,000 characters."),
+    // Stored as sanitized HTML from the rich text editor. The length limits
+    // apply to the visible text, not the markup around it — a heavily
+    // formatted announcement carries more bytes than characters, and a bare
+    // byte cap would reject it for formatting that has nothing to do with
+    // "too long".
+    content: z
+      .string()
+      .transform((value) => sanitizeAnnouncementHtml(value))
+      .refine(
+        (html) => stripHtmlToText(html).length >= 2,
+        "Content must be at least 2 characters.",
+      )
+      .refine(
+        (html) => stripHtmlToText(html).length <= 10000,
+        "Content cannot exceed 10,000 characters.",
+      ),
     category: z.enum(["COMPANY_EVENT", "GENERAL"]),
     // Publishing is the default so an omitted status can never silently hide
     // an announcement the cell meant to send.

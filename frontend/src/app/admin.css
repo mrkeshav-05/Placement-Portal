@@ -129,6 +129,53 @@
 .composer-field.filled { background: var(--card-bg); color: var(--ink); border-color: var(--border); }
 .composer-field.filled .tick { color: var(--green); }
 
+/* Rich text editor (announcement "Announcement"/"Notice" body). The toolbar
+   and shell borrow the portal's own tokens rather than a themed Tiptap
+   skin, so a bold word here looks like the rest of the admin UI. */
+.rte-shell {
+  background: var(--card-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.rte-shell:focus-within {
+  border-color: var(--ring, var(--blue));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 20%, transparent);
+}
+.rte-toolbar { background: var(--surface-alt); border-radius: 6px 6px 0 0; }
+.rte-content {
+  min-height: 200px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink);
+  outline: none;
+}
+.rte-content p { margin: 0 0 0.65em; }
+.rte-content > *:last-child { margin-bottom: 0; }
+.rte-content h2 { font-size: 1.2rem; font-weight: 700; margin: 0.7em 0 0.35em; }
+.rte-content h3 { font-size: 1.05rem; font-weight: 700; margin: 0.6em 0 0.3em; }
+.rte-content ul, .rte-content ol { margin: 0.4em 0; padding-left: 1.4em; }
+.rte-content li { margin: 0.15em 0; }
+.rte-content blockquote {
+  margin: 0.6em 0;
+  padding-left: 0.9em;
+  border-left: 3px solid var(--border);
+  color: var(--muted);
+}
+.rte-content a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.rte-content strong { font-weight: 700; }
+/* The preview modal renders the same sanitized HTML through this class for
+   consistent typography, but it is static text, not an editing surface —
+   the editor's `min-height` exists to give an empty document room to be
+   clicked into, which a short announcement here does not need. */
+.rte-content.rte-content--preview { min-height: 0; }
+.rte-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--muted);
+  pointer-events: none;
+}
+
 .composer-dropdown {
   position: absolute;
   top: calc(100% + 4px);

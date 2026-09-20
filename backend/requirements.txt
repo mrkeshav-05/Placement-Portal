@@ -19,5 +19,9 @@ python-multipart>=0.0.9
 cloudinary>=1.40
 resend>=2.0
 httpx>=0.27
+# Sanitizes announcement rich text server-side, mirroring the allow-list the
+# frontend's DOMPurify pass already applies — this is the belt for a request
+# built by hand rather than through the composer's editor.
+bleach>=6.1
 pytest>=8.0
 pytest-asyncio>=0.23
