@@ -1090,3 +1090,95 @@ job now has to match the fixed graduating year of the real students it
 targets, which does not move just because the calendar did. Registration
 deadlines and every other date in the dataset are still offsets from the seed
 run, so they stay evergreen.
+
+## 2026-09-21 — A fifth role, FACULTY: read-only NOC, placement records, and the overview; ranked between STUDENT and PLACEMENT_VOLUNTEER
+
+Requested directly: faculty need to see NOC requests (including the signed
+PDF) and placement records, and the placement dashboard overview, without any
+ability to change them, create them, or apply to a drive — ranked below
+`PLACEMENT_VOLUNTEER` and above `STUDENT`.
+
+- **`Role` gains `FACULTY`** in `database/prisma/schema.prisma` (migration
+  `20260921095322_add_faculty_role`, an `ALTER TYPE ... ADD VALUE`, so it is
+  additive and non-destructive) and its hand-maintained mirror in
+  `backend/app/models/db.py`.
+- **Its default permission set is exactly three keys** —
+  `analytics.view`, `noc.view`, `placement_records.view` — added as
+  `FACULTY_DEFAULTS`/`_FACULTY_DEFAULTS` in `frontend/src/lib/permissions.ts`
+  and `backend/app/core/security.py`, the two files that already had to stay
+  identical for every other role. No create/update/delete/approve permission
+  is granted, and `applications.apply` is not only withheld but structurally
+  unreachable: `require_student` in the backend gates applying on the literal
+  `STUDENT` role, not on a permission key, so no combination of custom
+  permissions could ever let a FACULTY account apply.
+- **Ranked by `ROLE_METADATA[...].tier`**, a display/sort-only field (see the
+  2026-09-17-era permission catalog) — `STUDENT` 1, `FACULTY` 2,
+  `PLACEMENT_VOLUNTEER` 3, `PLACEMENT_TEAM` 4, `SUPER_ADMIN` 5. Tier has never
+  driven authorization; that's entirely `ROLE_DEFAULT_PERMISSIONS` and
+  `ROUTE_PERMISSIONS`, both of which this entry's permission set already
+  determines.
+- **Deliberately excluded from `isElevatedRole`/`is_elevated_role`.** That
+  function is a broader shortcut than a permission check — "trust this role
+  for anything not explicitly permission-gated" — used inside
+  `hasAnyAdminPermission`'s fallback, `canAccessAdminRoute`'s fallback for a
+  path with no `ROUTE_PERMISSIONS` entry, and (backend)
+  `get_current_user`'s domain/role gate. Including FACULTY there would have
+  been the one-line fix for every symptom below, at the cost of granting
+  faculty implicit access to any future admin route nobody remembered to add
+  to `ROUTE_PERMISSIONS` — the opposite of "read-only, exactly these three
+  screens." Both functions carry a comment now explaining the omission is
+  intentional, not a gap. Faculty still reach the admin portal correctly:
+  `hasAnyAdminPermission`'s permission-based branch already treats any
+  non-student-scoped permission as administrative, and `noc.view`/
+  `placement_records.view`/`analytics.view` are not in
+  `STUDENT_SCOPED_PERMISSIONS`.
+- **Three call sites had to stop using `isElevatedRole` for the post-login
+  landing page**, because that decision — `/admin/dashboard` vs `/dashboard`
+  — was the one place in the app that read the role literal directly instead
+  of asking a permission question, and a non-elevated FACULTY account would
+  have landed on the empty student dashboard after every sign-in.
+  `frontend/src/app/login/page.tsx`, `frontend/src/app/register/page.tsx`,
+  and `frontend/src/app/account/password/page.tsx` now call
+  `hasAnyAdminPermission(session.user)`, the function the rest of the app
+  already uses for this exact question (`proxy.ts`, `admin-session.ts`).
+- **The NOC PDF has its own gate, separate from the JSON list/detail
+  endpoints, and it was missing `noc.view`.** `backend/app/routers/uploads.py`'s
+  `get_uploaded_file` — the generic local-file server also behind resumes,
+  identity documents, and announcement/event attachments — decided
+  `is_admin` from `is_elevated_role`, `is_admin_email`, `students.view`, or
+  `applications.view`, none of which a view-only FACULTY account holds. Fixed
+  narrowly, not by broadening `is_admin` (which would have hit every file
+  type this endpoint serves): inside the existing `noc_docs/`-prefixed
+  branch, a caller holding `noc.view` is now authorized for that document
+  without the per-row ownership query, the same read access the admin NOC
+  list/detail endpoints already give them via `require_permission(PERM_NOC_VIEW)`.
+  Covered by a new test in `backend/tests/test_storage.py`.
+- **`/admin/placement-records` had no read-only UI mode; this exposed that as
+  a real, pre-existing gap, not just a FACULTY-shaped one.** The Add/Edit/Delete
+  controls in `placement-records-manager.tsx` rendered unconditionally for
+  anyone who could reach the page at all — server actions were correctly
+  permission-gated, but `PLACEMENT_VOLUNTEER` (which has only
+  `placement_records.view`, same as FACULTY) already saw an enabled "Add
+  record" button and per-row Edit/Delete icons that would 403 on submission.
+  `placement-records/page.tsx` now computes `canCreate`/`canUpdate`/`canDelete`
+  from the three separate permission keys and passes them down; the manager
+  hides each control it lacks the grant for, and omits the Actions column
+  entirely rather than rendering it empty when neither grant is held — the
+  same pattern `noc-requests-manager.tsx`'s `canDecide` already established
+  for Approve/Reject.
+- **`/admin/users`'s and `/admin/settings`'s role-count tiles silently
+  miscounted, or omitted, FACULTY.** `users-manager.tsx` computed its stats
+  client-side with an `else students++` catch-all that had been correct only
+  because the four roles before this one were all explicitly branched — a
+  FACULTY account would have been counted as a student. Fixed by adding an
+  explicit branch and a `faculty` count, folded into the existing "Placement
+  Cell" tile (renamed "Placement Cell & Faculty") alongside team/volunteer
+  counts, since `FACULTY` and `PLACEMENT_VOLUNTEER` are the same shape of
+  role — read access, cannot change it. `admin/settings/page.tsx`'s
+  server-side counts got the same `FACULTY` query and the same tile treatment
+  in `settings-manager.tsx`, for the same reason.
+- Not changed: the self-demotion guards in `admin/users/actions.ts` and
+  `backend/app/routers/users.py` (`update_user_role`) only special-case
+  demoting to `STUDENT` or `PLACEMENT_VOLUNTEER` today — they already didn't
+  cover self-demotion to `PLACEMENT_TEAM` either, so leaving `FACULTY` out is
+  consistent with that existing scope rather than a new gap.

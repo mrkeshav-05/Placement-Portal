@@ -258,6 +258,20 @@ export const STUDENT_SCOPED_PERMISSIONS: readonly PermissionKey[] = [
 
 const STUDENT_DEFAULTS: readonly PermissionKey[] = STUDENT_SCOPED_PERMISSIONS;
 
+/**
+ * Read-only: the overview dashboard, NOC requests (including the uploaded
+ * document — see the noc.view carve-out in backend/app/routers/uploads.py),
+ * and placement records. No create/update/delete permission anywhere, and no
+ * `applications.apply` — a faculty account can never apply to a drive
+ * regardless of custom permissions, since `require_student` in the backend
+ * gates that on the literal STUDENT role, not on a permission key.
+ */
+const FACULTY_DEFAULTS: readonly PermissionKey[] = [
+  PERM_ANALYTICS_VIEW,
+  PERM_NOC_VIEW,
+  PERM_PLACEMENT_RECORDS_VIEW,
+];
+
 const PLACEMENT_VOLUNTEER_DEFAULTS: readonly PermissionKey[] = [
   PERM_ANALYTICS_VIEW,
   PERM_ANNOUNCEMENTS_VIEW,
@@ -318,6 +332,7 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<Role, readonly PermissionKey[]> = 
   SUPER_ADMIN: ALL_PERMISSIONS,
   PLACEMENT_TEAM: PLACEMENT_TEAM_DEFAULTS,
   PLACEMENT_VOLUNTEER: PLACEMENT_VOLUNTEER_DEFAULTS,
+  FACULTY: FACULTY_DEFAULTS,
   STUDENT: STUDENT_DEFAULTS,
 };
 
@@ -329,18 +344,24 @@ export const ROLE_METADATA: Record<
     label: "Super Admin",
     description: "Unrestricted access. The only role that can assign roles or change permissions.",
     badgeClass: "badge-superadmin",
-    tier: 4,
+    tier: 5,
   },
   PLACEMENT_TEAM: {
     label: "Placement Team",
     description: "Runs the placement cell day to day: drives, applications, records, and approvals.",
     badgeClass: "badge-placement-team",
-    tier: 3,
+    tier: 4,
   },
   PLACEMENT_VOLUNTEER: {
     label: "Placement Volunteer",
     description: "Assists the team with read access to placement data; cannot change it.",
     badgeClass: "badge-placement-volunteer",
+    tier: 3,
+  },
+  FACULTY: {
+    label: "Faculty",
+    description: "Read-only access to NOC requests and placement records, plus the overview dashboard. Cannot change anything or apply to drives.",
+    badgeClass: "badge-faculty",
     tier: 2,
   },
   STUDENT: {
@@ -353,6 +374,12 @@ export const ROLE_METADATA: Record<
 
 export function isElevatedRole(role: Role | string | null | undefined): boolean {
   if (!role) return false;
+  // Deliberately excludes FACULTY: this is the broad "trust this role for
+  // anything not explicitly permission-gated" shortcut (see its use in
+  // hasAnyAdminPermission and canAccessAdminRoute's fallback below), and
+  // faculty access is meant to stay limited to exactly FACULTY_DEFAULTS.
+  // Faculty still reach the admin portal and their three routes correctly
+  // through hasAnyAdminPermission's permission-based branch, not this one.
   return role === "SUPER_ADMIN" || role === "PLACEMENT_TEAM" || role === "PLACEMENT_VOLUNTEER";
 }
 

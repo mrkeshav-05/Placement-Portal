@@ -21,6 +21,7 @@ from app.core.security import (
     PERM_APPLICATIONS_VIEW,
     PERM_JOBS_CREATE,
     PERM_NOC_APPROVE,
+    PERM_NOC_VIEW,
     PERM_STUDENTS_VIEW,
     has_permission,
     is_admin_email,
@@ -234,19 +235,29 @@ async def get_uploaded_file(
             is_own_resume = resolved_rel.startswith(f"resumes/{user_id}/")
             is_noc_doc = False
             if resolved_rel.startswith("noc_docs/"):
-                # Ask whether *any* of the caller's NOC documents is this file.
-                # Loading a single arbitrary row and comparing against it 403'd
-                # a student who had more than one NOC document.
-                is_noc_doc = bool(
-                    await db.scalar(
-                        select(NocRequest.id)
-                        .where(
-                            NocRequest.userId == user_id,
-                            NocRequest.documentUrl.like(f"%{resolved_rel}"),
+                if has_permission(token_payload, PERM_NOC_VIEW):
+                    # Anyone holding noc.view (e.g. FACULTY, who is not
+                    # `is_admin` above since that flag also implies
+                    # students.view/applications.view, broader than NOC
+                    # access alone) can read any NOC document, the same read
+                    # access the admin NOC list/detail endpoints already give
+                    # them via require_permission(PERM_NOC_VIEW).
+                    is_noc_doc = True
+                else:
+                    # Ask whether *any* of the caller's NOC documents is this
+                    # file. Loading a single arbitrary row and comparing
+                    # against it 403'd a student who had more than one NOC
+                    # document.
+                    is_noc_doc = bool(
+                        await db.scalar(
+                            select(NocRequest.id)
+                            .where(
+                                NocRequest.userId == user_id,
+                                NocRequest.documentUrl.like(f"%{resolved_rel}"),
+                            )
+                            .limit(1)
                         )
-                        .limit(1)
                     )
-                )
 
             # An attachment is readable by any signed-in user once the
             # announcement carrying it is published, and by nobody while it is

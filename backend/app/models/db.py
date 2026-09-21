@@ -37,6 +37,7 @@ from app.core.database import Base
 
 class Role(str, enum.Enum):
     STUDENT = "STUDENT"
+    FACULTY = "FACULTY"
     PLACEMENT_VOLUNTEER = "PLACEMENT_VOLUNTEER"
     PLACEMENT_TEAM = "PLACEMENT_TEAM"
     SUPER_ADMIN = "SUPER_ADMIN"

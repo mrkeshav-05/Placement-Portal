@@ -14,6 +14,7 @@ export function SettingsManager({
     superAdmins: number;
     placementTeam: number;
     placementVolunteers: number;
+    faculty: number;
     students: number;
     total: number;
   };
@@ -61,9 +62,9 @@ export function SettingsManager({
             <UserCheck />
           </div>
           <div>
-            <small>Placement Cell</small>
-            <strong>{userCounts.placementTeam + userCounts.placementVolunteers}</strong>
-            <b>{userCounts.placementTeam} team · {userCounts.placementVolunteers} volunteers</b>
+            <small>Placement Cell &amp; Faculty</small>
+            <strong>{userCounts.placementTeam + userCounts.placementVolunteers + userCounts.faculty}</strong>
+            <b>{userCounts.placementTeam} team · {userCounts.placementVolunteers} volunteers · {userCounts.faculty} faculty</b>
           </div>
         </article>
 

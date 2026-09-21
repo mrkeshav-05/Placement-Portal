@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   ALL_PERMISSIONS,
+  PERM_ANALYTICS_VIEW,
   PERM_ANNOUNCEMENTS_PUBLISH,
   PERM_APPLICATIONS_APPLY,
   PERM_APPLICATIONS_UPDATE,
@@ -12,6 +13,9 @@ import {
   PERM_INTERVIEW_EXPERIENCES_VIEW,
   PERM_JOBS_CREATE,
   PERM_NOC_APPROVE,
+  PERM_NOC_VIEW,
+  PERM_PLACEMENT_RECORDS_CREATE,
+  PERM_PLACEMENT_RECORDS_VIEW,
   PERM_RBAC_MANAGE,
   PERM_SETTINGS_MANAGE,
   PERM_STUDENTS_VIEW,
@@ -63,6 +67,37 @@ test("PLACEMENT_VOLUNTEER reads placement data but cannot change it", () => {
   assert.ok(!perms.includes(PERM_USERS_VIEW));
 });
 
+test("FACULTY reads NOC requests, placement records, and the overview, and nothing else", () => {
+  const perms = computeEffectivePermissions("FACULTY");
+  assert.ok(perms.includes(PERM_ANALYTICS_VIEW));
+  assert.ok(perms.includes(PERM_NOC_VIEW));
+  assert.ok(perms.includes(PERM_PLACEMENT_RECORDS_VIEW));
+
+  assert.ok(!perms.includes(PERM_NOC_APPROVE));
+  assert.ok(!perms.includes(PERM_PLACEMENT_RECORDS_CREATE));
+  assert.ok(!perms.includes(PERM_APPLICATIONS_VIEW));
+  assert.ok(!perms.includes(PERM_APPLICATIONS_APPLY));
+  assert.ok(!perms.includes(PERM_STUDENTS_VIEW));
+  assert.ok(!perms.includes(PERM_USERS_VIEW));
+
+  // Reaches the admin portal on its permissions alone, not by being
+  // "elevated" — see the comment on isElevatedRole's own definition.
+  const faculty = { role: "FACULTY", email: "faculty@iiitl.ac.in" };
+  assert.equal(isElevatedRole("FACULTY"), false);
+  assert.equal(hasAnyAdminPermission(faculty), true);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/dashboard"), true);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/noc-requests"), true);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/placement-records"), true);
+  // No route-level grant beyond those three.
+  assert.equal(canAccessAdminRoute(faculty, "/admin/placement-records/add"), false);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/students"), false);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/applications"), false);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/users"), false);
+  // Unlisted subroutes fall back to isElevatedRole, which excludes FACULTY —
+  // the whole point of not granting it the broad "elevated" shortcut.
+  assert.equal(canAccessAdminRoute(faculty, "/admin/some-future-route"), false);
+});
+
 test("STUDENT holds only own-scoped permissions", () => {
   const perms = computeEffectivePermissions("STUDENT");
   assert.ok(perms.includes(PERM_APPLICATIONS_VIEW_OWN));
@@ -110,6 +145,9 @@ test("isElevatedRole identifies administrative roles correctly", () => {
   assert.equal(isElevatedRole("SUPER_ADMIN"), true);
   assert.equal(isElevatedRole("PLACEMENT_TEAM"), true);
   assert.equal(isElevatedRole("PLACEMENT_VOLUNTEER"), true);
+  // FACULTY is deliberately not "elevated" — it reaches the admin portal
+  // through its own permissions, not this broader shortcut.
+  assert.equal(isElevatedRole("FACULTY"), false);
   assert.equal(isElevatedRole("STUDENT"), false);
   assert.equal(isElevatedRole(null), false);
 });
@@ -221,7 +259,7 @@ test("the admin sidebar only offers routes the account can open", () => {
 test("a redirect target always exists for an account inside the admin portal", () => {
   // Guards the redirect loop: whoever passes the admin gate must have
   // somewhere to land, or the middleware bounces them forever.
-  for (const role of ["SUPER_ADMIN", "PLACEMENT_TEAM", "PLACEMENT_VOLUNTEER"] as const) {
+  for (const role of ["SUPER_ADMIN", "PLACEMENT_TEAM", "PLACEMENT_VOLUNTEER", "FACULTY"] as const) {
     const user = { role, email: `${role}@iiitl.ac.in` };
     assert.ok(hasAnyAdminPermission(user));
     assert.notEqual(firstAccessibleAdminRoute(user), null);

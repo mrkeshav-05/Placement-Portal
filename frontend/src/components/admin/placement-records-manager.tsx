@@ -120,12 +120,18 @@ export function PlacementRecordsManager({
   companies,
   jobs,
   backendError,
+  canCreate,
+  canUpdate,
+  canDelete,
 }: {
   offers: OfferRecord[];
   students: StudentOption[];
   companies: CompanyOption[];
   jobs: JobOption[];
   backendError: string | null;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<OfferRecord | null | undefined>(undefined);
@@ -288,32 +294,43 @@ export function PlacementRecordsManager({
         sortValue: (offer) => offer.location,
         cell: (offer) => offer.location ?? <span className="dt-muted">Not recorded</span>,
       },
-      {
-        id: "actions",
-        header: "Actions",
-        width: "110px",
-        hideable: false,
-        cell: (offer) => (
-          <span className="row-actions">
-            <button
-              title={`Edit the offer for ${offer.student?.name ?? "this student"}`}
-              aria-label={`Edit the offer for ${offer.student?.name ?? "this student"}`}
-              onClick={() => openForm(offer)}
-            >
-              <Edit3 />
-            </button>
-            <form action={remove}>
-              <input type="hidden" name="offerId" value={offer.id} />
-              <button title="Delete this placement record" aria-label="Delete this placement record">
-                <Trash2 />
-              </button>
-            </form>
-          </span>
-        ),
-      },
+      // Omitted entirely, rather than rendered empty, for a viewer with
+      // neither grant (PLACEMENT_VOLUNTEER, FACULTY): an actions column with
+      // nothing in it reads as a bug, not as "you can't do anything here".
+      ...(canUpdate || canDelete
+        ? [
+            {
+              id: "actions",
+              header: "Actions",
+              width: "110px",
+              hideable: false,
+              cell: (offer: OfferRecord) => (
+                <span className="row-actions">
+                  {canUpdate ? (
+                    <button
+                      title={`Edit the offer for ${offer.student?.name ?? "this student"}`}
+                      aria-label={`Edit the offer for ${offer.student?.name ?? "this student"}`}
+                      onClick={() => openForm(offer)}
+                    >
+                      <Edit3 />
+                    </button>
+                  ) : null}
+                  {canDelete ? (
+                    <form action={remove}>
+                      <input type="hidden" name="offerId" value={offer.id} />
+                      <button title="Delete this placement record" aria-label="Delete this placement record">
+                        <Trash2 />
+                      </button>
+                    </form>
+                  ) : null}
+                </span>
+              ),
+            },
+          ]
+        : []),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [canUpdate, canDelete],
   );
 
   const filters = useMemo<DataTableFilter<OfferRecord>[]>(
@@ -420,21 +437,23 @@ export function PlacementRecordsManager({
           <h1>Offers</h1>
           <p>Every placement, pre-placement, and internship offer. The dashboard is built from these rows.</p>
         </div>
-        <div className="admin-heading-actions">
-          {/* One record at a time, or a whole drive's outcome at once. */}
-          <Link className="secondary" href="/admin/placement-records/add">
-            <Users />
-            Add in bulk
-          </Link>
-          <button
-            disabled={Boolean(createDisabledReason)}
-            title={createDisabledReason ?? "Add placement record"}
-            onClick={() => openForm(null)}
-          >
-            <Plus />
-            Add record
-          </button>
-        </div>
+        {canCreate ? (
+          <div className="admin-heading-actions">
+            {/* One record at a time, or a whole drive's outcome at once. */}
+            <Link className="secondary" href="/admin/placement-records/add">
+              <Users />
+              Add in bulk
+            </Link>
+            <button
+              disabled={Boolean(createDisabledReason)}
+              title={createDisabledReason ?? "Add placement record"}
+              onClick={() => openForm(null)}
+            >
+              <Plus />
+              Add record
+            </button>
+          </div>
+        ) : null}
       </section>
 
       {backendError ? <Alert variant="destructive" className="mt-4"><AlertDescription>{backendError}</AlertDescription></Alert> : null}

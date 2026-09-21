@@ -113,6 +113,7 @@ export function UsersManager({
     let superAdmins = 0;
     let placementTeam = 0;
     let placementVolunteers = 0;
+    let faculty = 0;
     let students = 0;
     let inactive = 0;
 
@@ -121,6 +122,7 @@ export function UsersManager({
       if (u.role === "SUPER_ADMIN") superAdmins++;
       else if (u.role === "PLACEMENT_TEAM") placementTeam++;
       else if (u.role === "PLACEMENT_VOLUNTEER") placementVolunteers++;
+      else if (u.role === "FACULTY") faculty++;
       else students++;
     }
 
@@ -129,6 +131,7 @@ export function UsersManager({
       superAdmins,
       placementTeam,
       placementVolunteers,
+      faculty,
       students,
       inactive,
     };
@@ -541,9 +544,9 @@ export function UsersManager({
             <UserCheck />
           </div>
           <div>
-            <small>Placement Cell</small>
-            <strong>{stats.placementTeam + stats.placementVolunteers}</strong>
-            <b>{stats.placementTeam} team · {stats.placementVolunteers} volunteers</b>
+            <small>Placement Cell &amp; Faculty</small>
+            <strong>{stats.placementTeam + stats.placementVolunteers + stats.faculty}</strong>
+            <b>{stats.placementTeam} team · {stats.placementVolunteers} volunteers · {stats.faculty} faculty</b>
           </div>
         </article>
 

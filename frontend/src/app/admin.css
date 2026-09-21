@@ -1279,6 +1279,12 @@
   border: 1px solid rgba(var(--success-rgb), 0.3);
 }
 
+.badge-faculty {
+  background: var(--badge-orange-bg);
+  color: var(--badge-orange-text);
+  border: 1px solid rgba(var(--warning-rgb), 0.3);
+}
+
 .badge-student {
   background: var(--surface-alt);
   color: var(--muted);

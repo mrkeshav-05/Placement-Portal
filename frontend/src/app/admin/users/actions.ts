@@ -19,7 +19,7 @@ import type { Role } from "@prisma/client";
 
 export type UserActionResult = { error?: string; success?: string };
 
-const roles = ["STUDENT", "PLACEMENT_VOLUNTEER", "PLACEMENT_TEAM", "SUPER_ADMIN"] as const;
+const roles = ["STUDENT", "FACULTY", "PLACEMENT_VOLUNTEER", "PLACEMENT_TEAM", "SUPER_ADMIN"] as const;
 
 const createUserSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address."),

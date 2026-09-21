@@ -9,6 +9,10 @@ datasource db {
 
 enum Role {
   STUDENT
+  // Read-only: NOC requests (including the uploaded document) and placement
+  // records, plus the analytics overview. No create/update/delete anywhere,
+  // and never eligible to apply to a drive (see requireStudent in FastAPI).
+  FACULTY
   PLACEMENT_VOLUNTEER
   PLACEMENT_TEAM
   SUPER_ADMIN

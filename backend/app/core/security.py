@@ -157,6 +157,12 @@ STUDENT_SCOPED_PERMISSIONS = [
     PERM_FEEDBACK_CREATE,
 ]
 
+_FACULTY_DEFAULTS = [
+    PERM_ANALYTICS_VIEW,
+    PERM_NOC_VIEW,
+    PERM_PLACEMENT_RECORDS_VIEW,
+]
+
 _PLACEMENT_VOLUNTEER_DEFAULTS = [
     PERM_ANALYTICS_VIEW,
     PERM_ANNOUNCEMENTS_VIEW,
@@ -212,6 +218,7 @@ ROLE_DEFAULT_PERMISSIONS: dict[str, list[str]] = {
     "SUPER_ADMIN": list(ALL_PERMISSIONS),
     "PLACEMENT_TEAM": list(_PLACEMENT_TEAM_DEFAULTS),
     "PLACEMENT_VOLUNTEER": list(_PLACEMENT_VOLUNTEER_DEFAULTS),
+    "FACULTY": list(_FACULTY_DEFAULTS),
     "STUDENT": list(STUDENT_SCOPED_PERMISSIONS),
 }
 
@@ -303,6 +310,13 @@ def is_student_email(email: str) -> bool:
 
 
 def is_elevated_role(role: str) -> bool:
+    # Deliberately excludes FACULTY: this is the broad "trust this role for
+    # anything not explicitly permission-gated" shortcut (see its use in
+    # has_any_admin_permission and the frontend's canAccessAdminRoute
+    # fallback), and faculty access is meant to stay limited to exactly the
+    # permissions in _FACULTY_DEFAULTS. Faculty still reach the admin portal
+    # and their three routes correctly through has_any_admin_permission's
+    # permission-based branch below, not through this one.
     return role in ("PLACEMENT_VOLUNTEER", "PLACEMENT_TEAM", "SUPER_ADMIN")
 
 

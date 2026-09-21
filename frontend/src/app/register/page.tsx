@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { studentEmailDomain } from "@/lib/auth-access";
 import { MIN_PASSWORD_LENGTH } from "@/lib/credentials-schema";
-import { isElevatedRole } from "@/lib/permissions";
+import { hasAnyAdminPermission } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export default async function RegisterPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const session = await auth();
-  if (session) redirect(isElevatedRole(session.user.role) ? "/admin/dashboard" : "/dashboard");
+  if (session) redirect(hasAnyAdminPermission(session.user) ? "/admin/dashboard" : "/dashboard");
 
   const domain = studentEmailDomain();
   const problem = describeError((await searchParams).error, domain);

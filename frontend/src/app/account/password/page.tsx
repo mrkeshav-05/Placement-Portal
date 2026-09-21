@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { canUsePasswordAccount, studentEmailDomain } from "@/lib/auth-access";
 import { MIN_PASSWORD_LENGTH } from "@/lib/credentials-schema";
 import { db } from "@/lib/db";
-import { isElevatedRole } from "@/lib/permissions";
+import { hasAnyAdminPermission } from "@/lib/permissions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,7 @@ export default async function AccountPasswordPage({
   const problem = describeError(error, domain);
   const hasPassword = Boolean(user.passwordHash);
   const eligible = canUsePasswordAccount(user.email);
-  const homeHref = isElevatedRole(session.user.role) ? "/admin/dashboard" : "/dashboard";
+  const homeHref = hasAnyAdminPermission(session.user) ? "/admin/dashboard" : "/dashboard";
 
   return (
     <main className="account-page">

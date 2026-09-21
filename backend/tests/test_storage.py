@@ -1,6 +1,8 @@
 """Tests for file storage helpers, PDF validation, local fallback, and security checks."""
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+
 import pytest
 from app.core.storage import (
     StorageError,
@@ -107,5 +109,49 @@ async def test_get_uploaded_file_path_traversal_and_auth():
             token_payload={"sub": "user1", "role": "STUDENT"},
         )
     assert exc.value.status_code in (403, 404)
+
+
+@pytest.mark.asyncio
+async def test_get_uploaded_file_noc_view_permission_reaches_any_noc_document(
+    tmp_path, monkeypatch
+):
+    """
+    A FACULTY account (noc.view, nothing else) must be able to read any NOC
+    document, not just one it owns — this is what makes the "faculty can see
+    the NOC PDF" requirement actually work end to end, since the frontend's
+    /api/noc-documents/[id] route forwards to this endpoint for a
+    locally-stored file. A student with no noc.view permission and no
+    ownership of the row must still be refused the same file.
+    """
+    from fastapi import HTTPException
+    import app.core.storage as storage_mod
+    from app.routers.uploads import get_uploaded_file
+
+    monkeypatch.setattr(storage_mod, "LOCAL_UPLOADS_DIR", tmp_path)
+    noc_dir = tmp_path / "noc_docs"
+    noc_dir.mkdir()
+    document = noc_dir / "signed_noc.pdf"
+    document.write_bytes(b"%PDF-1.4 signed noc document")
+
+    db = AsyncMock()
+    # Only consulted for the non-noc.view fallback path (the plain student
+    # case below); a permission-holder never reaches this query.
+    db.scalar = AsyncMock(return_value=None)
+
+    faculty_response = await get_uploaded_file(
+        file_path="noc_docs/signed_noc.pdf",
+        token_payload={"sub": "faculty-1", "email": "faculty@iiitl.ac.in", "role": "FACULTY"},
+        db=db,
+    )
+    assert str(faculty_response.path) == str(document)
+    db.scalar.assert_not_awaited()
+
+    with pytest.raises(HTTPException) as exc:
+        await get_uploaded_file(
+            file_path="noc_docs/signed_noc.pdf",
+            token_payload={"sub": "some-other-student", "email": "s@iiitl.ac.in", "role": "STUDENT"},
+            db=db,
+        )
+    assert exc.value.status_code == 403
 
 
