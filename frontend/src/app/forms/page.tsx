@@ -32,6 +32,9 @@ export default async function Page() {
           message: r.message,
           adminRemarks: r.adminRemarks,
           documentUrl: r.documentUrl,
+          source: r.source,
+          offCampusProofUrl: r.offCampusProofUrl,
+          nocRequired: r.nocRequired,
           createdAt: r.createdAt.toISOString(),
         }));
       } catch (dbErr) {

@@ -17,7 +17,7 @@ from app.core.security import (
 )
 from app.core.storage import upload_pdf, validate_pdf
 from app.dependencies import get_db, require_student
-from app.models.db import NocRequest, NocStatus, Notification, User
+from app.models.db import NocRequest, NocSource, NocStatus, Notification, User
 from app.schemas.noc import (
     AdminNocResponse,
     NocApproveRequest,
@@ -26,6 +26,7 @@ from app.schemas.noc import (
     NocRejectRequest,
     NocResponse,
     NocStudentSummary,
+    NocVerifyRequest,
 )
 from app.services.email import send_notification_email
 
@@ -48,6 +49,7 @@ def _to_admin_noc_response(noc: NocRequest) -> AdminNocResponse:
         )
 
     status_val = noc.status.value if hasattr(noc.status, "value") else str(noc.status)
+    source_val = noc.source.value if hasattr(noc.source, "value") else str(noc.source)
 
     return AdminNocResponse(
         id=noc.id,
@@ -63,6 +65,10 @@ def _to_admin_noc_response(noc: NocRequest) -> AdminNocResponse:
         message=noc.message,
         adminRemarks=noc.adminRemarks,
         documentUrl=noc.documentUrl,
+        source=source_val,
+        offCampusProofUrl=noc.offCampusProofUrl,
+        verifiedByPlacementTeam=noc.verifiedByPlacementTeam,
+        nocRequired=noc.nocRequired,
         createdAt=noc.createdAt,
         updatedAt=noc.updatedAt,
         student=student_summary,
@@ -94,6 +100,12 @@ async def create_noc(
     db: AsyncSession = Depends(get_db),
 ):
     """Submit a new NOC request."""
+    # No NOC is actually required, so there is nothing to decide: the row
+    # exists purely so the placement cell has the company and dates on file.
+    # Skipping PENDING here — not defaulting to it and auto-approving later —
+    # means this request never briefly appears in anyone's decision queue.
+    initial_status = NocStatus.APPROVED if not data.nocRequired else NocStatus.PENDING
+
     noc = NocRequest(
         id=str(uuid.uuid4()),
         userId=user_payload["sub"],
@@ -104,8 +116,11 @@ async def create_noc(
         pincode=data.pincode.strip(),
         startDate=data.startDate,
         endDate=data.endDate,
-        status=NocStatus.PENDING,
+        status=initial_status,
         message=data.message.strip() if data.message else None,
+        source=NocSource(data.source),
+        offCampusProofUrl=data.offCampusProofUrl.strip() if data.offCampusProofUrl else None,
+        nocRequired=data.nocRequired,
         updatedAt=datetime.now(timezone.utc),
     )
     db.add(noc)
@@ -151,12 +166,32 @@ async def get_noc_metrics(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve NOC summary metrics for admin dashboard."""
+    not_required = await db.scalar(
+        select(func.count(NocRequest.id)).where(NocRequest.nocRequired.is_(False))
+    ) or 0
+    # Real approvals only — a not-required row's status is also APPROVED, but
+    # nobody decided it, so it is counted apart from this tally.
+    approved = await db.scalar(
+        select(func.count(NocRequest.id)).where(
+            NocRequest.status == NocStatus.APPROVED, NocRequest.nocRequired.is_(True)
+        )
+    ) or 0
+
+    # FACULTY only ever sees APPROVED rows (see list_admin_nocs), so a pending
+    # or rejected count here would be a number leak about requests they can
+    # never open.
+    if admin_payload.get("role") == "FACULTY":
+        return NocMetricsResponse(
+            total=approved + not_required,
+            pending=0,
+            approved=approved,
+            rejected=0,
+            notRequired=not_required,
+        )
+
     total = await db.scalar(select(func.count(NocRequest.id))) or 0
     pending = await db.scalar(
         select(func.count(NocRequest.id)).where(NocRequest.status == NocStatus.PENDING)
-    ) or 0
-    approved = await db.scalar(
-        select(func.count(NocRequest.id)).where(NocRequest.status == NocStatus.APPROVED)
     ) or 0
     rejected = await db.scalar(
         select(func.count(NocRequest.id)).where(NocRequest.status == NocStatus.REJECTED)
@@ -167,6 +202,7 @@ async def get_noc_metrics(
         pending=pending,
         approved=approved,
         rejected=rejected,
+        notRequired=not_required,
     )
 
 
@@ -186,7 +222,13 @@ async def list_admin_nocs(
         .order_by(NocRequest.createdAt.desc())
     )
 
-    if status_filter:
+    # FACULTY is read-only and only ever sees settled, approved requests —
+    # forced regardless of status_filter, rather than merely defaulted,
+    # so a FACULTY caller cannot request PENDING/REJECTED by passing the
+    # query param explicitly.
+    if admin_payload.get("role") == "FACULTY":
+        stmt = stmt.where(NocRequest.status == NocStatus.APPROVED)
+    elif status_filter:
         norm_status = status_filter.strip().upper()
         try:
             enum_status = NocStatus(norm_status)
@@ -227,6 +269,11 @@ async def get_admin_noc_detail(
     stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
     noc = await db.scalar(stmt)
     if not noc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
+
+    # 404, not 403: a FACULTY caller should not be able to tell a pending or
+    # rejected request apart from one that simply doesn't exist.
+    if admin_payload.get("role") == "FACULTY" and noc.status != NocStatus.APPROVED:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
 
     return _to_admin_noc_response(noc)
@@ -330,6 +377,32 @@ async def reject_noc(
                 f"Please contact the Placement Cell or submit feedback if you have any questions."
             ),
         )
+
+    return _to_admin_noc_response(noc)
+
+
+@router.patch("/admin/{noc_id}/verify", response_model=AdminNocResponse)
+async def verify_noc_offcampus_proof(
+    noc_id: str,
+    data: NocVerifyRequest,
+    admin_payload: dict = Depends(require_permission(PERM_NOC_APPROVE)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Mark (or unmark) that the placement team has checked the student's
+    off-campus proof document. Independent of approve/reject — this never
+    gates or is gated by the decision, it is only a record that someone
+    looked at the document.
+    """
+    stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
+    noc = await db.scalar(stmt)
+    if not noc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
+
+    noc.verifiedByPlacementTeam = data.verified
+    noc.updatedAt = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(noc)
 
     return _to_admin_noc_response(noc)
 

@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { nocApproveSchema, nocCancelSchema, nocFormSchema, nocRejectSchema } from "./noc-schema";
+import {
+  nocApproveSchema,
+  nocCancelSchema,
+  nocFormSchema,
+  nocRejectSchema,
+  nocVerifySchema,
+} from "./noc-schema";
 
 test("nocFormSchema accepts valid submission and trims values", () => {
   const parsed = nocFormSchema.parse({
@@ -12,6 +18,7 @@ test("nocFormSchema accepts valid submission and trims values", () => {
     startDate: "2026-06-01",
     endDate: "2026-08-31",
     message: "  Summer internship in core search team.  ",
+    source: "ON_CAMPUS",
   });
 
   assert.equal(parsed.company, "Google India");
@@ -20,6 +27,8 @@ test("nocFormSchema accepts valid submission and trims values", () => {
   assert.equal(parsed.state, "Karnataka");
   assert.equal(parsed.pincode, "560016");
   assert.equal(parsed.message, "Summer internship in core search team.");
+  // Defaults to requiring a decision unless explicitly told otherwise.
+  assert.equal(parsed.nocRequired, true);
 });
 
 test("nocFormSchema rejects end date earlier than start date", () => {
@@ -31,6 +40,7 @@ test("nocFormSchema rejects end date earlier than start date", () => {
     pincode: "560016",
     startDate: "2026-08-31",
     endDate: "2026-06-01",
+    source: "ON_CAMPUS",
   });
 
   assert.equal(res.success, false);
@@ -45,6 +55,7 @@ test("nocFormSchema rejects invalid 5-digit or alphanumeric pincode", () => {
     pincode: "50003", // 5 digits
     startDate: "2026-06-01",
     endDate: "2026-08-31",
+    source: "ON_CAMPUS",
   });
   assert.equal(invalidDigits.success, false);
 
@@ -56,8 +67,63 @@ test("nocFormSchema rejects invalid 5-digit or alphanumeric pincode", () => {
     pincode: "50003A", // letters
     startDate: "2026-06-01",
     endDate: "2026-08-31",
+    source: "ON_CAMPUS",
   });
   assert.equal(invalidAlpha.success, false);
+});
+
+test("nocFormSchema requires a chosen source", () => {
+  const res = nocFormSchema.safeParse({
+    company: "Amazon",
+    city: "Hyderabad",
+    address: "Financial District",
+    state: "Telangana",
+    pincode: "500032",
+    startDate: "2026-06-01",
+    endDate: "2026-08-31",
+  });
+  assert.equal(res.success, false);
+});
+
+test("nocFormSchema requires a proof document when source is off-campus", () => {
+  const base = {
+    company: "Atlan",
+    city: "Gurugram",
+    address: "Sector 44, Cyber City",
+    state: "Haryana",
+    pincode: "122003",
+    startDate: "2026-06-01",
+    endDate: "2026-08-31",
+    source: "OFF_CAMPUS" as const,
+  };
+
+  const missingProof = nocFormSchema.safeParse(base);
+  assert.equal(missingProof.success, false);
+
+  const withProof = nocFormSchema.safeParse({
+    ...base,
+    offCampusProofUrl: "/api/v1/uploads/files/noc_offcampus_proof/offer.pdf",
+  });
+  assert.equal(withProof.success, true);
+
+  // On-campus never needs one.
+  const onCampus = nocFormSchema.safeParse({ ...base, source: "ON_CAMPUS" });
+  assert.equal(onCampus.success, true);
+});
+
+test("nocFormSchema accepts nocRequired: false without a decision workflow", () => {
+  const parsed = nocFormSchema.parse({
+    company: "Internal Lab",
+    city: "Lucknow",
+    address: "Institute campus",
+    state: "Uttar Pradesh",
+    pincode: "226002",
+    startDate: "2026-06-01",
+    endDate: "2026-08-31",
+    source: "ON_CAMPUS",
+    nocRequired: false,
+  });
+  assert.equal(parsed.nocRequired, false);
 });
 
 test("nocApproveSchema and nocRejectSchema validate parameters properly", () => {
@@ -82,6 +148,14 @@ test("nocApproveSchema and nocRejectSchema validate parameters properly", () => 
 
   const cancelValid = nocCancelSchema.safeParse({ nocId: "noc_123" });
   assert.equal(cancelValid.success, true);
+});
+
+test("nocVerifySchema validates the toggle payload", () => {
+  const valid = nocVerifySchema.safeParse({ nocId: "noc_123", verified: true });
+  assert.equal(valid.success, true);
+
+  const missingId = nocVerifySchema.safeParse({ verified: true });
+  assert.equal(missingId.success, false);
 });
 
 test("a decision never carries the student's own message", () => {

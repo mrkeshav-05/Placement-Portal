@@ -10,7 +10,7 @@ from app.core.security import (
     compute_effective_permissions,
     has_permission,
 )
-from app.models.db import NocRequest, NocStatus, User
+from app.models.db import NocRequest, NocSource, NocStatus, User
 from app.routers.noc import _to_admin_noc_response
 from app.schemas.noc import (
     AdminNocResponse,
@@ -34,11 +34,13 @@ def test_noc_create_schema_valid():
         "startDate": start,
         "endDate": end,
         "message": "Summer SDE internship",
+        "source": "ON_CAMPUS",
     }
     schema = NocCreate(**data)
     assert schema.company == "Amazon India"
     assert schema.pincode == "560055"
     assert schema.endDate >= schema.startDate
+    assert schema.nocRequired is True
 
 
 def test_noc_create_schema_rejects_end_date_before_start_date():
@@ -53,6 +55,7 @@ def test_noc_create_schema_rejects_end_date_before_start_date():
             pincode="560016",
             startDate=start,
             endDate=end,
+            source="ON_CAMPUS",
         )
     assert "End date cannot be earlier than start date" in str(exc_info.value)
 
@@ -69,7 +72,50 @@ def test_noc_create_schema_rejects_invalid_pincode():
             pincode="5600A5",  # Invalid non-digit
             startDate=start,
             endDate=end,
+            source="ON_CAMPUS",
         )
+
+
+def test_noc_create_schema_requires_proof_for_offcampus_source():
+    start = datetime.now()
+    end = start + timedelta(days=30)
+    base = dict(
+        company="Atlan",
+        address="Sector 44, Cyber City",
+        city="Gurugram",
+        state="Haryana",
+        pincode="122003",
+        startDate=start,
+        endDate=end,
+        source="OFF_CAMPUS",
+    )
+
+    with pytest.raises(ValidationError) as exc_info:
+        NocCreate(**base)
+    assert "Upload a supporting document" in str(exc_info.value)
+
+    schema = NocCreate(
+        **base,
+        offCampusProofUrl="/api/v1/uploads/files/noc_offcampus_proof/abc.pdf",
+    )
+    assert schema.offCampusProofUrl == "/api/v1/uploads/files/noc_offcampus_proof/abc.pdf"
+
+
+def test_noc_create_schema_not_required_flag():
+    start = datetime.now()
+    end = start + timedelta(days=30)
+    schema = NocCreate(
+        company="Internal Lab",
+        address="Institute campus",
+        city="Lucknow",
+        state="Uttar Pradesh",
+        pincode="226002",
+        startDate=start,
+        endDate=end,
+        source="ON_CAMPUS",
+        nocRequired=False,
+    )
+    assert schema.nocRequired is False
 
 
 def test_noc_manage_permission_hierarchy():
@@ -115,6 +161,10 @@ def test_to_admin_noc_response_formatting():
         message="Off-campus internship",
         adminRemarks="Approved. Submit the joining letter to the placement cell.",
         documentUrl="/api/v1/uploads/files/noc_docs/cert_123.pdf",
+        source=NocSource.OFF_CAMPUS,
+        offCampusProofUrl="/api/v1/uploads/files/noc_offcampus_proof/offer_123.pdf",
+        verifiedByPlacementTeam=True,
+        nocRequired=True,
         createdAt=now,
         updatedAt=now,
     )
@@ -129,9 +179,20 @@ def test_to_admin_noc_response_formatting():
     assert resp.student.rollNumber == "LCS2023001"
     assert resp.student.cgpa == 8.95
     assert resp.documentUrl == "/api/v1/uploads/files/noc_docs/cert_123.pdf"
+    assert resp.source == "OFF_CAMPUS"
+    assert resp.offCampusProofUrl == "/api/v1/uploads/files/noc_offcampus_proof/offer_123.pdf"
+    assert resp.verifiedByPlacementTeam is True
+    assert resp.nocRequired is True
     # The two remarks fields stay distinct all the way out to the admin UI.
     assert resp.message == "Off-campus internship"
     assert resp.adminRemarks == "Approved. Submit the joining letter to the placement cell."
+
+
+def test_metrics_response_counts_not_required_separately_from_approved():
+    metrics = NocMetricsResponse(total=10, pending=3, approved=5, rejected=1, notRequired=1)
+    assert metrics.approved == 5
+    assert metrics.notRequired == 1
+    assert metrics.pending + metrics.approved + metrics.rejected + metrics.notRequired == metrics.total
 
 
 def test_decision_requests_carry_admin_remarks_and_never_the_student_message():
@@ -162,6 +223,9 @@ def test_student_facing_response_exposes_both_remarks_fields():
         status="REJECTED",
         message="Requesting an NOC for an off-campus role.",
         adminRemarks="Rejected: the organisation is not registered with the institute.",
+        source="OFF_CAMPUS",
+        verifiedByPlacementTeam=False,
+        nocRequired=True,
         createdAt=now,
         updatedAt=now,
     )

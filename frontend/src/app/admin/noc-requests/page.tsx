@@ -19,6 +19,10 @@ interface BackendNocAdminDto {
   message?: string | null;
   adminRemarks?: string | null;
   documentUrl?: string | null;
+  source: string;
+  offCampusProofUrl?: string | null;
+  verifiedByPlacementTeam: boolean;
+  nocRequired: boolean;
   createdAt: string;
   updatedAt: string;
   student?: {
@@ -65,12 +69,20 @@ export default async function Page() {
       message: noc.message ?? null,
       adminRemarks: noc.adminRemarks ?? null,
       documentUrl: noc.documentUrl ?? null,
+      source: noc.source,
+      offCampusProofUrl: noc.offCampusProofUrl ?? null,
+      verifiedByPlacementTeam: noc.verifiedByPlacementTeam,
+      nocRequired: noc.nocRequired,
       createdAt: typeof noc.createdAt === "string" ? noc.createdAt : new Date(noc.createdAt).toISOString(),
       updatedAt: typeof noc.updatedAt === "string" ? noc.updatedAt : new Date(noc.updatedAt).toISOString(),
     }));
   } catch {
-    // Prisma fallback
+    // Prisma fallback. FACULTY only ever sees APPROVED requests — the
+    // backend enforces this in list_admin_nocs, so it has to be mirrored
+    // here too, or a backend outage would show a read-only role rows it
+    // should never see.
     const records = await db.nocRequest.findMany({
+      where: user.role === "FACULTY" ? { status: "APPROVED" } : undefined,
       orderBy: { createdAt: "desc" },
       include: {
         user: {
@@ -110,6 +122,10 @@ export default async function Page() {
       message: noc.message,
       adminRemarks: noc.adminRemarks,
       documentUrl: noc.documentUrl,
+      source: noc.source,
+      offCampusProofUrl: noc.offCampusProofUrl,
+      verifiedByPlacementTeam: noc.verifiedByPlacementTeam,
+      nocRequired: noc.nocRequired,
       createdAt: noc.createdAt.toISOString(),
       updatedAt: noc.updatedAt.toISOString(),
     }));

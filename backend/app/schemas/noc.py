@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -31,10 +31,27 @@ class NocBase(BaseModel):
 
 
 class NocCreate(NocBase):
+    source: Literal["ON_CAMPUS", "OFF_CAMPUS"]
+    # The student's proof of an off-campus offer, staged beforehand via
+    # POST /uploads/noc-offcampus-proof — required exactly when source is
+    # OFF_CAMPUS, checked below.
+    offCampusProofUrl: Optional[str] = None
+    # False records the internship's company and dates for the placement
+    # cell's files without requesting a decision; see create_noc.
+    nocRequired: bool = True
+
     @model_validator(mode="after")
     def validate_dates(self) -> "NocCreate":
         if self.endDate < self.startDate:
             raise ValueError("End date cannot be earlier than start date.")
+        return self
+
+    @model_validator(mode="after")
+    def validate_offcampus_proof(self) -> "NocCreate":
+        if self.source == "OFF_CAMPUS" and not (self.offCampusProofUrl or "").strip():
+            raise ValueError(
+                "Upload a supporting document (offer letter) for an off-campus offer."
+            )
         return self
 
 
@@ -53,6 +70,11 @@ class NocDocument(BaseModel):
     documentUrl: str
 
 
+# Independent of approve/reject — see NocRequest.verifiedByPlacementTeam.
+class NocVerifyRequest(BaseModel):
+    verified: bool
+
+
 class NocResponse(NocBase):
     id: str
     userId: str
@@ -60,6 +82,10 @@ class NocResponse(NocBase):
     # Read-only for students: they see the decision remarks, they do not set them.
     adminRemarks: Optional[str] = None
     documentUrl: Optional[str] = None
+    source: str
+    offCampusProofUrl: Optional[str] = None
+    verifiedByPlacementTeam: bool
+    nocRequired: bool
     createdAt: datetime
     updatedAt: datetime
 
@@ -75,4 +101,7 @@ class NocMetricsResponse(BaseModel):
     pending: int
     approved: int
     rejected: int
+    # Rows with nocRequired=false — counted apart from `approved` since no
+    # decision was actually made on them.
+    notRequired: int
 

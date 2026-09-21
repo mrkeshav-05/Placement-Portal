@@ -79,6 +79,11 @@ class NocStatus(str, enum.Enum):
     REJECTED = "REJECTED"
 
 
+class NocSource(str, enum.Enum):
+    ON_CAMPUS = "ON_CAMPUS"
+    OFF_CAMPUS = "OFF_CAMPUS"
+
+
 class AnnouncementCategory(str, enum.Enum):
     COMPANY_EVENT = "COMPANY_EVENT"
     GENERAL = "GENERAL"
@@ -408,6 +413,17 @@ class NocRequest(Base):
     # or rejecting never overwrites what the student wrote.
     adminRemarks: Mapped[str | None] = mapped_column(Text, nullable=True)
     documentUrl: Mapped[str | None] = mapped_column(String, nullable=True)
+    source: Mapped[NocSource] = mapped_column(Enum(NocSource, name="NocSource"), default=NocSource.ON_CAMPUS)
+    # The student's own proof of an off-campus offer, required when source is
+    # OFF_CAMPUS. Separate from documentUrl, which is the placement cell's
+    # signed certificate issued after a decision.
+    offCampusProofUrl: Mapped[str | None] = mapped_column(String, nullable=True)
+    # An independent marker, never a gate on approve/reject.
+    verifiedByPlacementTeam: Mapped[bool] = mapped_column(Boolean, default=False)
+    # False means this row only records an internship's company and dates for
+    # the placement cell — no decision is made and status goes straight to
+    # APPROVED. See create_noc.
+    nocRequired: Mapped[bool] = mapped_column(Boolean, default=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updatedAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 

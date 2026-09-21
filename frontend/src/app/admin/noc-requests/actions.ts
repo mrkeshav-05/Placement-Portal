@@ -5,7 +5,7 @@ import { backendAuthHeader, backendBaseUrl, backendFetch } from "@/lib/api-clien
 import { requirePermission } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import { PERM_NOC_APPROVE, PERM_NOC_REJECT } from "@/lib/permissions";
-import { nocApproveSchema, nocRejectSchema } from "@/lib/noc-schema";
+import { nocApproveSchema, nocRejectSchema, nocVerifySchema } from "@/lib/noc-schema";
 
 export type NocActionResult = { error?: string; success?: string };
 
@@ -101,6 +101,40 @@ export async function rejectNocAction(formData: FormData): Promise<NocActionResu
   revalidatePath("/admin/noc-requests");
   revalidatePath("/forms");
   return { success: "NOC request rejected." };
+}
+
+export async function verifyNocDocumentAction(nocId: string, verified: boolean): Promise<NocActionResult> {
+  await requirePermission(PERM_NOC_APPROVE);
+
+  const parsed = nocVerifySchema.safeParse({ nocId, verified });
+  if (!parsed.success) {
+    return { error: "Invalid verification request." };
+  }
+
+  try {
+    try {
+      await backendFetch(`/api/v1/noc/admin/${parsed.data.nocId}/verify`, {
+        method: "PATCH",
+        body: JSON.stringify({ verified: parsed.data.verified }),
+      });
+    } catch {
+      // Direct Prisma fallback
+      await db.nocRequest.update({
+        where: { id: parsed.data.nocId },
+        data: { verifiedByPlacementTeam: parsed.data.verified },
+      });
+    }
+  } catch (err) {
+    console.error("Failed to update NOC verification", err);
+    return { error: err instanceof Error ? err.message : "Failed to update verification status." };
+  }
+
+  revalidatePath("/admin/noc-requests");
+  return {
+    success: parsed.data.verified
+      ? "Marked as verified by the placement team."
+      : "Verification mark removed.",
+  };
 }
 
 export async function uploadNocDocumentAction(formData: FormData): Promise<{ error?: string; url?: string }> {

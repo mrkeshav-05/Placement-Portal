@@ -126,6 +126,47 @@ async def upload_noc_document(
     return {"url": result["secure_url"]}
 
 
+# An offer letter is as likely to be a scanned image or a Word doc as a PDF,
+# unlike the placement cell's own signed certificate, which is always a PDF.
+NOC_OFFCAMPUS_PROOF_EXTENSIONS = {"pdf", "png", "jpg", "jpeg", "doc", "docx"}
+
+
+@router.post("/noc-offcampus-proof")
+async def upload_noc_offcampus_proof(
+    file: UploadFile = File(...),
+    user_payload: dict = Depends(require_student),
+):
+    """
+    Stage a student's proof of an off-campus offer before the NOC request
+    that will carry it exists yet — the same stage-before-save flow the
+    announcement composer and event form use, since the form itself calls
+    POST /noc with the returned URL once the file is up.
+    """
+    content = await file.read()
+    filename = file.filename or "offer-proof"
+
+    try:
+        extension, media_type = validate_attachment(content, filename, settings.allowed_pdf_size_mb)
+    except StorageError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if extension not in NOC_OFFCAMPUS_PROOF_EXTENSIONS:
+        allowed = ", ".join(f".{name}" for name in sorted(NOC_OFFCAMPUS_PROOF_EXTENSIONS))
+        raise HTTPException(status_code=400, detail=f"'{filename}' is not accepted here. Allowed: {allowed}.")
+
+    result = upload_document(
+        content,
+        folder="noc_offcampus_proof",
+        public_id=f"{user_payload['sub']}_{uuid.uuid4()}",
+        extension=extension,
+    )
+    return {
+        "url": result["secure_url"],
+        "fileName": filename,
+        "mimeType": media_type,
+        "sizeBytes": len(content),
+    }
+
+
 @router.post("/admin/announcement-attachment")
 async def upload_announcement_attachment(
     file: UploadFile = File(...),
@@ -234,7 +275,18 @@ async def get_uploaded_file(
             resolved_rel = str(local_path.relative_to(LOCAL_UPLOADS_DIR.resolve()))
             is_own_resume = resolved_rel.startswith(f"resumes/{user_id}/")
             is_noc_doc = False
-            if resolved_rel.startswith("noc_docs/"):
+            # Two NOC-related folders, same ownership/permission shape: the
+            # placement cell's signed certificate (noc_docs/) and the
+            # student's own off-campus offer proof (noc_offcampus_proof/) —
+            # only which column to match the path against differs.
+            noc_url_column = (
+                NocRequest.documentUrl
+                if resolved_rel.startswith("noc_docs/")
+                else NocRequest.offCampusProofUrl
+                if resolved_rel.startswith("noc_offcampus_proof/")
+                else None
+            )
+            if noc_url_column is not None:
                 if has_permission(token_payload, PERM_NOC_VIEW):
                     # Anyone holding noc.view (e.g. FACULTY, who is not
                     # `is_admin` above since that flag also implies
@@ -244,8 +296,8 @@ async def get_uploaded_file(
                     # them via require_permission(PERM_NOC_VIEW).
                     is_noc_doc = True
                 else:
-                    # Ask whether *any* of the caller's NOC documents is this
-                    # file. Loading a single arbitrary row and comparing
+                    # Ask whether *any* of the caller's own NOC rows carries
+                    # this file. Loading a single arbitrary row and comparing
                     # against it 403'd a student who had more than one NOC
                     # document.
                     is_noc_doc = bool(
@@ -253,7 +305,7 @@ async def get_uploaded_file(
                             select(NocRequest.id)
                             .where(
                                 NocRequest.userId == user_id,
-                                NocRequest.documentUrl.like(f"%{resolved_rel}"),
+                                noc_url_column.like(f"%{resolved_rel}"),
                             )
                             .limit(1)
                         )

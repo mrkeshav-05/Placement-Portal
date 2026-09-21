@@ -57,6 +57,15 @@ enum NocStatus {
   REJECTED
 }
 
+/// Whether the offer behind an NOC request came through a portal drive or the
+/// student found it independently. Off-campus offers carry a supporting
+/// document (see NocRequest.offCampusProofUrl) so the placement cell can
+/// confirm the offer is real before proceeding.
+enum NocSource {
+  ON_CAMPUS
+  OFF_CAMPUS
+}
+
 enum AnnouncementCategory {
   COMPANY_EVENT
   GENERAL
@@ -412,6 +421,26 @@ model NocRequest {
   // a decision never overwrites what the student wrote.
   adminRemarks String?
   documentUrl  String?
+  // Defaults ON_CAMPUS rather than being left unset, so every pre-existing row
+  // (all recorded before this column existed) reads the same way they always
+  // implicitly were: routed through a portal drive.
+  source       NocSource @default(ON_CAMPUS)
+  // The student's own proof of an off-campus offer (an offer letter or
+  // equivalent), required by the form when source is OFF_CAMPUS. Separate
+  // from `documentUrl`, which is the placement cell's signed NOC certificate
+  // issued after a decision — this one is submitted by the student, before
+  // any decision exists.
+  offCampusProofUrl       String?
+  // An independent marker, not a workflow gate: the placement cell can check
+  // the uploaded proof and flip this whenever, but it is never required
+  // before approving or rejecting the request.
+  verifiedByPlacementTeam Boolean   @default(false)
+  // False means the student is only recording an internship's company and
+  // dates for the placement cell's records — no certificate is issued and no
+  // approve/reject decision is made. `create_noc` sets `status` straight to
+  // APPROVED for these rows since there is nothing left to decide; the UI
+  // tells the two apart by this flag, not by status.
+  nocRequired  Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @default(now()) @updatedAt
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -6,10 +6,12 @@ import {
   Clock3,
   Download,
   Eye,
+  FileBadge,
   FileCheck2,
   FileText,
   FileUp,
   MapPin,
+  ShieldCheck,
   Upload,
   User,
   XCircle,
@@ -20,6 +22,7 @@ import {
   approveNocAction,
   rejectNocAction,
   uploadNocDocumentAction,
+  verifyNocDocumentAction,
   type NocActionResult,
 } from "@/app/admin/noc-requests/actions";
 import { PortalDialog } from "@/components/common/portal-dialog";
@@ -32,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -77,9 +81,30 @@ export type AdminNocItem = {
   /** Written by the placement cell when approving or rejecting. */
   adminRemarks: string | null;
   documentUrl: string | null;
+  /** Whether the offer behind the request is on- or off-campus. */
+  source: "ON_CAMPUS" | "OFF_CAMPUS" | string;
+  /** The student's own proof of an off-campus offer. */
+  offCampusProofUrl: string | null;
+  /** An independent marker, not a workflow gate — see the schema comment. */
+  verifiedByPlacementTeam: boolean;
+  /** False means this row only records dates/company; no decision was made. */
+  nocRequired: boolean;
   createdAt: string;
   updatedAt: string;
 };
+
+/**
+ * The status a row displays as, distinct from its stored `status`: a
+ * not-required row is stored APPROVED (nothing was left to decide) but must
+ * never read as a real approval.
+ */
+function displayStatus(item: AdminNocItem): "NOT_REQUIRED" | "PENDING" | "APPROVED" | "REJECTED" {
+  if (item.nocRequired === false) return "NOT_REQUIRED";
+  if (item.status === "PENDING" || item.status === "APPROVED" || item.status === "REJECTED") {
+    return item.status;
+  }
+  return "PENDING";
+}
 
 export function NocRequestsManager({
   nocRequests,
@@ -97,16 +122,20 @@ export function NocRequestsManager({
   const [rejectingItem, setRejectingItem] = useState<AdminNocItem | null>(null);
   const [uploadingItem, setUploadingItem] = useState<AdminNocItem | null>(null);
   const [previewDoc, setPreviewDoc] = useState<{ url: string; title: string } | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   const [result, setResult] = useState<NocActionResult>({});
   const [isPending, startTransition] = useTransition();
 
   const metrics = useMemo(() => {
     const total = nocRequests.length;
-    const pending = nocRequests.filter((n) => n.status === "PENDING").length;
-    const approved = nocRequests.filter((n) => n.status === "APPROVED").length;
-    const rejected = nocRequests.filter((n) => n.status === "REJECTED").length;
-    return { total, pending, approved, rejected };
+    const pending = nocRequests.filter((n) => displayStatus(n) === "PENDING").length;
+    // Real approvals only — a not-required row's stored status is also
+    // APPROVED, but nobody decided it, so it is counted apart from this.
+    const approved = nocRequests.filter((n) => displayStatus(n) === "APPROVED").length;
+    const rejected = nocRequests.filter((n) => displayStatus(n) === "REJECTED").length;
+    const notRequired = nocRequests.filter((n) => displayStatus(n) === "NOT_REQUIRED").length;
+    return { total, pending, approved, rejected, notRequired };
   }, [nocRequests]);
 
   const columns = useMemo<DataTableColumn<AdminNocItem>[]>(
@@ -141,6 +170,23 @@ export function NocRequestsManager({
         ),
       },
       {
+        id: "source",
+        header: "Source",
+        width: "110px",
+        sortValue: (item) => item.source,
+        cell: (item) =>
+          item.source === "OFF_CAMPUS" ? (
+            <span className="cell-tag" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              {item.offCampusProofUrl && item.verifiedByPlacementTeam ? (
+                <ShieldCheck size={11} style={{ color: "var(--green)" }} />
+              ) : null}
+              Off-campus
+            </span>
+          ) : (
+            <span className="cell-tag">On-campus</span>
+          ),
+      },
+      {
         id: "startDate",
         header: "Start Date",
         width: "130px",
@@ -171,35 +217,43 @@ export function NocRequestsManager({
               id: "status",
               header: "Status",
               width: "120px",
-              sortValue: (item: AdminNocItem) => item.status,
-              cell: (item: AdminNocItem) => (
-                <>
-                  {item.status === "PENDING" && (
-                    <span className="cell-status pending" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <Clock3 size={11} /> Pending
-                    </span>
-                  )}
-                  {item.status === "APPROVED" && (
-                    <span className="cell-status" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <CheckCircle2 size={11} /> Approved
-                    </span>
-                  )}
-                  {item.status === "REJECTED" && (
-                    <span
-                      className="cell-status"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        background: "var(--badge-red-bg)",
-                        color: "var(--badge-red-text)",
-                      }}
-                    >
-                      <XCircle size={11} /> Rejected
-                    </span>
-                  )}
-                </>
-              ),
+              sortValue: (item: AdminNocItem) => displayStatus(item),
+              cell: (item: AdminNocItem) => {
+                const state = displayStatus(item);
+                return (
+                  <>
+                    {state === "NOT_REQUIRED" && (
+                      <span className="cell-status" style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "var(--surface-alt)", color: "var(--muted-foreground)" }}>
+                        <FileBadge size={11} /> Not required
+                      </span>
+                    )}
+                    {state === "PENDING" && (
+                      <span className="cell-status pending" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <Clock3 size={11} /> Pending
+                      </span>
+                    )}
+                    {state === "APPROVED" && (
+                      <span className="cell-status" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <CheckCircle2 size={11} /> Approved
+                      </span>
+                    )}
+                    {state === "REJECTED" && (
+                      <span
+                        className="cell-status"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          background: "var(--badge-red-bg)",
+                          color: "var(--badge-red-text)",
+                        }}
+                      >
+                        <XCircle size={11} /> Rejected
+                      </span>
+                    )}
+                  </>
+                );
+              },
             } satisfies DataTableColumn<AdminNocItem>,
           ]
         : []),
@@ -314,7 +368,7 @@ export function NocRequestsManager({
               </>
             )}
 
-            {canDecide && item.status === "APPROVED" && (
+            {canDecide && item.status === "APPROVED" && item.nocRequired !== false && (
               <button
                 type="button"
                 onClick={() => {
@@ -381,6 +435,15 @@ export function NocRequestsManager({
         options: branches.map((branch) => ({ value: branch, label: branch })),
         value: (item) => item.branch,
       },
+      {
+        id: "source",
+        label: "Source",
+        options: [
+          { value: "ON_CAMPUS", label: "On-campus" },
+          { value: "OFF_CAMPUS", label: "Off-campus" },
+        ],
+        value: (item) => item.source,
+      },
       // Same admin-only rule as the Status column: a Placement Volunteer can
       // filter by who the request is about, but not by the decision made.
       ...(canDecide
@@ -392,8 +455,9 @@ export function NocRequestsManager({
                 { value: "PENDING", label: "Pending Review" },
                 { value: "APPROVED", label: "Approved" },
                 { value: "REJECTED", label: "Rejected" },
+                { value: "NOT_REQUIRED", label: "Not Required" },
               ],
-              value: (item: AdminNocItem) => item.status,
+              value: (item: AdminNocItem) => displayStatus(item),
             } satisfies DataTableFilter<AdminNocItem>,
           ]
         : []),
@@ -466,6 +530,24 @@ export function NocRequestsManager({
     });
   }
 
+  function handleVerifyToggle(item: AdminNocItem, verified: boolean) {
+    setVerifyingId(item.id);
+    startTransition(async () => {
+      const res = await verifyNocDocumentAction(item.id, verified);
+      setVerifyingId(null);
+      if (res.error) {
+        setResult({ error: res.error });
+        return;
+      }
+      // Optimistic: keep the inspection dialog in sync without waiting on the
+      // table's own refresh, since it's likely still open.
+      setDetailItem((current) =>
+        current && current.id === item.id ? { ...current, verifiedByPlacementTeam: verified } : current,
+      );
+      router.refresh();
+    });
+  }
+
   return (
     <div className="admin-page">
       <section className="admin-heading">
@@ -507,7 +589,10 @@ export function NocRequestsManager({
           <div>
             <small>Approved</small>
             <strong>{metrics.approved}</strong>
-            <b>Certificates issued</b>
+            <b>
+              Certificates issued
+              {metrics.notRequired > 0 ? ` · ${metrics.notRequired} recorded, no review needed` : ""}
+            </b>
           </div>
         </article>
 
@@ -612,10 +697,18 @@ export function NocRequestsManager({
 
               {canDecide && (
                 <DetailBox label="Current Status">
-                  <strong className="mt-1 block">{detailItem.status}</strong>
+                  <strong className="mt-1 block">
+                    {displayStatus(detailItem) === "NOT_REQUIRED" ? "Not required" : detailItem.status}
+                  </strong>
                 </DetailBox>
               )}
             </div>
+
+            <DetailBox label="Offer Source">
+              <strong className="mt-1 block">
+                {detailItem.source === "OFF_CAMPUS" ? "Off-campus" : "On-campus"}
+              </strong>
+            </DetailBox>
 
             {/* Student Remarks */}
             {detailItem.message && (
@@ -631,6 +724,47 @@ export function NocRequestsManager({
               <DetailBox label="Placement Cell Remarks">
                 <p className="mt-1 leading-relaxed">{detailItem.adminRemarks}</p>
               </DetailBox>
+            )}
+
+            {/* Off-campus offer proof, with the placement team's verification toggle */}
+            {detailItem.source === "OFF_CAMPUS" && detailItem.offCampusProofUrl && (
+              <div className="rounded-[10px] border border-[var(--blue)] bg-[var(--badge-blue-bg)] px-3.5 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <strong className="block text-[var(--badge-blue-text)]">Off-campus offer proof</strong>
+                    <small className="text-muted-foreground">Submitted by the student with this request</small>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      setPreviewDoc({ url: `/api/noc-offcampus-proof/${detailItem.id}`, title: `Offer proof - ${detailItem.company}` });
+                    }}
+                  >
+                    <Eye /> View Document
+                  </Button>
+                </div>
+
+                {/* An independent marker, not a workflow gate: the placement
+                    team can check the document and flip this whenever — it is
+                    never required before approving or rejecting. */}
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-[var(--blue)]/20 pt-3">
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--badge-blue-text)]">
+                    <ShieldCheck size={13} /> Verified by placement team
+                  </span>
+                  {canDecide ? (
+                    <Switch
+                      checked={detailItem.verifiedByPlacementTeam}
+                      disabled={verifyingId === detailItem.id}
+                      onCheckedChange={(checked) => handleVerifyToggle(detailItem, checked)}
+                    />
+                  ) : (
+                    <span className="text-muted-foreground text-[11px]">
+                      {detailItem.verifiedByPlacementTeam ? "Yes" : "Not yet"}
+                    </span>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Certificate preview button if attached */}

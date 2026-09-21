@@ -1182,3 +1182,78 @@ ability to change them, create them, or apply to a drive — ranked below
   demoting to `STUDENT` or `PLACEMENT_VOLUNTEER` today — they already didn't
   cover self-demotion to `PLACEMENT_TEAM` either, so leaving `FACULTY` out is
   consistent with that existing scope rather than a new gap.
+
+## 2026-09-21 — NOC requests gain an offer source, an off-campus proof document, an independent verification mark, and a no-review path; FACULTY narrows to APPROVED only
+
+Four requests bundled together, plus a consequence of the FACULTY role from
+the entry above. Two decisions were confirmed directly rather than assumed,
+because both change workflow semantics in a way that's hard to walk back
+once students start relying on it:
+
+- **A "no NOC required" submission is auto-recorded, never queued for
+  review.** `NocRequest.nocRequired: Boolean @default(true)` — when false,
+  `create_noc` sets `status` straight to `APPROVED` instead of `PENDING`, so
+  the row never appears in anyone's decision queue and no PENDING→APPROVED
+  transition is logged for something nobody decided. The alternative
+  (still landing in PENDING so the placement cell acknowledges it) was
+  explicitly turned down: it would add busywork for entries that by
+  definition need no decision. Modeled as a boolean, not a fourth
+  `NocStatus` value — the exhaustiveness risk of a new enum member across
+  every `status === "PENDING"`-shaped conditional in both frontend and
+  backend (cancel eligibility, row-action gating, the metrics tiles, the
+  status filter) was worse than one extra column. The UI derives what it
+  shows from this flag, not from `status`: `displayStatus()` in
+  `noc-requests-manager.tsx` and the equivalent inline check in
+  `forms-view.tsx` render "Not required" instead of "Approved" whenever
+  `nocRequired` is false, so nobody reads an unreviewed row as a real
+  approval. `get_noc_metrics` counts these rows separately (`notRequired`)
+  from `approved`, for the same reason.
+- **The "verified by placement team" toggle never gates Approve/Reject.**
+  `NocRequest.verifiedByPlacementTeam: Boolean @default(false)`, set via the
+  new `PATCH /noc/admin/{id}/verify` (`require_permission(PERM_NOC_APPROVE)`,
+  the same grant `canDecide` already checks — no new permission key). It is
+  purely a record that someone on the placement team looked at the student's
+  off-campus proof document; approving or rejecting the request never checks
+  it. The alternative (blocking Approve until verified) was explicitly
+  turned down as an unrequested hard workflow dependency.
+- **Off-campus offers carry their own proof document, submitted by the
+  student, separate from the placement cell's signed certificate.** New
+  `NocSource` enum (`ON_CAMPUS` | `OFF_CAMPUS`, defaulting `ON_CAMPUS` so
+  every pre-existing row reads the way it always implicitly was) and
+  `NocRequest.offCampusProofUrl`, staged before the request exists via the
+  new student-facing `POST /uploads/noc-offcampus-proof` (the same
+  stage-before-save pattern the announcement and event composers already
+  use), then attached when `POST /noc` is called with the returned URL.
+  `NocCreate.validate_offcampus_proof` rejects an `OFF_CAMPUS` submission
+  with no proof URL — the whole point was giving the placement cell
+  something to confirm the offer is real before proceeding. Uses
+  `validate_attachment`/`upload_document` (pdf/png/jpg/jpeg/doc/docx), not
+  the PDF-only `validate_pdf`/`upload_pdf` the signed certificate uses,
+  since an offer letter is as likely to be a scanned image as a PDF.
+  Read access for both the JSON fields and the file bytes is symmetric with
+  the existing signed-certificate path: `frontend/src/app/api/
+  noc-offcampus-proof/[id]/route.ts` mirrors `noc-documents/[id]/route.ts`,
+  and `backend/app/routers/uploads.py`'s `get_uploaded_file` gained a second
+  `noc_offcampus_proof/`-prefixed branch alongside `noc_docs/`, both
+  resolved by the same `has_permission(PERM_NOC_VIEW)`-or-ownership check.
+- **FACULTY (added in the entry above) only ever sees APPROVED NOC
+  requests.** `list_admin_nocs` force-filters to `NocStatus.APPROVED` for
+  that role regardless of the `status_filter` query param — not merely
+  defaulted, so a FACULTY caller cannot ask for PENDING/REJECTED explicitly
+  either. `get_admin_noc_detail` 404s (not 403s) on a non-approved row for
+  the same role, so a pending or rejected request cannot be told apart from
+  one that doesn't exist. `get_noc_metrics` suppresses the pending/rejected
+  counts for FACULTY for the identical leak reason — an admin dashboard
+  tile reading "Pending Review: 3" for requests the role can't open would
+  itself be a disclosure. A not-required row is stored `APPROVED` (see
+  above), so FACULTY does see those too — they're a settled record with
+  nothing left to decide, the same category as a real approval from this
+  role's point of view.
+- Verified live via direct API calls against the running dev stack with
+  hand-signed JWTs for a real student, a FACULTY account, an unrelated
+  student, and an admin: the off-campus-without-proof submission 422s, a
+  `nocRequired: false` submission lands at `APPROVED` immediately, the
+  verify toggle flips independently of a still-`PENDING` status, FACULTY's
+  list/metrics never surface a non-approved row, a FACULTY detail fetch on
+  a `PENDING` row 404s, an unrelated student is refused the proof PDF's
+  bytes while the owning student and a `noc.view` holder are not.

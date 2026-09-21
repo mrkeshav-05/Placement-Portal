@@ -13,15 +13,17 @@ import {
   Plus,
   ShieldAlert,
   Trash2,
+  UploadCloud,
   XCircle,
 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { cancelNocRequestAction, submitNocRequest } from "@/app/forms/actions";
+import { cancelNocRequestAction, submitNocRequest, uploadNocOffCampusProofAction } from "@/app/forms/actions";
 import { PortalDialog } from "@/components/common/portal-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,6 +90,12 @@ export type LocalNoc = {
   /** The placement cell's remarks on the decision. Read-only here. */
   adminRemarks?: string | null;
   documentUrl?: string | null;
+  /** Whether the offer behind the request is on- or off-campus. */
+  source?: "ON_CAMPUS" | "OFF_CAMPUS" | string;
+  /** The student's own proof of an off-campus offer, uploaded at submission. */
+  offCampusProofUrl?: string | null;
+  /** False means this row is only a record of dates/company — no decision was made. */
+  nocRequired?: boolean;
   createdAt?: string;
 };
 
@@ -101,6 +109,42 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // New-request form: the offer source, the resulting proof-upload flow, and
+  // the "no decision needed" checkbox all need to react to each other before
+  // the surrounding <form> is ever submitted, so they live in state rather
+  // than being read from FormData at submit time like the plain text fields.
+  const [nocSource, setNocSource] = useState<"ON_CAMPUS" | "OFF_CAMPUS" | "">("");
+  const [nocRequired, setNocRequired] = useState(true);
+  const [offCampusProof, setOffCampusProof] = useState<{ url: string; fileName: string } | null>(null);
+  const [proofUploading, setProofUploading] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
+
+  function resetNocFormState() {
+    setNocSource("");
+    setNocRequired(true);
+    setOffCampusProof(null);
+    setProofUploading(false);
+    setProofError(null);
+  }
+
+  function handleProofFileChange(file: File | null) {
+    if (!file) return;
+    setProofError(null);
+    setOffCampusProof(null);
+    setProofUploading(true);
+    startTransition(async () => {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      const res = await uploadNocOffCampusProofAction(uploadData);
+      setProofUploading(false);
+      if (res.error || !res.url) {
+        setProofError(res.error ?? "Failed to upload document.");
+        return;
+      }
+      setOffCampusProof({ url: res.url, fileName: res.fileName ?? file.name });
+    });
+  }
+
   function handleAction(formData: FormData) {
     setFormError(null);
     setActionSuccess(null);
@@ -109,6 +153,7 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
       if (!result?.error) {
         setModal(false);
         setFormError(null);
+        resetNocFormState();
         setActionSuccess("NOC request submitted successfully.");
       } else {
         setFormError(result.error);
@@ -133,6 +178,7 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
   function openModal() {
     setFormError(null);
     setActionSuccess(null);
+    resetNocFormState();
     setModal(true);
   }
 
@@ -235,8 +281,12 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                 <b>Actions</b>
               </div>
               {initialNocs.map((noc) => {
+                const isNotRequired = noc.nocRequired === false;
                 const isPendingReview = noc.status === "PENDING";
-                const isApproved = noc.status === "APPROVED";
+                // A not-required row is stored as APPROVED (nothing was left
+                // to decide), so its badge is derived from the flag, not the
+                // status, to avoid implying a real decision was made.
+                const isApproved = noc.status === "APPROVED" && !isNotRequired;
                 const isRejected = noc.status === "REJECTED";
 
                 return (
@@ -258,6 +308,11 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                     </div>
 
                     <div>
+                      {isNotRequired && (
+                        <Badge className="gap-1 bg-[var(--surface-alt)] text-[9px] font-extrabold text-[var(--muted-foreground)]">
+                          <FileBadge /> Not required
+                        </Badge>
+                      )}
                       {isPendingReview && (
                         <Badge className="gap-1 bg-[var(--badge-orange-bg)] text-[9px] font-extrabold text-[var(--badge-orange-text)]">
                           <Clock3 /> Pending
@@ -448,6 +503,67 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
               </div>
 
               <div className="grid gap-2 sm:col-span-2">
+                <Label>
+                  Offer source <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={nocSource === "ON_CAMPUS" ? "default" : "outline"}
+                    className="flex-1"
+                    onClick={() => {
+                      setNocSource("ON_CAMPUS");
+                      setOffCampusProof(null);
+                      setProofError(null);
+                    }}
+                  >
+                    On-campus
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={nocSource === "OFF_CAMPUS" ? "default" : "outline"}
+                    className="flex-1"
+                    onClick={() => setNocSource("OFF_CAMPUS")}
+                  >
+                    Off-campus
+                  </Button>
+                </div>
+                <input type="hidden" name="source" value={nocSource} />
+              </div>
+
+              {nocSource === "OFF_CAMPUS" && (
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="noc-offcampus-proof">
+                    Proof of offer (offer letter) <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="noc-offcampus-proof"
+                    type="file"
+                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                    disabled={proofUploading}
+                    onChange={(e) => handleProofFileChange(e.target.files?.[0] ?? null)}
+                  />
+                  <input type="hidden" name="offCampusProofUrl" value={offCampusProof?.url ?? ""} />
+                  <p className="text-muted-foreground text-[11px]">
+                    So the placement cell can confirm this is a real offer before proceeding. PDF, image, or Word file, up to 10MB.
+                  </p>
+                  {proofUploading && (
+                    <span className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
+                      <UploadCloud size={12} /> Uploading...
+                    </span>
+                  )}
+                  {offCampusProof && (
+                    <span className="flex items-center gap-1.5 text-[11px] text-[var(--green)]">
+                      <CheckCircle2 size={12} /> Uploaded: {offCampusProof.fileName}
+                    </span>
+                  )}
+                  {proofError && (
+                    <span className="text-destructive text-[11px]">{proofError}</span>
+                  )}
+                </div>
+              )}
+
+              <div className="grid gap-2 sm:col-span-2">
                 <Label htmlFor="noc-message">Remarks / Purpose (optional)</Label>
                 <Textarea
                   id="noc-message"
@@ -456,13 +572,39 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                   placeholder="Provide context on the training offer, department, or special schedule requirements..."
                 />
               </div>
+
+              <div className="flex items-start gap-2 sm:col-span-2">
+                <Checkbox
+                  id="noc-not-required"
+                  checked={!nocRequired}
+                  onCheckedChange={(checked) => setNocRequired(!checked)}
+                />
+                <div className="grid gap-0.5">
+                  <Label htmlFor="noc-not-required" className="font-normal">
+                    An NOC is not required for this internship
+                  </Label>
+                  <input type="hidden" name="nocRequired" value={String(nocRequired)} />
+                  <p className="text-muted-foreground text-[11px]">
+                    Use this only to record the company and dates on file. No certificate is
+                    issued and there is nothing for the placement cell to approve or reject.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeModal}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="submit"
+                disabled={
+                  isPending ||
+                  proofUploading ||
+                  !nocSource ||
+                  (nocSource === "OFF_CAMPUS" && !offCampusProof)
+                }
+              >
                 <FileBadge />
                 {isPending ? "Submitting..." : "Submit request"}
               </Button>
@@ -483,7 +625,7 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
             <Card className="bg-muted flex-row items-center justify-between rounded-[10px] px-3.5 py-3 shadow-none">
               <span className="text-muted-foreground font-semibold">Status</span>
               <Badge variant="outline" className="font-extrabold">
-                {viewingNoc.status}
+                {viewingNoc.nocRequired === false ? "Not required" : viewingNoc.status}
               </Badge>
             </Card>
 
@@ -513,6 +655,12 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
               </DetailBox>
             </div>
 
+            <DetailBox label="Offer source">
+              <strong className="block">
+                {viewingNoc.source === "OFF_CAMPUS" ? "Off-campus" : "On-campus"}
+              </strong>
+            </DetailBox>
+
             <DetailBox
               label={
                 <>
@@ -540,6 +688,24 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
               >
                 <p className="leading-relaxed">{viewingNoc.adminRemarks}</p>
               </DetailBox>
+            )}
+
+            {viewingNoc.offCampusProofUrl && (
+              <Card className="flex-row items-center justify-between gap-3 rounded-[10px] border-[var(--blue)] bg-[var(--badge-blue-bg)] px-3.5 py-3 shadow-none">
+                <div>
+                  <strong className="block text-xs text-[var(--badge-blue-text)]">Your offer proof is on file</strong>
+                  <small className="text-muted-foreground text-[10px]">Submitted with this request</small>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setPreviewDocUrl({ url: `/api/noc-offcampus-proof/${viewingNoc.id}`, title: `Offer proof - ${viewingNoc.company}` });
+                  }}
+                >
+                  <Eye /> View Document
+                </Button>
+              </Card>
             )}
 
             {viewingNoc.documentUrl && (

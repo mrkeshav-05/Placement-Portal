@@ -35,6 +35,15 @@ export const nocFormSchema = z
       .optional()
       .nullable()
       .transform((val) => (val && val.trim().length > 0 ? val.trim() : null)),
+    source: z.enum(["ON_CAMPUS", "OFF_CAMPUS"], {
+      message: "Choose whether this offer is on-campus or off-campus.",
+    }),
+    // Staged beforehand via POST /uploads/noc-offcampus-proof; required
+    // exactly when source is OFF_CAMPUS, checked below.
+    offCampusProofUrl: z.string().trim().optional().nullable(),
+    // False just records the internship's company and dates for the
+    // placement cell's files — no certificate, no approve/reject decision.
+    nocRequired: z.boolean().default(true),
   })
   .refine(
     (data) => {
@@ -46,7 +55,11 @@ export const nocFormSchema = z
       message: "End date cannot be earlier than start date.",
       path: ["endDate"],
     }
-  );
+  )
+  .refine((data) => data.source !== "OFF_CAMPUS" || Boolean(data.offCampusProofUrl?.trim()), {
+    message: "Upload a supporting document (offer letter) for an off-campus offer.",
+    path: ["offCampusProofUrl"],
+  });
 
 // A decision carries the placement cell's remarks. The student's `message`
 // stays as submitted, so these schemas never accept it.
@@ -65,7 +78,14 @@ export const nocCancelSchema = z.object({
   nocId: z.string().min(1, "NOC request ID is required."),
 });
 
+// Independent of approve/reject — see NocRequest.verifiedByPlacementTeam.
+export const nocVerifySchema = z.object({
+  nocId: z.string().min(1, "NOC request ID is required."),
+  verified: z.boolean(),
+});
+
 export type NocFormData = z.infer<typeof nocFormSchema>;
 export type NocApproveData = z.infer<typeof nocApproveSchema>;
 export type NocRejectData = z.infer<typeof nocRejectSchema>;
 export type NocCancelData = z.infer<typeof nocCancelSchema>;
+export type NocVerifyData = z.infer<typeof nocVerifySchema>;
