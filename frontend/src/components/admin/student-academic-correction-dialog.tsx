@@ -12,11 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 /**
- * The only student-record editor for cgpa/backlogs. Both drive job
- * eligibility and are shown to recruiters as fact, so the student's own
- * profile form cannot touch them (see `ACADEMIC_LOCKED_FIELDS` in
- * `profile-view.tsx`) — this dialog, gated by `students.update`, is the sole
- * write path left.
+ * The admin-side editor for a student's cgpa/backlogs — the placement
+ * team's way to correct a value the student self-reported on their own
+ * profile (see the 2026-09-23 decision). Gated by `students.update`; not
+ * the only writer of these two columns, the student's own profile form is
+ * the other one.
  */
 export function StudentAcademicCorrectionDialog({
   studentId,

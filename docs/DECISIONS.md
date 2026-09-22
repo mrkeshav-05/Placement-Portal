@@ -1479,3 +1479,70 @@ each would keep its own count of the same address's failures.
   which login attempt is checked against — confirmed by reading the
   `tnp:throttle:login:*` keys directly out of the shared `cache` Redis
   rather than only by observing one process's behavior.
+
+## 2026-09-23 — CGPA and backlogs become student-editable again, alongside the admin correction path
+
+Supersedes *2026-09-22 — CGPA and backlogs are no longer student-editable;
+`students.update` gets its first route*, on explicit product direction, not
+a reversal of the finding that decision responded to. The placement office
+stated the actual requirement: this is a prototype deployment with no
+complete academic record for every student yet, so a student must be able
+to enter and update their own CGPA and active-backlog count through the
+normal profile flow. The Training & Placement team verifies values
+manually, outside the system, and corrects a wrong one from the admin
+side — which the 2026-09-22 change had already built and which stays
+exactly as it was. The two decisions are not in tension: that entry's
+`StudentAcademicCorrection` route and its admin dialog were never the
+disputed part, and neither one gained a new column, a verification flag, or
+an approval state, per instruction — self-report and admin correction are
+two writers of the same `cgpa`/`backlogs` columns, nothing more.
+
+- **`cgpa` and `backlogs` are back on `StudentProfileUpdate`**
+  (`backend/app/schemas/student.py`) and `studentProfileSchema`
+  (`frontend/src/lib/profile-schema.ts`), with the same range and
+  precision rules `StudentAcademicCorrection`/
+  `studentAcademicCorrectionSchema` already enforced for the admin path —
+  0–10 for CGPA capped at two decimal places, 0–20 for backlogs. `PATCH
+  /profile` needed no code change to accept them again: the route already
+  applies `model_dump(exclude_unset=True)` field-by-field, so restoring
+  the schema fields was the entire boundary change, the same way removing
+  them was the whole change yesterday.
+- **`frontend/src/components/profile/profile-view.tsx`'s
+  `ACADEMIC_LOCKED_FIELDS` is gone**; `LOCKED_FIELDS` is back to only the
+  roster fields (name, roll number, branch, degree, batch) a student could
+  never edit even before any of this. CGPA and backlogs render as
+  ordinary editable inputs again, through the same "Edit profile" /
+  "Save changes" flow every other field already uses — no new UI, no new
+  state.
+- **The admin side is untouched in behavior.** `StudentAcademicCorrection`,
+  `PATCH /students/admin/{id}/academic`, the `students.update` permission
+  gate, and the "Correct CGPA / backlogs" dialog on the admin student
+  profile all still exist and still work exactly as built on 2026-09-22.
+  Only the comments describing them changed, from "the only write path"
+  to "a second writer of the same columns" — an admin correction still
+  simply overwrites whatever the student last saved, the same as it did
+  when it was the sole writer; nothing tracks which write was more recent
+  or which one "counts."
+- **No new database column, flag, or state was added**, on explicit
+  instruction: no `verifiedBy`, no `lastCorrectedBy`, no `isVerified`, no
+  audit table. A student's self-reported value and an admin's corrected
+  value are stored identically and indistinguishably in `User.cgpa` /
+  `User.backlogs` — the schema cannot tell which kind of write produced
+  the current value, by design, because that distinction was explicitly
+  out of scope for this stage.
+- **The residual risk this reopens is accepted, not overlooked.** A
+  student can still self-report a CGPA/backlog count that eligibility and
+  recruiter-facing screens treat as fact, exactly as the 2026-09-22 finding
+  described. What changed is the product's answer to it: rather than
+  blocking self-report outright, the placement team's manual verification
+  process plus the admin correction path already built are the accepted
+  mitigation for this prototype stage. A future stage that wants a
+  systematic guarantee (e.g. a verified/unverified distinction visible to
+  recruiters) is new scope, not implied by this entry.
+- **Tests updated, not just reverted.** `test_student_profile_schema.py`
+  and `profile-schema.test.ts` again assert `StudentProfileUpdate`/
+  `studentProfileSchema` accept `cgpa`/`backlogs` (precision, range, and
+  the roster-fields-only exclusion), while keeping every
+  `StudentAcademicCorrection`/`studentAcademicCorrectionSchema` test from
+  2026-09-22 unchanged — both schemas are independently correct, and nothing
+  about the admin path needed re-verifying.

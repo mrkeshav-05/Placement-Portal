@@ -109,23 +109,19 @@ export type StudentProfileViewData = {
   }>;
 };
 
-// Roster fields are set by the placement office from the official roster;
-// cgpa/backlogs are locked for a different reason — both drive job
-// eligibility and are shown to recruiters as fact, so a student self-editing
-// them would let an ineligible student fabricate eligibility (corrected only
-// through the placement office's admin tooling). Kept in ProfileValues for
-// display, but renderFields never lets either group unlock.
-const ROSTER_LOCKED_FIELDS = new Set<keyof ProfileValues>([
+// Set by the placement office from the official roster, not by the student.
+// cgpa/backlogs are deliberately NOT here — see the 2026-09-23 decision: this
+// is a prototype without complete academic records yet, so a student edits
+// their own values here, and the placement team corrects them from the admin
+// side (student-academic-correction-dialog.tsx) if one is wrong. Kept in
+// ProfileValues for display, but renderFields never lets a roster field
+// unlock.
+const LOCKED_FIELDS = new Set<keyof ProfileValues>([
   "name",
   "rollNumber",
   "branch",
   "degree",
   "batch",
-]);
-const ACADEMIC_LOCKED_FIELDS = new Set<keyof ProfileValues>(["cgpa", "backlogs"]);
-const LOCKED_FIELDS = new Set<keyof ProfileValues>([
-  ...ROSTER_LOCKED_FIELDS,
-  ...ACADEMIC_LOCKED_FIELDS,
 ]);
 
 /** Radix has no empty option value, so "not provided" rides a sentinel. */
@@ -481,13 +477,8 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
       const disabled = locked || !editing;
       const error = result.fieldErrors?.[key]?.[0];
       const fieldId = `profile-${key}`;
-      const title = ACADEMIC_LOCKED_FIELDS.has(key)
-        ? "Contact the placement office to correct your CGPA or backlogs"
-        : locked
-          ? "Set by the placement office from the official roster"
-          : undefined;
       const shared = {
-        title,
+        title: locked ? "Set by the placement office from the official roster" : undefined,
         "aria-invalid": error ? (true as const) : undefined,
         "aria-errormessage": error ? `${key}-error` : undefined,
       };

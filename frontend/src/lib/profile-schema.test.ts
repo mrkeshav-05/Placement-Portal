@@ -19,6 +19,8 @@ const EMPTY = {
   currentAddress: "",
   class10Percent: "",
   class12Percent: "",
+  cgpa: "",
+  backlogs: "0",
 };
 
 function parse(field: string, value: unknown) {
@@ -73,7 +75,30 @@ test("gender and blood group stay optional and clearable", () => {
   assert.equal(accepted("bloodGroup", ""), null);
 });
 
-test("the roster-owned and academic fields are still unwritable", () => {
+test("a percentage is only bounded by its own scale", () => {
+  // CGPA shares the precision rule but is out of 10, not 100.
+  assert.equal(accepted("cgpa", "9.75"), 9.75);
+  rejected("cgpa", "10.01");
+  rejected("cgpa", "8.765");
+});
+
+test("backlogs accepts 0 through 20 as a number", () => {
+  assert.equal(BACKLOG_OPTIONS.length, 21);
+  assert.equal(BACKLOG_OPTIONS[0], "0");
+  assert.equal(BACKLOG_OPTIONS[20], "20");
+
+  for (const value of BACKLOG_OPTIONS) {
+    const parsed = accepted("backlogs", value);
+    assert.equal(typeof parsed, "number");
+    assert.equal(parsed, Number(value));
+  }
+});
+
+test("backlogs rejects values outside the list", () => {
+  for (const value of ["21", "100", "-1", "3.5", "abc"]) rejected("backlogs", value);
+});
+
+test("the roster-owned fields are still unwritable, but a student can set their own cgpa and backlogs", () => {
   const result = studentProfileSchema.safeParse({
     ...EMPTY,
     name: "Someone Else",
@@ -82,12 +107,15 @@ test("the roster-owned and academic fields are still unwritable", () => {
     degree: "PhD",
     batch: 1999,
     cgpa: "9.5",
-    backlogs: "0",
+    backlogs: "2",
   });
   assert.ok(result.success);
-  for (const key of ["name", "rollNumber", "branch", "degree", "batch", "cgpa", "backlogs"]) {
-    assert.equal(key in (result.data as Record<string, unknown>), false);
+  const data = result.data as Record<string, unknown>;
+  for (const key of ["name", "rollNumber", "branch", "degree", "batch"]) {
+    assert.equal(key in data, false);
   }
+  assert.equal(data.cgpa, 9.5);
+  assert.equal(data.backlogs, 2);
 });
 
 test("studentAcademicCorrectionSchema: cgpa shares the precision rule but is out of 10", () => {

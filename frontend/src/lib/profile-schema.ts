@@ -70,12 +70,13 @@ const optionalDate = z.preprocess(
 // part of this schema: a student cannot write them through this action, no
 // matter what a crafted request includes, because the field is never parsed.
 //
-// cgpa and backlogs are absent for a different reason: both drive job
-// eligibility and are shown to recruiters as fact, so a student self-editing
-// them would let an ineligible student fabricate eligibility. Only the
-// placement office can correct them, through studentAcademicCorrectionSchema
-// below, mirrored in `backend/app/schemas/student.py`'s
-// `StudentAcademicCorrection`.
+// cgpa and backlogs ARE part of this schema, on purpose (see the 2026-09-23
+// decision): this is a prototype deployment without complete academic
+// records for every student, so a student must be able to enter and update
+// their own values here. The placement team verifies them manually and can
+// override either one from the admin student profile
+// (studentAcademicCorrectionSchema below) if a self-reported value is wrong
+// — the same two fields, two write paths, no separate "verified" state.
 export const studentProfileSchema = z.object({
   personalEmail: optionalEmail,
   contactNumber: optionalText(20),
@@ -86,11 +87,19 @@ export const studentProfileSchema = z.object({
   currentAddress: optionalText(500),
   class10Percent: optionalDecimal(0, 100, 2),
   class12Percent: optionalDecimal(0, 100, 2),
+  cgpa: optionalDecimal(0, 10, 2),
+  backlogs: optionalNumber(0, 20, true).transform((value) => value ?? 0),
 });
 
 export type StudentProfileInput = z.infer<typeof studentProfileSchema>;
 
-/** The placement-office-only counterpart to the cgpa/backlogs omitted above. */
+/**
+ * The admin-side counterpart to the same two fields, used from the student
+ * admin profile's Academic Correction dialog. Independent of the schema
+ * above only in that an admin correction may leave either field untouched
+ * (both optional, no forced default) — it is not a separate, more
+ * authoritative state, just another writer of the same two columns.
+ */
 export const studentAcademicCorrectionSchema = z.object({
   cgpa: optionalDecimal(0, 10, 2),
   backlogs: optionalNumber(0, 20, true),

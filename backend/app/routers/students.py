@@ -28,9 +28,11 @@ async def update_student_academic_record(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    The only write path for cgpa/backlogs: a student cannot set these through
-    PATCH /profile (see the comment on StudentProfileUpdate), because both
-    values drive job eligibility and are shown to recruiters as fact.
+    The placement team's way to correct a student's cgpa/backlogs — the
+    same two columns a student can already set on their own profile via
+    PATCH /profile (see the 2026-09-23 decision and the comment on
+    StudentProfileUpdate). Not the only writer, just the one an
+    administrator uses on someone else's behalf.
     """
     student = await db.scalar(select(User).where(User.id == student_id, User.role == Role.STUDENT))
     if not student:

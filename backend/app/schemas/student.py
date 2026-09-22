@@ -36,11 +36,13 @@ class StudentProfileUpdate(BaseModel):
     # the boundary the student-facing PATCH /profile route validates against,
     # so a field that doesn't exist on it can never be set by a student.
     #
-    # cgpa and backlogs are absent for the same reason, not because they are
-    # roster-imported: they drive job-eligibility checks and are shown to
-    # recruiters as fact, so letting a student self-report them would let an
-    # ineligible student fabricate eligibility. Only the placement office can
-    # correct them, through StudentAcademicCorrection below.
+    # cgpa and backlogs ARE part of this schema, on purpose (see the
+    # 2026-09-23 decision): this is a prototype deployment without complete
+    # academic records for every student, so a student must be able to enter
+    # and update their own values. The placement team verifies them manually
+    # and can override either one from StudentAcademicCorrection below if a
+    # self-reported value is wrong — same two columns, two write paths, no
+    # separate "verified" state.
     personalEmail: Optional[str] = None
     contactNumber: Optional[str] = None
     altContactNumber: Optional[str] = None
@@ -52,8 +54,10 @@ class StudentProfileUpdate(BaseModel):
     currentAddress: Optional[str] = None
     class10Percent: Optional[float] = Field(default=None, ge=0, le=100)
     class12Percent: Optional[float] = Field(default=None, ge=0, le=100)
+    cgpa: Optional[float] = Field(default=None, ge=0, le=10)
+    backlogs: Optional[int] = Field(default=None, ge=0, le=20)
 
-    @field_validator("class10Percent", "class12Percent")
+    @field_validator("class10Percent", "class12Percent", "cgpa")
     @classmethod
     def _cap_precision(cls, value: Optional[float]) -> Optional[float]:
         if value is None:
@@ -67,9 +71,12 @@ class StudentProfileUpdate(BaseModel):
 
 class StudentAcademicCorrection(BaseModel):
     """
-    The placement-office-only counterpart to the cgpa/backlogs omitted above.
-    Bound to `PATCH /students/admin/{id}/academic`, guarded by
-    `students.update`, never by the student-facing profile route.
+    The admin-side counterpart to the same cgpa/backlogs a student can
+    already set on their own profile above. Bound to
+    `PATCH /students/admin/{id}/academic`, guarded by `students.update` —
+    not a more authoritative state, just another writer of the same two
+    columns, for when the placement team needs to correct a self-reported
+    value on someone else's behalf.
     """
 
     cgpa: Optional[float] = Field(default=None, ge=0, le=10)

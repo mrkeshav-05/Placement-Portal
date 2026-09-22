@@ -51,8 +51,8 @@ def test_blood_group_rejects_anything_else(value):
         StudentProfileUpdate(bloodGroup=value)
 
 
-def test_roster_owned_and_academic_fields_are_still_unwritable():
-    """A crafted payload cannot set what the roster owns, or cgpa/backlogs."""
+def test_roster_owned_fields_are_still_unwritable():
+    """A crafted payload cannot set what the roster owns, even alongside legitimate fields."""
     model = StudentProfileUpdate(
         name="Someone Else",
         rollNumber="FAKE9999",
@@ -60,13 +60,38 @@ def test_roster_owned_and_academic_fields_are_still_unwritable():
         degree="PhD",
         batch=1999,
         cgpa=9.1,
-        backlogs=0,
     )
-    assert model.model_dump(exclude_unset=True) == {}
+    # cgpa is a real field on this schema (see the 2026-09-23 decision), so it
+    # survives; the roster fields above were never parsed at all.
+    assert model.model_dump(exclude_unset=True) == {"cgpa": 9.1}
+
+
+def test_cgpa_shares_precision_but_is_out_of_ten():
+    assert StudentProfileUpdate(cgpa=9.75).cgpa == 9.75
+    with pytest.raises(ValidationError):
+        StudentProfileUpdate(cgpa=10.01)
+    with pytest.raises(ValidationError):
+        StudentProfileUpdate(cgpa=8.765)
+
+
+def test_backlogs_accepts_zero_through_twenty():
+    for value in range(0, 21):
+        assert StudentProfileUpdate(backlogs=value).backlogs == value
+
+
+@pytest.mark.parametrize("value", [21, 100, -1])
+def test_backlogs_rejects_values_outside_the_list(value):
+    with pytest.raises(ValidationError):
+        StudentProfileUpdate(backlogs=value)
 
 
 class TestStudentAcademicCorrection:
-    """The placement-office-only counterpart: PATCH /students/admin/{id}/academic."""
+    """
+    The admin-side counterpart, bound to PATCH /students/admin/{id}/academic
+    and guarded by students.update — a second writer of the same cgpa and
+    backlogs columns a student can already set on their own profile, for
+    when the placement team needs to correct one on someone else's behalf.
+    """
 
     def test_cgpa_shares_precision_but_is_out_of_ten(self):
         assert StudentAcademicCorrection(cgpa=9.75).cgpa == 9.75
