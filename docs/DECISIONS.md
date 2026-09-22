@@ -1546,3 +1546,44 @@ two writers of the same `cgpa`/`backlogs` columns, nothing more.
   `StudentAcademicCorrection`/`studentAcademicCorrectionSchema` test from
   2026-09-22 unchanged — both schemas are independently correct, and nothing
   about the admin path needed re-verifying.
+
+## 2026-09-23 — The last-active-super-admin guard actually runs now
+
+`backend/app/routers/users.py`'s role-change, deactivate, and delete
+endpoints each compared `user.role` against `(Role.SUPER_ADMIN,
+Role.ADMIN)` — `Role.ADMIN` has never existed on the `Role` enum
+(`STUDENT`, `FACULTY`, `PLACEMENT_VOLUNTEER`, `PLACEMENT_TEAM`,
+`SUPER_ADMIN`; see `docs/DECISIONS.md`, 2026-09-17). Accessing a
+nonexistent enum member raises `AttributeError` the moment Python
+evaluates the tuple, so all three guards 500'd on every attempt to act on
+a `SUPER_ADMIN` account, not only the ones that should have been blocked.
+The action never happened either way (an unhandled exception aborts the
+request before the commit), so this was never an escalation path — but it
+did mean a legitimate super-admin demotion, deactivation, or deletion was
+simply broken, and the guard itself had never actually been exercised.
+
+- **`Role.ADMIN` is gone from all three call sites**; the comparison is
+  `user.role == Role.SUPER_ADMIN`, the only tier this guard was ever
+  written to protect (the docstring already said "superadmin," singular
+  tier, before this fix).
+- **The three near-identical blocks collapsed into one pure predicate,
+  `_blocks_last_active_super_admin(remaining_active_super_admins,
+  target_email)`, plus one query helper,
+  `_remaining_active_super_admins(db, excluding)`.** The predicate takes
+  an already-known count rather than a database session specifically so
+  it can be unit tested without one — this test suite has no
+  database-backed test harness anywhere (see `test_cache.py`'s and
+  `test_rate_limit.py`'s fake-client pattern for the nearest equivalent),
+  so a guard that could only be exercised through a live query was
+  never going to get real coverage. `backend/tests/test_users_guardrails.py`
+  now covers it directly, including the bootstrap-`ADMIN_EMAILS` exemption
+  (such an address regains `SUPER_ADMIN` automatically on its next
+  sign-in, per `auth.ts`'s `signIn` callback, so it is never actually "the
+  last one" this guard needs to stop).
+- **Verified live**: with the dev stack's three real `SUPER_ADMIN` rows
+  left untouched, three throwaway `SUPER_ADMIN` test rows were demoted,
+  deactivated, and deleted through the actual endpoints — each returned
+  200 where every one of the three previously 500'd unconditionally,
+  confirming the fix addresses exactly the reported failure. The blocking
+  branch itself is covered by the new unit tests rather than by touching
+  real administrator accounts to reproduce a zero-remaining-admins state.

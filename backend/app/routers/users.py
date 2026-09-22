@@ -37,6 +37,36 @@ from app.schemas.user import (
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+def _blocks_last_active_super_admin(remaining_active_super_admins: int, target_email: str | None) -> bool:
+    """
+    True when demoting, deactivating, or deleting this SUPER_ADMIN would
+    leave the portal with no active super-administrator to run it.
+
+    `target_email` matters because a bootstrap `ADMIN_EMAILS` address
+    regains SUPER_ADMIN automatically on its next sign-in (`auth.ts`'s
+    `signIn` callback recomputes the role from the allowlist every time), so
+    acting on one is never actually "the last one" in the sense this guard
+    exists to prevent — the allowlist itself is the real floor.
+
+    A pure predicate on purpose, so it can be tested without a database: the
+    three call sites below only own the query that produces its first
+    argument.
+    """
+    return remaining_active_super_admins == 0 and not is_admin_email(target_email or "")
+
+
+async def _remaining_active_super_admins(db: AsyncSession, excluding: User) -> int:
+    return (
+        await db.scalar(
+            select(func.count(User.id)).where(
+                User.role == Role.SUPER_ADMIN,
+                User.isActive.is_(True),
+                User.id != excluding.id,
+            )
+        )
+    ) or 0
+
+
 def _to_user_summary(user: User, application_count: int = 0) -> UserSummary:
     role_str = user.role.value if hasattr(user.role, "value") else str(user.role)
     custom_perms = user.customPermissions or []
@@ -319,18 +349,10 @@ async def update_user_role(
                 detail="You cannot demote your own administrator account.",
             )
 
-    # Last super-admin / admin guard
-    if user.role in (Role.SUPER_ADMIN, Role.ADMIN) and new_role not in (Role.SUPER_ADMIN, Role.ADMIN):
-        admin_count = (
-            await db.scalar(
-                select(func.count(User.id)).where(
-                    User.role.in_([Role.SUPER_ADMIN, Role.ADMIN]),
-                    User.isActive.is_(True),
-                    User.id != user.id,
-                )
-            )
-        ) or 0
-        if admin_count == 0 and not is_admin_email(user.email or ""):
+    # Last super-admin guard
+    if user.role == Role.SUPER_ADMIN and new_role != Role.SUPER_ADMIN:
+        remaining = await _remaining_active_super_admins(db, user)
+        if _blocks_last_active_super_admin(remaining, user.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot demote the last active administrator.",
@@ -403,17 +425,9 @@ async def update_user_status(
             detail="You cannot deactivate your own account.",
         )
 
-    if not data.isActive and user.role in (Role.SUPER_ADMIN, Role.ADMIN):
-        admin_count = (
-            await db.scalar(
-                select(func.count(User.id)).where(
-                    User.role.in_([Role.SUPER_ADMIN, Role.ADMIN]),
-                    User.isActive.is_(True),
-                    User.id != user.id,
-                )
-            )
-        ) or 0
-        if admin_count == 0 and not is_admin_email(user.email or ""):
+    if not data.isActive and user.role == Role.SUPER_ADMIN:
+        remaining = await _remaining_active_super_admins(db, user)
+        if _blocks_last_active_super_admin(remaining, user.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot deactivate the last active administrator.",
@@ -448,17 +462,9 @@ async def delete_user(
             detail="You cannot delete your own account.",
         )
 
-    if user.role in (Role.SUPER_ADMIN, Role.ADMIN):
-        admin_count = (
-            await db.scalar(
-                select(func.count(User.id)).where(
-                    User.role.in_([Role.SUPER_ADMIN, Role.ADMIN]),
-                    User.isActive.is_(True),
-                    User.id != user.id,
-                )
-            )
-        ) or 0
-        if admin_count == 0 and not is_admin_email(user.email or ""):
+    if user.role == Role.SUPER_ADMIN:
+        remaining = await _remaining_active_super_admins(db, user)
+        if _blocks_last_active_super_admin(remaining, user.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot delete the last active administrator.",
