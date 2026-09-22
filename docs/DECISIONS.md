@@ -1257,3 +1257,143 @@ once students start relying on it:
   list/metrics never surface a non-approved row, a FACULTY detail fetch on
   a `PENDING` row 404s, an unrelated student is refused the proof PDF's
   bytes while the owning student and a `noc.view` holder are not.
+
+## 2026-09-22 — CGPA and backlogs are no longer student-editable; `students.update` gets its first route
+
+A security review found that a student could `PATCH /profile` their own
+`cgpa` and `backlogs` to any value inside the schema's numeric range, with
+no cross-check against an official record. Both fields are load-bearing:
+`backend/app/services/eligibility.py` / `frontend/src/lib/eligibility.ts`
+evaluate them directly against a drive's `minCGPA`/`maxBacklogs`, and the
+admin applications screen shows them to recruiters as the candidate's
+record. A student with a 6.2 CGPA and 2 backlogs could self-report 9.5 and
+0, pass eligibility for a drive that should have rejected them, and have
+the fabricated number displayed to the recruiter reviewing the application.
+
+- **`cgpa` and `backlogs` are removed from `StudentProfileUpdate`
+  (`backend/app/schemas/student.py`) and `studentProfileSchema`
+  (`frontend/src/lib/profile-schema.ts`)**, the same way roster fields
+  (name, roll number, branch, degree, batch) were already excluded — by
+  omission from the schema that is the actual write boundary, not by a
+  runtime check. `frontend/src/components/profile/profile-view.tsx` locks
+  both inputs the same way it already locked the roster fields
+  (`ACADEMIC_LOCKED_FIELDS`, folded into the existing `LOCKED_FIELDS` set),
+  with its own tooltip pointing the student at the placement office rather
+  than implying a roster import owns the value.
+- **A new schema, `StudentAcademicCorrection`, is the only way to write
+  either field now**, bound to a new route,
+  `PATCH /students/admin/{id}/academic`
+  (`backend/app/routers/students.py`), guarded by `students.update` — a
+  permission that has existed in the 49-entry catalog since the RBAC
+  redesign (2026-09-17) with exactly this description ("Update roster
+  fields, backlogs, and placement bans") but had no route or admin screen
+  behind it until now. Both fields are independently optional on the
+  correction schema, so a placement-cell member can fix just the CGPA or
+  just the backlog count without having to know the other value.
+- **The admin student detail page
+  (`frontend/src/components/admin/student-profile-detail.tsx`) gained a
+  "Correct CGPA / backlogs" action**, shown only when the viewer holds
+  `students.update` (checked server-side in
+  `frontend/src/app/admin/students/[id]/page.tsx` via `hasPermission`, the
+  same pattern `/admin/placement-records` already uses to gate its
+  create/update/delete buttons). The action is a `PortalDialog` form
+  (`student-academic-correction-dialog.tsx`) that posts through a new
+  `"use server"` action, `updateStudentAcademicAction`
+  (`frontend/src/app/admin/students/actions.ts`), which re-validates with
+  `studentAcademicCorrectionSchema` before calling the backend — the
+  browser is not trusted any more here than it is anywhere else in the
+  portal.
+- **No Prisma fallback was added for the new write.** Every other
+  student-directory screen still reads through Prisma directly pending the
+  broader FastAPI migration, but this is a new route with no legacy
+  behavior to preserve, and adding a second write path for the exact value
+  this decision restricts would have undercut the fix.
+
+## 2026-09-22 — Registration requires an email-OTP before anything is written to `User`
+
+A security review found that `/register`'s "claim an existing account"
+path — added in the 2026-09-17 entry below, once Google sign-in stopped
+proving mailbox ownership — let anyone who could type an institute address
+set its password. Both 2026-09-17 entries said as much explicitly: *"With
+no verified provider and no verification mail, whoever registers an unused
+institute address owns it... A verification link at registration is still
+the single change that would fix this."* Institute addresses are commonly
+roll-number-shaped and therefore guessable, so this was a real
+account-takeover path against any student who had not yet registered,
+reaching their applications, resumes, NOC requests, and profile PII. This
+entry is that change.
+
+- **Registration is now two steps.** `requestRegistrationOtpAction`
+  (`frontend/src/app/register/actions.ts`) validates the form, runs the
+  same eligibility checks the old single-step `registerAction` did
+  (domain, not an `ADMIN_EMAILS` address, not already claimed by an
+  active password, not a `TeamMember` row), hashes the password, and
+  stages `{ name, passwordHash }` — **not** the plaintext password — for
+  the address. `verifyRegistrationOtpAction` only writes to `User`, by
+  claim or by create, once the caller types back the code that was
+  emailed to that exact address. `RegisterForm`
+  (`frontend/src/app/register/register-form.tsx`) is the client component
+  that drives the two steps; `register/page.tsx` is back to a thin server
+  wrapper.
+- **The dormant `VerificationToken` table holds the pending state**, not a
+  new table. It was scaffolded for Auth.js's email provider and has been
+  unwritten since Google sign-in was removed (2026-09-17); it is exactly
+  shaped for this — `identifier` the email, `token` now `sha256(code)` so
+  the code itself is never at rest, `expires` a 10-minute TTL. It gained
+  one column, `payload Json?`, for the staged `{ name, passwordHash }` —
+  `database/prisma/migrations/20260922175701_add_verification_token_payload`.
+  A request deletes any row already pending for that address before
+  writing a fresh one, so a resend invalidates whatever code came before
+  it, and a successful or failed-out verify deletes the row too — a code
+  is single-use on every exit path. `frontend/src/lib/registration-otp.ts`
+  owns all of this and is the only code that reads or writes the table.
+- **Two independent throttles, not one.** Requesting a code and guessing
+  one are different abuse shapes — one spends a victim's inbox (and
+  Resend's bill), the other spends the 6-digit space — so each gets its
+  own limit and lockout, both a generalization of the existing
+  `login-throttle.ts` pulled out into `frontend/src/lib/rate-limit.ts`
+  (`createThrottle`) so the two throttles and the pre-existing login one
+  share the sliding-window/lockout logic rather than three copies of it.
+  `login-throttle.ts`'s own exported names and behavior are unchanged —
+  it is now a five-line instantiation. Same accepted caveat as before:
+  in-process, resets on deploy, not shared across replicas.
+- **The email itself is sent by the backend, authorized by a new
+  purpose-scoped token, not a shared static secret.** The frontend already
+  owns `User`/`VerificationToken` via Prisma and generates the code, but
+  the only real mailer in the system is `send_notification_email`
+  (`backend/app/services/email.py`, Resend). Rather than duplicating a
+  second Resend integration into the frontend, `registration-otp.ts` mints
+  a two-minute HS256 JWT — `{ purpose: "register-otp-email", email, code
+  }`, signed with the same `AUTH_SECRET` a real session JWT uses — and a
+  new endpoint, `POST /auth/internal/send-registration-otp`
+  (`backend/app/routers/auth.py`), verifies it and relays the send.
+  `require_internal_purpose_token`/`_decode_internal_purpose_token`
+  (`backend/app/core/security.py`) are what make this safe to sign with
+  the same secret as a session: the `purpose` claim means neither token
+  is ever valid as the other, so a lifted session cannot be replayed
+  against this endpoint and this token is useless anywhere a session is
+  expected. This endpoint is unreachable by a browser — nothing gives a
+  browser `AUTH_SECRET` to sign with — so it is not the open mail relay it
+  would be if it trusted its caller on request shape alone.
+- **`is_email_delivery_configured()` (`backend/app/services/email.py`) is
+  a new, small public wrapper around the existing placeholder-key check**,
+  so the OTP endpoint can tell a genuinely unconfigured mailer apart from
+  a real send it should attempt. When Resend is not configured — every
+  local and demo environment today, since `RESEND_API_KEY` ships empty —
+  the endpoint logs the code at `WARNING` instead of silently discarding
+  it the way `send_notification_email` already does for every other
+  email. Without this, registration would have been unusable outside a
+  deployment with a real Resend key.
+- **`User.emailVerified`, an Auth.js-standard column that nothing has
+  ever written since the adapter was removed, is now stamped** on a
+  successful claim or create. Nothing reads it yet; it is there for
+  whatever needs "was this address ever OTP-verified" next, such as the
+  forgot-password flow both 2026-09-17 entries still call outstanding.
+- **Verified live** against the running dev stack (containers rebuilt to
+  pick up the change): registering a fresh address stages the hash and
+  emails nothing to `User` — confirmed with a direct query between the two
+  steps — logs the code (`RESEND_API_KEY` is unset locally), rejects a
+  wrong code with the row still intact, and accepts the right one, at
+  which point the row appears with `emailVerified` set, the
+  `VerificationToken` row is gone, and the session signs in and lands on
+  `/dashboard`.

@@ -4,7 +4,12 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.student import BLOOD_GROUPS_VALUES, GENDERS_VALUES, StudentProfileUpdate
+from app.schemas.student import (
+    BLOOD_GROUPS_VALUES,
+    GENDERS_VALUES,
+    StudentAcademicCorrection,
+    StudentProfileUpdate,
+)
 
 
 def test_percentages_accept_zero_to_hundred_with_two_decimals():
@@ -27,14 +32,6 @@ def test_precision_is_counted_on_the_digits_sent_not_the_binary_float(value):
     assert StudentProfileUpdate(class10Percent=value).class10Percent == value
 
 
-def test_cgpa_shares_precision_but_is_out_of_ten():
-    assert StudentProfileUpdate(cgpa=9.75).cgpa == 9.75
-    with pytest.raises(ValidationError):
-        StudentProfileUpdate(cgpa=10.01)
-    with pytest.raises(ValidationError):
-        StudentProfileUpdate(cgpa=8.765)
-
-
 def test_gender_and_blood_group_are_closed_lists():
     for value in GENDERS_VALUES:
         assert StudentProfileUpdate(gender=value).gender == value
@@ -54,19 +51,8 @@ def test_blood_group_rejects_anything_else(value):
         StudentProfileUpdate(bloodGroup=value)
 
 
-def test_backlogs_accepts_zero_through_twenty():
-    for value in range(0, 21):
-        assert StudentProfileUpdate(backlogs=value).backlogs == value
-
-
-@pytest.mark.parametrize("value", [21, 100, -1])
-def test_backlogs_rejects_values_outside_the_list(value):
-    with pytest.raises(ValidationError):
-        StudentProfileUpdate(backlogs=value)
-
-
-def test_roster_owned_fields_are_still_unwritable():
-    """A crafted payload cannot set what the roster owns."""
+def test_roster_owned_and_academic_fields_are_still_unwritable():
+    """A crafted payload cannot set what the roster owns, or cgpa/backlogs."""
     model = StudentProfileUpdate(
         name="Someone Else",
         rollNumber="FAKE9999",
@@ -74,5 +60,30 @@ def test_roster_owned_fields_are_still_unwritable():
         degree="PhD",
         batch=1999,
         cgpa=9.1,
+        backlogs=0,
     )
-    assert model.model_dump(exclude_unset=True) == {"cgpa": 9.1}
+    assert model.model_dump(exclude_unset=True) == {}
+
+
+class TestStudentAcademicCorrection:
+    """The placement-office-only counterpart: PATCH /students/admin/{id}/academic."""
+
+    def test_cgpa_shares_precision_but_is_out_of_ten(self):
+        assert StudentAcademicCorrection(cgpa=9.75).cgpa == 9.75
+        with pytest.raises(ValidationError):
+            StudentAcademicCorrection(cgpa=10.01)
+        with pytest.raises(ValidationError):
+            StudentAcademicCorrection(cgpa=8.765)
+
+    def test_backlogs_accepts_zero_through_twenty(self):
+        for value in range(0, 21):
+            assert StudentAcademicCorrection(backlogs=value).backlogs == value
+
+    @pytest.mark.parametrize("value", [21, 100, -1])
+    def test_backlogs_rejects_values_outside_the_list(self, value):
+        with pytest.raises(ValidationError):
+            StudentAcademicCorrection(backlogs=value)
+
+    def test_either_field_can_be_corrected_independently(self):
+        assert StudentAcademicCorrection(cgpa=8.5).model_dump(exclude_unset=True) == {"cgpa": 8.5}
+        assert StudentAcademicCorrection(backlogs=2).model_dump(exclude_unset=True) == {"backlogs": 2}

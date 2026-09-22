@@ -109,14 +109,23 @@ export type StudentProfileViewData = {
   }>;
 };
 
-// Set by the placement office from the official roster, not by the student.
-// Kept in ProfileValues for display, but renderFields never lets them unlock.
-const LOCKED_FIELDS = new Set<keyof ProfileValues>([
+// Roster fields are set by the placement office from the official roster;
+// cgpa/backlogs are locked for a different reason — both drive job
+// eligibility and are shown to recruiters as fact, so a student self-editing
+// them would let an ineligible student fabricate eligibility (corrected only
+// through the placement office's admin tooling). Kept in ProfileValues for
+// display, but renderFields never lets either group unlock.
+const ROSTER_LOCKED_FIELDS = new Set<keyof ProfileValues>([
   "name",
   "rollNumber",
   "branch",
   "degree",
   "batch",
+]);
+const ACADEMIC_LOCKED_FIELDS = new Set<keyof ProfileValues>(["cgpa", "backlogs"]);
+const LOCKED_FIELDS = new Set<keyof ProfileValues>([
+  ...ROSTER_LOCKED_FIELDS,
+  ...ACADEMIC_LOCKED_FIELDS,
 ]);
 
 /** Radix has no empty option value, so "not provided" rides a sentinel. */
@@ -472,8 +481,13 @@ export function ProfileView({ profile }: { profile: StudentProfileViewData }) {
       const disabled = locked || !editing;
       const error = result.fieldErrors?.[key]?.[0];
       const fieldId = `profile-${key}`;
+      const title = ACADEMIC_LOCKED_FIELDS.has(key)
+        ? "Contact the placement office to correct your CGPA or backlogs"
+        : locked
+          ? "Set by the placement office from the official roster"
+          : undefined;
       const shared = {
-        title: locked ? "Set by the placement office from the official roster" : undefined,
+        title,
         "aria-invalid": error ? (true as const) : undefined,
         "aria-errormessage": error ? `${key}-error` : undefined,
       };

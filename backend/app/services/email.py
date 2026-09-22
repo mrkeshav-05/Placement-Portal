@@ -13,6 +13,16 @@ def _is_placeholder_key(key: str | None) -> bool:
     lowered = key.strip().lower()
     return any(p in lowered for p in ["placeholder", "your-api-key", "your_api_key", "dummy", "example", "re_xxx"])
 
+def is_email_delivery_configured() -> bool:
+    """
+    False in local/demo environments where RESEND_API_KEY is unset or a
+    placeholder. Callers for whom a real inbox is optional can ignore this;
+    callers that gate access on delivery (e.g. a registration OTP) should
+    check it first and fall back to something a developer can still read,
+    since send_notification_email itself always fails silently.
+    """
+    return not _is_placeholder_key(settings.resend_api_key)
+
 def send_notification_email(to_email: str, subject: str, message: str, html_content: str | None = None):
     """
     Sends an email notification via Resend.

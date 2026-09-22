@@ -1,4 +1,4 @@
-import { AlertCircle, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -7,57 +7,13 @@ import { studentEmailDomain } from "@/lib/auth-access";
 import { MIN_PASSWORD_LENGTH } from "@/lib/credentials-schema";
 import { hasAnyAdminPermission } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { registerAction } from "./actions";
+import { RegisterForm } from "./register-form";
 
-function describeError(code: string | undefined, domain: string) {
-  if (!code) return null;
-  if (code === "Exists") {
-    return {
-      title: "This address already has an account",
-      body: "Sign in instead. If you have lost the password, ask the placement office to set a new one.",
-    };
-  }
-  if (code === "Domain") {
-    return {
-      title: `Use your @${domain} address`,
-      body: "Password accounts are limited to institute addresses.",
-    };
-  }
-  if (code === "Staff") {
-    return {
-      title: "Placement office accounts are created by the office",
-      body: "Ask the placement cell to create your account and give you its first password. You can change it afterwards.",
-    };
-  }
-  if (code === "Mismatch") {
-    return { title: "Passwords do not match", body: "Re-enter the same password in both fields." };
-  }
-  if (code === "Password") {
-    return {
-      title: "Choose a stronger password",
-      body: `Use at least ${MIN_PASSWORD_LENGTH} characters with at least one letter and one number.`,
-    };
-  }
-  if (code === "Email") {
-    return { title: "Enter a valid email address", body: `Your address must end in @${domain}.` };
-  }
-  return { title: "Enter your full name", body: "We show this name to the placement office." };
-}
-
-export default async function RegisterPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
+export default async function RegisterPage() {
   const session = await auth();
   if (session) redirect(hasAnyAdminPermission(session.user) ? "/admin/dashboard" : "/dashboard");
 
   const domain = studentEmailDomain();
-  const problem = describeError((await searchParams).error, domain);
 
   return (
     <main className="login-page">
@@ -88,68 +44,11 @@ export default async function RegisterPage({
           <span className="eyebrow">Student portal</span>
           <h2>Create your account</h2>
           <p>
-            Register with your <strong>@{domain}</strong> address. If you used this portal before,
-            registering with the same address keeps your profile and applications.
+            Register with your <strong>@{domain}</strong> address. We&apos;ll email a code to confirm it&apos;s
+            yours. If you used this portal before, registering with the same address keeps your profile and
+            applications.
           </p>
-          {problem ? (
-            <Alert variant="destructive" className="mb-5">
-              <AlertCircle />
-              <AlertTitle className="line-clamp-none">{problem.title}</AlertTitle>
-              <AlertDescription>{problem.body}</AlertDescription>
-            </Alert>
-          ) : null}
-          <form action={registerAction} className="login-fields">
-            <div className="grid gap-2">
-              <Label htmlFor="register-name">Full name</Label>
-              <Input
-                id="register-name"
-                className="h-11"
-                type="text"
-                name="name"
-                autoComplete="name"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="register-email">Institute email</Label>
-              <Input
-                id="register-email"
-                className="h-11"
-                type="email"
-                name="email"
-                autoComplete="email"
-                placeholder={`you@${domain}`}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="register-password">Password</Label>
-              <Input
-                id="register-password"
-                className="h-11"
-                type="password"
-                name="password"
-                autoComplete="new-password"
-                minLength={MIN_PASSWORD_LENGTH}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="register-confirm-password">Confirm password</Label>
-              <Input
-                id="register-confirm-password"
-                className="h-11"
-                type="password"
-                name="confirmPassword"
-                autoComplete="new-password"
-                minLength={MIN_PASSWORD_LENGTH}
-                required
-              />
-            </div>
-            <Button type="submit" className="h-11 w-full">
-              Create account
-            </Button>
-          </form>
+          <RegisterForm domain={domain} />
           <p className="login-switch">
             Already registered? <Link href="/login">Sign in</Link>
           </p>

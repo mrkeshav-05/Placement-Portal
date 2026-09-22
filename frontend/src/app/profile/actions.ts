@@ -27,8 +27,6 @@ export async function updateStudentProfile(
     currentAddress: formData.get("currentAddress"),
     class10Percent: formData.get("class10Percent"),
     class12Percent: formData.get("class12Percent"),
-    cgpa: formData.get("cgpa"),
-    backlogs: formData.get("backlogs"),
   });
   if (!parsed.success) {
     return {

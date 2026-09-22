@@ -1,18 +1,48 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.security import PERM_STUDENTS_VIEW, require_permission
+from app.core.security import PERM_STUDENTS_UPDATE, PERM_STUDENTS_VIEW, require_permission
 from app.dependencies import get_db
 from app.models.db import Application, JobProfile, JobStatus, Resume, Role, User
-from app.schemas.student import MissedCompanyFlag, StudentApplicationFlag
+from app.schemas.student import (
+    MissedCompanyFlag,
+    StudentAcademicCorrection,
+    StudentAcademicResponse,
+    StudentApplicationFlag,
+)
 from app.services.eligibility import to_eligibility_profile
 from app.services.student_flags import compute_missed_streak
 
 router = APIRouter(prefix="/students", tags=["students"])
+
+
+@router.patch("/admin/{student_id}/academic", response_model=StudentAcademicResponse)
+async def update_student_academic_record(
+    student_id: str,
+    data: StudentAcademicCorrection,
+    admin_payload: dict = Depends(require_permission(PERM_STUDENTS_UPDATE)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    The only write path for cgpa/backlogs: a student cannot set these through
+    PATCH /profile (see the comment on StudentProfileUpdate), because both
+    values drive job eligibility and are shown to recruiters as fact.
+    """
+    student = await db.scalar(select(User).where(User.id == student_id, User.role == Role.STUDENT))
+    if not student:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found.")
+
+    update_dict = data.model_dump(exclude_unset=True)
+    for key, value in update_dict.items():
+        setattr(student, key, value)
+
+    await db.commit()
+    await db.refresh(student)
+    return student
 
 
 @router.get("/admin/flags", response_model=list[StudentApplicationFlag])

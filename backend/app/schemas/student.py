@@ -35,6 +35,12 @@ class StudentProfileUpdate(BaseModel):
     # office's roster import and are deliberately absent here: this schema is
     # the boundary the student-facing PATCH /profile route validates against,
     # so a field that doesn't exist on it can never be set by a student.
+    #
+    # cgpa and backlogs are absent for the same reason, not because they are
+    # roster-imported: they drive job-eligibility checks and are shown to
+    # recruiters as fact, so letting a student self-report them would let an
+    # ineligible student fabricate eligibility. Only the placement office can
+    # correct them, through StudentAcademicCorrection below.
     personalEmail: Optional[str] = None
     contactNumber: Optional[str] = None
     altContactNumber: Optional[str] = None
@@ -46,10 +52,8 @@ class StudentProfileUpdate(BaseModel):
     currentAddress: Optional[str] = None
     class10Percent: Optional[float] = Field(default=None, ge=0, le=100)
     class12Percent: Optional[float] = Field(default=None, ge=0, le=100)
-    cgpa: Optional[float] = Field(default=None, ge=0, le=10)
-    backlogs: Optional[int] = Field(default=None, ge=0, le=20)
 
-    @field_validator("class10Percent", "class12Percent", "cgpa")
+    @field_validator("class10Percent", "class12Percent")
     @classmethod
     def _cap_precision(cls, value: Optional[float]) -> Optional[float]:
         if value is None:
@@ -59,6 +63,37 @@ class StudentProfileUpdate(BaseModel):
                 f"Use at most {MAX_PERCENT_DECIMALS} decimal places."
             )
         return value
+
+
+class StudentAcademicCorrection(BaseModel):
+    """
+    The placement-office-only counterpart to the cgpa/backlogs omitted above.
+    Bound to `PATCH /students/admin/{id}/academic`, guarded by
+    `students.update`, never by the student-facing profile route.
+    """
+
+    cgpa: Optional[float] = Field(default=None, ge=0, le=10)
+    backlogs: Optional[int] = Field(default=None, ge=0, le=20)
+
+    @field_validator("cgpa")
+    @classmethod
+    def _cap_precision(cls, value: Optional[float]) -> Optional[float]:
+        if value is None:
+            return None
+        if _round_trip_decimals(value) > MAX_PERCENT_DECIMALS:
+            raise ValueError(
+                f"Use at most {MAX_PERCENT_DECIMALS} decimal places."
+            )
+        return value
+
+
+class StudentAcademicResponse(BaseModel):
+    id: str
+    cgpa: Optional[float] = None
+    backlogs: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class AadhaarUpdate(BaseModel):
     aadhaar: str = Field(..., min_length=12, max_length=12)

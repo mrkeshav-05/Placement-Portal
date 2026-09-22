@@ -200,6 +200,11 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
+  /// Staged { name, passwordHash } for a pending registration-OTP claim —
+  /// applied to `User` only once the code is verified, so the target row is
+  /// never touched until mailbox ownership is proven. See the 2026-09-22
+  /// decision. Unused for anything else this table might one day hold.
+  payload    Json?
 
   @@id([identifier, token])
 }

@@ -20,7 +20,7 @@ function authSecret() {
   return process.env.NODE_ENV === "production" ? undefined : DEVELOPMENT_SECRET;
 }
 
-function requireAuthSecret() {
+export function requireAuthSecret() {
   const secret = authSecret();
   if (!secret) throw new Error("AUTH_SECRET must be set in production.");
   return secret;

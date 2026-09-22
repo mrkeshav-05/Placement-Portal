@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   MIN_PASSWORD_LENGTH,
   passwordLoginSchema,
+  registrationOtpSchema,
   registrationSchema,
   setPasswordSchema,
 } from "./credentials-schema";
@@ -79,4 +80,18 @@ test("registration rejects passwords that are short or single-class", () => {
   assert.equal(attempt("abcdefghijkl"), false);
   assert.equal(attempt("123456789012"), false);
   assert.equal(attempt(`${"a".repeat(MIN_PASSWORD_LENGTH - 1)}1`), true);
+});
+
+test("a registration OTP code must be exactly six digits", () => {
+  const parsed = registrationOtpSchema.parse({ email: "Asha@iiitl.ac.in", code: " 123456 " });
+  assert.equal(parsed.email, "asha@iiitl.ac.in");
+  assert.equal(parsed.code, "123456");
+
+  for (const code of ["12345", "1234567", "12345a", "", "  "]) {
+    assert.equal(
+      registrationOtpSchema.safeParse({ email: "asha@iiitl.ac.in", code }).success,
+      false,
+      `expected code=${JSON.stringify(code)} to be rejected`,
+    );
+  }
 });

@@ -56,9 +56,11 @@ export function canUsePasswordAccount(
 }
 
 /**
- * Who may create their own account. Narrower than sign-in on purpose:
- * registration is unverified, so it is institute-domain only and never
- * reaches an allowlisted administrator address.
+ * Who may create their own account. Narrower than sign-in on purpose: even
+ * with the mailbox-ownership check in `frontend/src/lib/registration-otp.ts`,
+ * registration stays institute-domain only and never reaches an allowlisted
+ * administrator address — an OTP proves the address, not that it should hold
+ * that role.
  */
 export function canSelfRegister(email: string | null | undefined, domain?: string) {
   return isStudentEmail(email, domain);

@@ -54,6 +54,16 @@ export const setPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+/** The code from a registration OTP email. Six digits, nothing else. */
+export const registrationOtpSchema = z.object({
+  email: emailField,
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Enter the 6-digit code from your email"),
+});
+
 export type PasswordLoginInput = z.infer<typeof passwordLoginSchema>;
 export type RegistrationInput = z.infer<typeof registrationSchema>;
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
+export type RegistrationOtpInput = z.infer<typeof registrationOtpSchema>;

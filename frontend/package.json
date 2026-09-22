@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/auth-access.test.ts src/lib/credentials-schema.test.ts src/lib/login-throttle.test.ts src/lib/permissions.test.ts src/lib/company-schema.test.ts src/lib/job-profile-schema.test.ts src/lib/application-schema.test.ts src/lib/eligibility.test.ts src/lib/encryption.test.ts src/lib/student-profile.test.ts src/lib/profile-schema.test.ts src/lib/announcement-schema.test.ts src/lib/rich-text.test.ts src/lib/noc-schema.test.ts src/lib/offer-schema.test.ts src/lib/feedback-schema.test.ts src/lib/team-schema.test.ts src/lib/interview-experience-schema.test.ts src/lib/data-table.test.ts"
+    "test": "node --import tsx --test src/lib/auth-access.test.ts src/lib/credentials-schema.test.ts src/lib/login-throttle.test.ts src/lib/rate-limit.test.ts src/lib/permissions.test.ts src/lib/company-schema.test.ts src/lib/job-profile-schema.test.ts src/lib/application-schema.test.ts src/lib/eligibility.test.ts src/lib/encryption.test.ts src/lib/student-profile.test.ts src/lib/profile-schema.test.ts src/lib/announcement-schema.test.ts src/lib/rich-text.test.ts src/lib/noc-schema.test.ts src/lib/offer-schema.test.ts src/lib/feedback-schema.test.ts src/lib/team-schema.test.ts src/lib/interview-experience-schema.test.ts src/lib/data-table.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

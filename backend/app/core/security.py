@@ -299,6 +299,43 @@ def _email_of(payload: dict) -> str:
     return (payload.get("email") or "").strip().lower()
 
 
+# A short-lived, purpose-scoped token minted only by the Next.js server (never
+# a browser) to authorize one narrow backend action that has no signed-in
+# user yet — currently, sending a registration OTP email. Signed with the
+# same AUTH_SECRET as a real session JWT, but never interchangeable with one:
+# `purpose` must match exactly, nothing that mints a session sets it, and
+# nothing that mints one of these sets `role`/`sub`, so a lifted session
+# cannot be replayed here and this token cannot be replayed as a session.
+INTERNAL_TOKEN_PURPOSE_REGISTER_OTP_EMAIL = "register-otp-email"
+
+
+def _decode_internal_purpose_token(token: str, expected_purpose: str) -> dict:
+    try:
+        payload = jwt.decode(token, settings.auth_secret, algorithms=_ALGORITHMS)
+    except (ExpiredSignatureError, JWTError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired internal token.",
+        )
+    if payload.get("purpose") != expected_purpose:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired internal token.",
+        )
+    return payload
+
+
+def require_internal_purpose_token(purpose: str) -> Callable:
+    """Dependency factory for an internal, purpose-scoped token. Mirrors require_permission's shape."""
+
+    def _dependency(
+        credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    ) -> dict:
+        return _decode_internal_purpose_token(credentials.credentials, purpose)
+
+    return _dependency
+
+
 def is_admin_email(email: str) -> bool:
     """ADMIN_EMAILS is the bootstrap source of administrator access."""
     return bool(email) and email in settings.admin_email_set

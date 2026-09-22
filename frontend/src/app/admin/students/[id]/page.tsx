@@ -4,12 +4,13 @@ import { StudentProfileDetail, type AdminStudentDetail } from "@/components/admi
 import { requireAdmin } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import { formatPortalDate } from "@/lib/job-presenters";
+import { hasPermission, PERM_STUDENTS_UPDATE } from "@/lib/permissions";
 import { calculateProfileCompletion } from "@/lib/student-profile";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const { user } = await requireAdmin();
   const { id } = await params;
   const student = await db.user.findFirst({
     where: { id, role: "STUDENT" },
@@ -20,6 +21,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   });
   if (!student) notFound();
   const detail: AdminStudentDetail = {
+    id: student.id,
     name: student.name ?? "Student",
     email: student.email ?? "No email",
     rollNumber: student.rollNumber,
@@ -44,5 +46,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     resumes: student.resumes.map((resume) => ({ id: resume.id, label: resume.label, fileName: resume.fileName, uploadedAt: formatPortalDate(resume.uploadedAt) })),
     applications: student.applications.map((application) => ({ id: application.id, company: application.jobProfile.company.name, role: application.jobProfile.title, status: application.status, appliedAt: formatPortalDate(application.appliedAt) })),
   };
-  return <AuthenticatedAdminShell><StudentProfileDetail student={detail}/></AuthenticatedAdminShell>;
+  return (
+    <AuthenticatedAdminShell>
+      <StudentProfileDetail student={detail} canUpdateAcademic={hasPermission(user, PERM_STUDENTS_UPDATE)} />
+    </AuthenticatedAdminShell>
+  );
 }

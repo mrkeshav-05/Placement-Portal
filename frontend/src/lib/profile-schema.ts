@@ -69,6 +69,13 @@ const optionalDate = z.preprocess(
 // by the placement office from the official roster and are deliberately not
 // part of this schema: a student cannot write them through this action, no
 // matter what a crafted request includes, because the field is never parsed.
+//
+// cgpa and backlogs are absent for a different reason: both drive job
+// eligibility and are shown to recruiters as fact, so a student self-editing
+// them would let an ineligible student fabricate eligibility. Only the
+// placement office can correct them, through studentAcademicCorrectionSchema
+// below, mirrored in `backend/app/schemas/student.py`'s
+// `StudentAcademicCorrection`.
 export const studentProfileSchema = z.object({
   personalEmail: optionalEmail,
   contactNumber: optionalText(20),
@@ -79,8 +86,13 @@ export const studentProfileSchema = z.object({
   currentAddress: optionalText(500),
   class10Percent: optionalDecimal(0, 100, 2),
   class12Percent: optionalDecimal(0, 100, 2),
-  cgpa: optionalDecimal(0, 10, 2),
-  backlogs: optionalNumber(0, 20, true).transform((value) => value ?? 0),
 });
 
 export type StudentProfileInput = z.infer<typeof studentProfileSchema>;
+
+/** The placement-office-only counterpart to the cgpa/backlogs omitted above. */
+export const studentAcademicCorrectionSchema = z.object({
+  cgpa: optionalDecimal(0, 10, 2),
+  backlogs: optionalNumber(0, 20, true),
+});
+export type StudentAcademicCorrectionInput = z.infer<typeof studentAcademicCorrectionSchema>;
