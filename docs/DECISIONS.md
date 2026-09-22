@@ -1587,3 +1587,90 @@ simply broken, and the guard itself had never actually been exercised.
   confirming the fix addresses exactly the reported failure. The blocking
   branch itself is covered by the new unit tests rather than by touching
   real administrator accounts to reproduce a zero-remaining-admins state.
+
+## 2026-09-23 — Bounding the admin applications/students lists, and caching analytics by season
+
+A performance review found the admin applications list and the student
+directory had no `LIMIT`/`take` at all — every load fetched every row a
+season, or the portal, had ever accumulated, and the search box filtered
+that full set in a Python loop instead of reaching SQL, unlike its sibling
+`/admin/export` endpoint. Separately, `/analytics/admin/overview` recomputed
+its season's package/degree/branch aggregates on every request with no cache,
+the one analytics-adjacent endpoint that had skipped the Redis pass
+`announcements`/`events` already got.
+
+Fixed this pass, scoped deliberately to what could ship without touching the
+shared `DataTable` component's fetch contract (used by roughly a dozen other
+admin tables) — that rework is real work with its own risk and stays a
+separate, explicitly deferred item:
+
+- **Two missing index pairs, added via Prisma migration
+  `20260922194813_add_application_jobprofile_indexes`**:
+  `Application(jobProfileId)`, `Application(status)`,
+  `JobProfile(status)`, `JobProfile(registrationDeadline)` — exactly the
+  columns the admin filters query on, none of which the existing
+  `@@unique([userId, jobProfileId])` (leading column `userId`) covered.
+  `backend/app/models/db.py` mirrors them with `index=True` for
+  documentation; Prisma remains the only thing that runs the DDL.
+- **`GET /api/v1/applications/admin` now pushes `search` into SQL as
+  `ILIKE`** (matching the `or_()` pattern `/admin/export` already used),
+  instead of filtering the fetched rows in Python. It also gained
+  `limit`/`offset` query params — default `limit=500`, capped at `1000` —
+  so a request that specifies neither still gets a bounded, ordered result
+  rather than every application ever recorded. The frontend does not pass
+  `search`/`limit`/`offset` yet; wiring `ApplicationsManager`'s search box
+  and pagination controls through to these params, and rebuilding
+  `DataTable` to support a server-driven fetch, is the deferred item.
+- **`admin/students/page.tsx`'s Prisma query gained `take: 1000`.** Its
+  search box still filters client-side over whatever that returns — the
+  same server-side search push-down decided against here, since this page
+  has no existing search-parameter contract to extend without the same
+  `DataTable` rework, and a cap alone already removes the "every student
+  this portal has ever registered" cost without changing the page's UX.
+- **`/analytics/admin/overview` is now cached under a new `analytics` Redis
+  topic, keyed by `{"season": ...}`.** Unlike `announcements`/`events`,
+  there is no viewer dimension in the key: the response is identical for
+  every caller who holds `analytics:view`, admin or student (it is in
+  `STUDENT_SCOPED_PERMISSIONS`). Invalidated explicitly by the backend's own
+  offer writes (`offers.py`'s create/bulk-create/update/delete) and
+  application-status writes (`applications.py`'s admin status/bulk-status),
+  since those are the changes an admin is most likely to check the
+  dashboard immediately after; a Prisma-side job-status write from
+  `admin/events/actions.ts` invalidates it too, as a second, independent
+  `invalidateBackendCache("analytics")` call — kept separate from the
+  existing `invalidateBackendCache("events")` call because the API checks a
+  different permission per topic (`placement_records:update` for
+  `analytics`, `jobs:update` for `events`), and one request naming both
+  would fail closed on the whole thing for a caller holding only one. Every
+  other write that could move the payload (a new student registering, a
+  company being added) is left to the existing `CACHE_TTL_SECONDS` (300s)
+  backstop — the same class of trade-off `cache.py` already documents for
+  invalidation misses elsewhere.
+- **The underlying Python-side aggregation
+  (`placement_stats.summarize_amounts`/`counts_by_label`) was left as
+  Python, not rewritten as `AVG`/`PERCENTILE_CONT`/`GROUP BY` SQL.** The
+  review that raised this flagged it "bounded (hundreds of rows/season) so
+  not urgent" in the same breath as raising it; caching removes the
+  repeated-computation cost this pass, and the SQL rewrite is available as
+  future work if a season's offer count ever makes hundreds of rows a real
+  cost.
+- **Deferred, and scoped as its own change**: rebuilding `DataTable`
+  (`frontend/src/components/common/data-table.tsx`) to support a
+  server-driven fetch (page/pageSize/sort/search as request parameters
+  rather than a full array), and wiring `ApplicationsManager` and
+  `StudentsManager` through it. This is the one fix from the review that
+  touches a component every other admin table also depends on, and doing
+  it alongside the index/cache work risked regressing tables that are
+  working correctly today for no gain to them.
+- **Verified**: `make test-backend` (233 passed, including new
+  `test_applications_admin_list.py` — asserting `ILIKE` and the exact
+  `LIMIT`/`OFFSET` appear in the compiled statement, and are absent when a
+  search term isn't given — and `test_analytics_cache.py`, asserting the
+  overview endpoint reads through `cache.get_or_set` under the `analytics`
+  topic keyed by season). `npm run lint`, `npm run type-check` (one
+  pre-existing, unrelated failure — `redis-client.ts` importing `ioredis`,
+  which is not installed in this environment; untouched by this change),
+  and `npm test` (152 passed) all ran clean otherwise. The four new indexes
+  were applied to the running dev database and confirmed present via
+  `\d "Application"` / `\d "JobProfile"`; the backend image was rebuilt and
+  confirmed to start healthy.

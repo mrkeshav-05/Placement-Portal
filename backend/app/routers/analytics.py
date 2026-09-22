@@ -14,6 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core import cache
 from app.core.security import PERM_ANALYTICS_VIEW, require_permission
 from app.dependencies import get_db
 from app.models.db import (
@@ -122,63 +123,72 @@ async def admin_overview(
             "recentApplications": [],
         }
 
-    season_students = await db.scalar(
-        select(func.count(User.id)).where(User.role == Role.STUDENT, User.batch == season)
-    )
-
-    offers = (
-        await db.scalars(
-            select(Offer)
-            .options(selectinload(Offer.user), selectinload(Offer.company))
-            .where(Offer.batch == season, Offer.status.in_(COUNTED_OFFER_STATUSES))
+    async def load() -> dict:
+        season_students = await db.scalar(
+            select(func.count(User.id)).where(User.role == Role.STUDENT, User.batch == season)
         )
-    ).all()
 
-    placements = [o for o in offers if o.type in PLACEMENT_TYPES]
-    internships = [o for o in offers if o.type == OfferType.INTERNSHIP]
-    fte = [o for o in placements if o.type == OfferType.FTE]
-    ppo = [o for o in placements if o.type == OfferType.PPO]
+        offers = (
+            await db.scalars(
+                select(Offer)
+                .options(selectinload(Offer.user), selectinload(Offer.company))
+                .where(Offer.batch == season, Offer.status.in_(COUNTED_OFFER_STATUSES))
+            )
+        ).all()
 
-    placed_students = {o.userId for o in placements}
+        placements = [o for o in offers if o.type in PLACEMENT_TYPES]
+        internships = [o for o in offers if o.type == OfferType.INTERNSHIP]
+        fte = [o for o in placements if o.type == OfferType.FTE]
+        ppo = [o for o in placements if o.type == OfferType.PPO]
 
-    return {
-        "season": season,
-        "seasons": seasons,
-        "totals": {
-            "students": total_students or 0,
-            "seasonStudents": season_students or 0,
-            "companies": total_companies or 0,
-            "activeJobs": active_jobs or 0,
-            "placements": len(placements),
-            "internships": len(internships),
-            "placedStudents": len(placed_students),
-            "placementRate": placement_rate(len(placed_students), season_students or 0),
-            "recruiters": len({o.companyId for o in offers}),
-        },
-        "packages": {
-            "placement": _stats_payload(summarize_amounts(o.ctc for o in fte)),
-            "ppo": _stats_payload(summarize_amounts(o.ctc for o in ppo)),
-            "combined": _stats_payload(summarize_amounts(o.ctc for o in placements)),
-            "internship": _stats_payload(summarize_amounts(o.stipend for o in internships)),
-        },
-        "placementsByDegree": _distribution(
-            o.user.degree if o.user else None for o in placements
-        ),
-        "internshipsByDegree": _distribution(
-            o.user.degree if o.user else None for o in internships
-        ),
-        "placementsByBranch": _distribution(
-            o.user.branch if o.user else None for o in placements
-        ),
-        "topRecruiters": [
-            {"label": label, "count": count}
-            for label, count in counts_by_label(
-                o.company.name if o.company else None for o in offers
-            )[:8]
-        ],
-        "applicationFunnel": await _funnel(db, season),
-        "recentApplications": await _recent_applications(db, season),
-    }
+        placed_students = {o.userId for o in placements}
+
+        return {
+            "season": season,
+            "seasons": seasons,
+            "totals": {
+                "students": total_students or 0,
+                "seasonStudents": season_students or 0,
+                "companies": total_companies or 0,
+                "activeJobs": active_jobs or 0,
+                "placements": len(placements),
+                "internships": len(internships),
+                "placedStudents": len(placed_students),
+                "placementRate": placement_rate(len(placed_students), season_students or 0),
+                "recruiters": len({o.companyId for o in offers}),
+            },
+            "packages": {
+                "placement": _stats_payload(summarize_amounts(o.ctc for o in fte)),
+                "ppo": _stats_payload(summarize_amounts(o.ctc for o in ppo)),
+                "combined": _stats_payload(summarize_amounts(o.ctc for o in placements)),
+                "internship": _stats_payload(summarize_amounts(o.stipend for o in internships)),
+            },
+            "placementsByDegree": _distribution(
+                o.user.degree if o.user else None for o in placements
+            ),
+            "internshipsByDegree": _distribution(
+                o.user.degree if o.user else None for o in internships
+            ),
+            "placementsByBranch": _distribution(
+                o.user.branch if o.user else None for o in placements
+            ),
+            "topRecruiters": [
+                {"label": label, "count": count}
+                for label, count in counts_by_label(
+                    o.company.name if o.company else None for o in offers
+                )[:8]
+            ],
+            "applicationFunnel": await _funnel(db, season),
+            "recentApplications": await _recent_applications(db, season),
+        }
+
+    # Every input here is bounded to one season (hundreds of rows, not the
+    # whole table), so the win from caching is avoiding the repeat work on
+    # every dashboard load/refresh, not bounding an unbounded query the way
+    # the admin applications list needed. Keyed by season alone: the response
+    # is the same for every caller who holds `analytics.view`, admin or
+    # student, so there is no viewer dimension to add to the key.
+    return await cache.get_or_set(cache.TOPIC_ANALYTICS, {"season": season}, load)
 
 
 async def _funnel(db: AsyncSession, season: int) -> dict:

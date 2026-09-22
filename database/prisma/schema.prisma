@@ -286,6 +286,12 @@ model JobProfile {
   coordinators         Coordinator[]
   offers               Offer[]
   announcements        Announcement[]
+
+  // The admin drives list and the student-facing "open opportunities" query
+  // both filter on status (ACTIVE vs DRAFT/CLOSED) and order by deadline;
+  // neither had an index to filter or sort with before this one.
+  @@index([status])
+  @@index([registrationDeadline])
 }
 
 model Application {
@@ -301,7 +307,12 @@ model Application {
   resume       Resume?           @relation(fields: [resumeId], references: [id], onDelete: SetNull)
   offer        Offer?
 
+  // `@@unique([userId, jobProfileId])` already indexes that pair, but with
+  // `userId` leading — no help to the admin list's `WHERE jobProfileId = ?`
+  // or `WHERE status = ?`, which is exactly what it filters on.
   @@unique([userId, jobProfileId])
+  @@index([jobProfileId])
+  @@index([status])
 }
 
 model Announcement {

@@ -28,6 +28,13 @@ export default async function Page() {
     where: { role: "STUDENT" },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { applications: true } } },
+    // Every registered student, forever, was fetched here unconditionally —
+    // cost that grows with every incoming batch rather than with the batch
+    // being looked at right now. This bounds it the same way the admin
+    // applications endpoint's `limit` does; genuine server-side pagination
+    // and search (this page's search box still filters client-side, over
+    // whatever this take returns) is the deferred, separately-scoped item.
+    take: 1000,
   });
 
   let flagsByUserId = new Map<string, StudentApplicationFlagDto>();

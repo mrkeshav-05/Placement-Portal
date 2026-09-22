@@ -89,6 +89,13 @@ async function revalidateEventPages() {
   // rendered pages; Redis, behind the API, holds the rows they render from.
   // Clearing only the first would rebuild the page from the stale list.
   await invalidateBackendCache("events");
+  // A drive's status also moves `activeJobs` on the placement dashboard,
+  // which this Prisma write can't invalidate itself. Kept as its own call:
+  // the API checks a *different* permission for this topic
+  // (`placement_records:update`, not `jobs:update`), and one request naming
+  // both topics would fail closed on the whole thing — including the
+  // "events" bust above — for a caller who holds only one of the two.
+  await invalidateBackendCache("analytics");
   revalidatePath("/admin/events");
   revalidatePath("/admin/dashboard");
   revalidatePath("/company-events");

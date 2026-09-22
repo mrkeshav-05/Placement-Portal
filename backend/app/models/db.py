@@ -231,8 +231,10 @@ class JobProfile(Base):
     jobCategory: Mapped[str | None] = mapped_column(String, nullable=True)
     batch: Mapped[int] = mapped_column(Integer)
     placementYear: Mapped[int] = mapped_column(Integer)
-    registrationDeadline: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    status: Mapped[JobStatus] = mapped_column(Enum(JobStatus, name="JobStatus"), default=JobStatus.DRAFT)
+    # `index=True` on these two is descriptive, matching the 20260922194813
+    # migration — Prisma owns the DDL, this model never runs `create_all()`.
+    registrationDeadline: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    status: Mapped[JobStatus] = mapped_column(Enum(JobStatus, name="JobStatus"), default=JobStatus.DRAFT, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     openingOverview: Mapped[str | None] = mapped_column(Text, nullable=True)
     cap: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -261,8 +263,12 @@ class Application(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     userId: Mapped[str] = mapped_column(String, ForeignKey("User.id", ondelete="CASCADE"))
-    jobProfileId: Mapped[str] = mapped_column(String, ForeignKey("JobProfile.id", ondelete="CASCADE"))
-    status: Mapped[ApplicationStatus] = mapped_column(Enum(ApplicationStatus, name="ApplicationStatus"), default=ApplicationStatus.APPLIED)
+    # `index=True` here is descriptive, not prescriptive: Prisma owns the
+    # actual DDL (see the 20260922194813 migration), and this model never
+    # runs `create_all()`. It exists so the mapping matches what is really
+    # on the table for anyone reading this file instead of the schema.
+    jobProfileId: Mapped[str] = mapped_column(String, ForeignKey("JobProfile.id", ondelete="CASCADE"), index=True)
+    status: Mapped[ApplicationStatus] = mapped_column(Enum(ApplicationStatus, name="ApplicationStatus"), default=ApplicationStatus.APPLIED, index=True)
     appliedAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updatedAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
     resumeId: Mapped[str | None] = mapped_column(String, ForeignKey("Resume.id", ondelete="SET NULL"), nullable=True)

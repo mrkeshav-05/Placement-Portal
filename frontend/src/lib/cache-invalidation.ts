@@ -12,7 +12,7 @@ import { backendFetch } from "@/lib/api-client";
  * the API's business, so the two services cannot drift into disagreeing about
  * the key layout. Drop these calls as the writes themselves move to the API.
  */
-export type BackendCacheTopic = "announcements" | "events";
+export type BackendCacheTopic = "announcements" | "events" | "analytics";
 
 export async function invalidateBackendCache(...topics: BackendCacheTopic[]) {
   if (topics.length === 0) return;

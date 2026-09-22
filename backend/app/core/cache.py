@@ -42,8 +42,14 @@ T = TypeVar("T")
 # free strings from the routers.
 TOPIC_ANNOUNCEMENTS = "announcements"
 TOPIC_EVENTS = "events"
+# The placement dashboard's per-season summary. Read-heavy (every dashboard
+# load) and, unlike the two above, cheap enough to recompute that staleness
+# rather than an invalidation miss was the risk worth guarding: writes that
+# change it (offers.py) invalidate explicitly, and the TTL is the backstop for
+# the rest (a job's status flipping, a new student registering).
+TOPIC_ANALYTICS = "analytics"
 
-TOPICS = frozenset({TOPIC_ANNOUNCEMENTS, TOPIC_EVENTS})
+TOPICS = frozenset({TOPIC_ANNOUNCEMENTS, TOPIC_EVENTS, TOPIC_ANALYTICS})
 
 _KEY_PREFIX = "tnp:cache"
 

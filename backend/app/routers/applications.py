@@ -9,6 +9,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
+from app.core import cache
 from app.core.security import PERM_APPLICATIONS_UPDATE, PERM_APPLICATIONS_VIEW
 from app.dependencies import get_db, require_permission, require_student
 from app.models.db import (
@@ -257,6 +258,14 @@ async def list_admin_applications(
     branch: Optional[str] = Query(None),
     batch: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
+    # A bounded default rather than "everything ever applied for": this list
+    # grows with every season the portal runs, and nothing here paginates in
+    # the browser yet (see the follow-up in docs/DECISIONS.md). The cap keeps
+    # today's query cost from scaling with all historical data while that
+    # follow-up is scoped; `limit`/`offset` are exposed now so wiring real
+    # pagination through later needs no further change here.
+    limit: int = Query(500, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
     admin_payload: dict = Depends(require_permission(PERM_APPLICATIONS_VIEW)),
     db: AsyncSession = Depends(get_db),
 ):
@@ -279,12 +288,32 @@ async def list_admin_applications(
             stmt = stmt.where(Application.status == enum_status)
         except KeyError:
             pass
-    if (branch and branch != "ALL") or batch:
+
+    term = (search or "").strip()
+
+    if (branch and branch != "ALL") or batch or term:
         stmt = stmt.join(Application.user)
         if branch and branch != "ALL":
             stmt = stmt.where(User.branch == branch)
         if batch:
             stmt = stmt.where(User.batch == batch)
+
+    # Mirrors the free-text box on /admin/applications so the same term
+    # reaches Postgres here that the export endpoint already pushes down,
+    # rather than pulling every row and filtering it in a Python loop.
+    if term:
+        pattern = f"%{term}%"
+        stmt = stmt.join(Application.job_profile).outerjoin(JobProfile.company).where(
+            or_(
+                User.name.ilike(pattern),
+                User.email.ilike(pattern),
+                User.rollNumber.ilike(pattern),
+                JobProfile.title.ilike(pattern),
+                Company.name.ilike(pattern),
+            )
+        )
+
+    stmt = stmt.limit(limit).offset(offset)
 
     result = await db.scalars(stmt)
     apps = result.unique().all()
@@ -296,13 +325,6 @@ async def list_admin_applications(
 
         student_name = app.user.name or app.user.rollNumber or "Student"
         student_email = app.user.email or ""
-
-        # Filter by search string if provided
-        if search:
-            q = search.lower()
-            haystack = f"{student_name} {student_email} {app.user.rollNumber or ''} {app.job_profile.title} {app.job_profile.company.name if app.job_profile.company else ''}".lower()
-            if q not in haystack:
-                continue
 
         items.append(
             AdminApplicationItem(
@@ -381,6 +403,7 @@ async def update_application_status(
 
     await db.commit()
     await db.refresh(app)
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
 
     # Non-blocking background email dispatch
     if data.status not in _STUDENT_HIDDEN_STATUSES and app.user and app.user.email:
@@ -461,6 +484,7 @@ async def bulk_update_application_status(
                 notifications_to_send.append((app.user.email, app.user.name or "Student", job_title, company_name))
 
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
 
     # Dispatch background emails after successful commit
     for email, name, job_title, company_name in notifications_to_send:

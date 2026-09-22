@@ -23,6 +23,7 @@ from app.core import cache
 from app.core.security import (
     PERM_ANNOUNCEMENTS_UPDATE,
     PERM_JOBS_UPDATE,
+    PERM_PLACEMENT_RECORDS_UPDATE,
     get_current_user,
     has_permission,
 )
@@ -35,6 +36,11 @@ router = APIRouter(prefix="/cache", tags=["cache"])
 _PERMISSION_FOR_TOPIC = {
     cache.TOPIC_ANNOUNCEMENTS: PERM_ANNOUNCEMENTS_UPDATE,
     cache.TOPIC_EVENTS: PERM_JOBS_UPDATE,
+    # The backend's own offer/application writes already invalidate this
+    # directly (see offers.py, applications.py); this entry exists for the
+    # Prisma-side write this cache can't otherwise see — a job's status
+    # flipping, which moves `activeJobs` in the same overview.
+    cache.TOPIC_ANALYTICS: PERM_PLACEMENT_RECORDS_UPDATE,
 }
 
 

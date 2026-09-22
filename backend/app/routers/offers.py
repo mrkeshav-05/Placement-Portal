@@ -21,6 +21,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core import cache
 from app.core.security import (
     PERM_ANALYTICS_VIEW,
     PERM_PLACEMENT_RECORDS_CREATE,
@@ -353,6 +354,7 @@ async def create_offer(
     )
     db.add(offer)
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
 
     saved = await db.scalar(_loaded(select(Offer)).where(Offer.id == offer_id))
     return _to_response(saved)
@@ -483,6 +485,7 @@ async def create_offers_in_bulk(
 
     if created_ids:
         await db.commit()
+        await cache.invalidate(cache.TOPIC_ANALYTICS)
 
     saved = (
         (await db.scalars(_loaded(select(Offer)).where(Offer.id.in_(created_ids)))).all()
@@ -555,6 +558,7 @@ async def update_offer(
     await _require_amount_for_type(offer.type, offer.ctc, offer.stipend)
     offer.updatedAt = datetime.now(timezone.utc)
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
 
     saved = await db.scalar(_loaded(select(Offer)).where(Offer.id == offer_id))
     return _to_response(saved)
@@ -572,6 +576,7 @@ async def delete_offer(
 
     await db.delete(offer)
     await db.commit()
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
     return {"message": "Offer deleted successfully."}
 
 
