@@ -128,12 +128,22 @@ services:
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       STUDENT_EMAIL_DOMAIN: ${STUDENT_EMAIL_DOMAIN:-iiitl.ac.in}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set in .env}
+      # In-cluster, same reasoning as the backend's own REDIS_URL above: the
+      # login and registration-OTP throttles (frontend/src/lib/rate-limit.ts)
+      # share this Redis so a brute-force count is visible to every replica,
+      # not just whichever one answered a given request.
+      REDIS_URL: redis://cache:6379/0
       NODE_OPTIONS: "--dns-result-order=ipv4first"
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       backend:
         condition: service_healthy
+      # service_started, not service_healthy: the throttle is optional at
+      # runtime (it fails open), so a sick Redis must not block the frontend
+      # from booting.
+      cache:
+        condition: service_started
 
 volumes:
   postgres_data:

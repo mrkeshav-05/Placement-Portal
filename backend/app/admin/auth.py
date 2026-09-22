@@ -11,6 +11,14 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from app.core.config import settings
+from app.core.rate_limit import Throttle
+
+# This session can rewrite any row in the database behind a single shared
+# password, so a wrong guess is throttled per source address: five attempts,
+# then a 15-minute lock — tighter than the portal's own login throttle
+# because this password is not one person's, and only whoever locks
+# themselves out pays for it.
+_login_throttle = Throttle("db-admin-login", window_seconds=15 * 60, lockout_seconds=15 * 60, max_attempts=5)
 
 # Marks a session as signed in. The value is random per login rather than a
 # constant, so a lifted cookie cannot be recognised by inspection, and
@@ -68,12 +76,21 @@ class DatabaseAdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         form = await request.form()
         supplied = str(form.get("password") or "")
+        throttle_key = request.client.host if request.client else "unknown"
+
+        # Locked out is reported exactly like a wrong password: sqladmin's
+        # own failure flash is what the caller sees either way, so a locked
+        # source address never learns that from the response.
+        if await _login_throttle.is_locked_out(throttle_key):
+            return False
 
         # compare_digest keeps the check's duration independent of how much of
         # the password was correct, so a response time says nothing about it.
         if not hmac.compare_digest(supplied, settings.db_admin_password):
+            await _login_throttle.record_attempt(throttle_key)
             return False
 
+        await _login_throttle.clear(throttle_key)
         request.session[_SESSION_KEY] = secrets.token_urlsafe(32)
         return True
 

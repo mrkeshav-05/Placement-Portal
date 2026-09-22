@@ -31,16 +31,24 @@ const OTP_REQUEST_PURPOSE = "register-otp-email";
 
 // A wrong guess and a fresh request are different kinds of abuse — one is
 // pointed at Resend's bill and a victim's inbox, the other at the 6-digit
-// space itself — so they get separate limits. Same "resets on deploy,
-// single-replica only" caveat as `login-throttle.ts`.
-const requestThrottle = createThrottle({ windowMs: 15 * 60 * 1000, lockoutMs: 15 * 60 * 1000, maxAttempts: 4 });
-const verifyThrottle = createThrottle({ windowMs: 15 * 60 * 1000, lockoutMs: 15 * 60 * 1000, maxAttempts: 6 });
+// space itself — so they get separate limits. Shared across replicas via
+// Redis, like every `createThrottle` instance (see rate-limit.ts).
+const requestThrottle = createThrottle("register-otp-request", {
+  windowMs: 15 * 60 * 1000,
+  lockoutMs: 15 * 60 * 1000,
+  maxAttempts: 4,
+});
+const verifyThrottle = createThrottle("register-otp-verify", {
+  windowMs: 15 * 60 * 1000,
+  lockoutMs: 15 * 60 * 1000,
+  maxAttempts: 6,
+});
 
-export function isOtpRequestLockedOut(email: string) {
+export function isOtpRequestLockedOut(email: string): Promise<boolean> {
   return requestThrottle.isLockedOut(email);
 }
 
-export function isOtpVerifyLockedOut(email: string) {
+export function isOtpVerifyLockedOut(email: string): Promise<boolean> {
   return verifyThrottle.isLockedOut(email);
 }
 
@@ -102,10 +110,10 @@ export async function requestRegistrationOtp(
   email: string,
   pending: PendingRegistration,
 ): Promise<{ sent: true } | { sent: false; error: string }> {
-  if (isOtpRequestLockedOut(email)) {
+  if (await isOtpRequestLockedOut(email)) {
     return { sent: false, error: "Too many codes requested. Try again in a few minutes." };
   }
-  requestThrottle.recordAttempt(email);
+  await requestThrottle.recordAttempt(email);
 
   const code = await issueRegistrationOtp(email, pending);
   try {
@@ -127,7 +135,7 @@ export async function consumeRegistrationOtp(
   email: string,
   code: string,
 ): Promise<{ ok: true; pending: PendingRegistration } | { ok: false; error: string }> {
-  if (isOtpVerifyLockedOut(email)) {
+  if (await isOtpVerifyLockedOut(email)) {
     return { ok: false, error: "Too many incorrect attempts. Request a new code." };
   }
 
@@ -136,7 +144,7 @@ export async function consumeRegistrationOtp(
   });
 
   if (!record || record.expires < new Date()) {
-    verifyThrottle.recordAttempt(email);
+    await verifyThrottle.recordAttempt(email);
     return { ok: false, error: "That code is incorrect or has expired." };
   }
 
@@ -149,6 +157,6 @@ export async function consumeRegistrationOtp(
     return { ok: false, error: "That code is incorrect or has expired." };
   }
 
-  verifyThrottle.clearAttempts(email);
+  await verifyThrottle.clearAttempts(email);
   return { ok: true, pending };
 }

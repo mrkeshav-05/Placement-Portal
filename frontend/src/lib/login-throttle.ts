@@ -1,15 +1,19 @@
 /**
- * Best-effort brute-force brake for password sign-in.
+ * Brute-force brake for password sign-in, shared across every frontend
+ * replica through Redis (see `rate-limit.ts`) — a wrong password from one
+ * replica is visible to the next request regardless of which replica
+ * answers it. See `backend/app/core/rate_limit.py` for the equivalent
+ * throttle guarding the `/admin` table-browser login and the
+ * identity-document unlock challenge.
  *
- * The counter lives in the process, so it resets on deploy and is not shared
- * between replicas. That is enough to make online guessing impractical at the
- * current single-container deployment; move the counter to Postgres or Redis
- * before running the frontend at more than one replica.
+ * `createThrottle`'s own algorithm is what's under test
+ * (`rate-limit.test.ts`, against an in-memory fake); this file is just its
+ * configuration for this one call site.
  */
 
 import { createThrottle } from "@/lib/rate-limit";
 
-const throttle = createThrottle({
+const throttle = createThrottle("login", {
   windowMs: 15 * 60 * 1000,
   lockoutMs: 15 * 60 * 1000,
   maxAttempts: 8,
@@ -18,4 +22,3 @@ const throttle = createThrottle({
 export const isLockedOut = throttle.isLockedOut;
 export const recordFailedAttempt = throttle.recordAttempt;
 export const clearFailedAttempts = throttle.clearAttempts;
-export const resetLoginThrottle = throttle.reset;

@@ -1397,3 +1397,85 @@ entry is that change.
   which point the row appears with `emailVerified` set, the
   `VerificationToken` row is gone, and the session signs in and lands on
   `/dashboard`.
+
+## 2026-09-22 — Three unthrottled password checks get a shared, Redis-backed brake
+
+A security review found two gaps the portal's own login throttle
+(`frontend/src/lib/login-throttle.ts`) had never covered. First, the
+`/admin` table-browser login (`backend/app/admin/auth.py`) and the
+identity-document unlock challenge (`backend/app/routers/profile.py`'s
+three `*-doc/unlock` routes) had no attempt limit at all — a timing-safe
+comparison stops a response from leaking anything, but nothing stopped
+unlimited guessing. Second, the login throttle that did exist was an
+in-process `Map`: correct for one container, but silently stopped
+coordinating the moment the frontend ran as more than one replica, since
+each would keep its own count of the same address's failures.
+
+- **`backend/app/core/rate_limit.py` is a new module**, a `Throttle` class
+  shaped like `frontend/src/lib/rate-limit.ts`'s `createThrottle`: `name`
+  namespaces a throttle's keys, `is_locked_out`/`record_attempt`/`clear`
+  are its whole surface, and it fails open on any Redis error — the
+  opposite direction from `app.core.cache`, and deliberately so: a cache
+  miss falls through to a slower, still-correct answer, but a throttle has
+  no equivalent path when it cannot be read, and refusing a request because
+  Redis is down would turn one incident into two. It keeps its own client
+  rather than sharing `cache.py`'s, because the two fail toward opposite
+  defaults and mixing them would make a shared failure path a lie for one
+  of them.
+- **The `/admin` login is now five attempts per source address, then a
+  15-minute lock** — tighter than the portal's own eight, because this
+  password is not one person's, so only whoever locks themselves out pays
+  for it. A locked-out attempt returns `False` exactly like a wrong
+  password: sqladmin's own failure flash is the only thing either produces,
+  so a locked address never learns that from the response, the same
+  reasoning `login-throttle.ts` already applied to `authorize()`.
+- **Each identity document's unlock challenge is now eight wrong numbers
+  per (student, document type), then a 15-minute lock.** Keyed per document
+  type so a wrong Aadhaar guess does not also lock out a correct PAN in the
+  same sitting; keyed per student because the caller is already
+  authenticated (`require_student`), so there is an identity to throttle by
+  rather than only a source address.
+- **`frontend/src/lib/rate-limit.ts` moved from an in-process `Map` to the
+  same Redis the backend's read-through cache already uses**, wired to the
+  frontend for the first time (`REDIS_URL: redis://cache:6379/0` added to
+  the frontend service in `docker-compose.yml`, matching the backend's own
+  entry; `.env.example`'s comment above it updated to say both services
+  read it now, not only the backend). `login-throttle.ts` is now a five-line
+  instantiation, and `registration-otp.ts`'s two throttles (added in the
+  entry above) moved to the same backing store in the same change, since
+  they shared the old in-process implementation and would otherwise have
+  kept its single-replica limitation on their own.
+- **`createThrottle` takes an optional, injectable `redis` client**
+  (`RedisLike`, the narrow slice of the `ioredis` surface it actually
+  calls) rather than always reaching for the shared production client.
+  Omitting it resolves the real one, but only through a dynamic `import()`
+  inside each method — never a static import at the top of the file. A
+  static import of `redis-client.ts` (which is marked `server-only` and
+  connects to `ioredis` eagerly) would execute the moment anything imports
+  `rate-limit.ts` at all, including `rate-limit.test.ts`, and the real
+  `server-only` package throws unconditionally outside Next.js's bundler —
+  it has no way to know a plain `node:test` run isn't a browser bundle. The
+  dynamic import is only reached when a caller omits `redis` entirely;
+  `rate-limit.test.ts` always supplies its own in-memory fake, so it never
+  touches Redis, `ioredis`, or `server-only` and needs no Redis to run.
+  `login-throttle.test.ts` is retired for the same reason it can no longer
+  exist as written: its assertions depended on passing an explicit `now`
+  to a synchronous, in-process counter, and there is no equivalent for a
+  wall-clock, async, Redis-backed one. The algorithm it exercised is the
+  same `createThrottle` `rate-limit.test.ts` now covers directly, with an
+  in-memory fake's own fake clock standing in for real Redis TTLs.
+- **`server-only` became a real dependency** (`frontend/package.json`)
+  rather than the implicit one it always was. Every file that already
+  imported it — `db.ts`, `admin-session.ts`, and others — worked only
+  because Next.js's bundler special-cases the string `"server-only"`
+  regardless of whether the package resolves; a plain Node `require` never
+  had that leniency, it simply never had to make the call before, since no
+  test file transitively imported one of those modules until this change.
+- **Verified live** against the rebuilt dev stack: five wrong `/admin`
+  passwords from one address lock it out (a sixth, correct, attempt still
+  fails while locked), `redis-cli` shows the corresponding
+  `tnp:throttle:db-admin-login:*` keys with TTLs, and a locked-out frontend
+  login address is rejected the same way across requests regardless of
+  which login attempt is checked against — confirmed by reading the
+  `tnp:throttle:login:*` keys directly out of the shared `cache` Redis
+  rather than only by observing one process's behavior.

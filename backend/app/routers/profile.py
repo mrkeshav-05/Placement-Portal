@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Response, UploadFil
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.core.rate_limit import Throttle
 from app.dependencies import get_db, require_student
 from app.models.db import User, Resume
 from app.schemas.student import (
@@ -29,6 +30,22 @@ from app.core.encryption import (
 from app.core.storage import LOCAL_UPLOADS_DIR, delete_file, validate_pdf
 
 router = APIRouter(prefix="/profile", tags=["profile"])
+
+# The number doubles as the challenge that unlocks a document's own scan
+# (see the three `*-doc/unlock` routes below), and until now nothing limited
+# how many numbers a caller could try. Keyed by (user, document type), so
+# guessing the Aadhaar number does not also lock out a correct PAN.
+_unlock_throttle = Throttle("identity-doc-unlock", window_seconds=15 * 60, lockout_seconds=15 * 60, max_attempts=8)
+
+
+async def _guard_unlock_attempt(user_id: str, doc_type: str) -> str:
+    throttle_key = f"{user_id}:{doc_type}"
+    if await _unlock_throttle.is_locked_out(throttle_key):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many incorrect attempts. Try again in a few minutes.",
+        )
+    return throttle_key
 
 
 def _mask_aadhaar(encrypted_val: str | None) -> str | None:
@@ -258,6 +275,8 @@ async def unlock_aadhaar_document(
     user_payload: dict = Depends(require_student),
     db: AsyncSession = Depends(get_db),
 ):
+    throttle_key = await _guard_unlock_attempt(user_payload["sub"], "aadhaar")
+
     user = await db.scalar(select(User).where(User.id == user_payload["sub"]))
     if not user or not user.aadhaarDocUrl:
         raise HTTPException(status_code=404, detail="Aadhaar document not found.")
@@ -272,10 +291,12 @@ async def unlock_aadhaar_document(
         raise HTTPException(status_code=500, detail="Failed to decrypt identity record.")
 
     if real_aadhaar != request_data.aadhaar.strip():
+        await _unlock_throttle.record_attempt(throttle_key)
         raise HTTPException(
             status_code=403,
             detail="Incorrect Aadhaar number. Verification failed and document cannot be unlocked.",
         )
+    await _unlock_throttle.clear(throttle_key)
 
     # Read and decrypt file
     file_path = LOCAL_UPLOADS_DIR / user.aadhaarDocUrl
@@ -304,6 +325,8 @@ async def unlock_pan_document(
     user_payload: dict = Depends(require_student),
     db: AsyncSession = Depends(get_db),
 ):
+    throttle_key = await _guard_unlock_attempt(user_payload["sub"], "pan")
+
     user = await db.scalar(select(User).where(User.id == user_payload["sub"]))
     if not user or not user.panCardDocUrl:
         raise HTTPException(status_code=404, detail="PAN document not found.")
@@ -317,10 +340,12 @@ async def unlock_pan_document(
         raise HTTPException(status_code=500, detail="Failed to decrypt identity record.")
 
     if real_pan.upper() != request_data.pan.strip().upper():
+        await _unlock_throttle.record_attempt(throttle_key)
         raise HTTPException(
             status_code=403,
             detail="Incorrect PAN number. Verification failed and document cannot be unlocked.",
         )
+    await _unlock_throttle.clear(throttle_key)
 
     file_path = LOCAL_UPLOADS_DIR / user.panCardDocUrl
     if not file_path.exists():
@@ -521,6 +546,8 @@ async def unlock_college_id_document(
     user_payload: dict = Depends(require_student),
     db: AsyncSession = Depends(get_db),
 ):
+    throttle_key = await _guard_unlock_attempt(user_payload["sub"], "college-id")
+
     user = await db.scalar(select(User).where(User.id == user_payload["sub"]))
     if not user or not user.collegeIdDocUrl:
         raise HTTPException(status_code=404, detail="College ID document not found.")
@@ -534,10 +561,12 @@ async def unlock_college_id_document(
         raise HTTPException(status_code=500, detail="Failed to decrypt identity record.")
 
     if real_college_id != _normalise_college_id(request_data.collegeId):
+        await _unlock_throttle.record_attempt(throttle_key)
         raise HTTPException(
             status_code=403,
             detail="Incorrect College ID number. Verification failed and document cannot be unlocked.",
         )
+    await _unlock_throttle.clear(throttle_key)
 
     file_path = LOCAL_UPLOADS_DIR / user.collegeIdDocUrl
     if not file_path.exists():

@@ -52,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Institute domain, or an address the operator put in ADMIN_EMAILS.
         if (!canUsePasswordAccount(email)) return null;
-        if (isLockedOut(email)) return null;
+        if (await isLockedOut(email)) return null;
 
         const user = await db.user.findUnique({
           where: { email },
@@ -64,16 +64,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Those are given a password by an administrator or by the
         // set-password script, never by guessing one here.
         if (!user?.passwordHash || user.isActive === false) {
-          recordFailedAttempt(email);
+          await recordFailedAttempt(email);
           return null;
         }
 
         if (!(await verifyPassword(password, user.passwordHash))) {
-          recordFailedAttempt(email);
+          await recordFailedAttempt(email);
           return null;
         }
 
-        clearFailedAttempts(email);
+        await clearFailedAttempts(email);
         // The jwt callback re-reads the role and permissions from the
         // database, so this only has to satisfy the augmented User type.
         return { id: user.id, email: user.email, name: user.name, role: user.role };
