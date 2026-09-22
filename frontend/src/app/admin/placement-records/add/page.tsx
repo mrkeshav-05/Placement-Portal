@@ -3,6 +3,7 @@ import { PlacementRecordsBulkForm } from "@/components/admin/placement-records-b
 import type {
   CompanyOption,
   JobOption,
+  StudentOption,
 } from "@/components/admin/placement-records-manager";
 import { backendFetch } from "@/lib/api-client";
 import { requirePermission } from "@/lib/admin-session";
@@ -11,6 +12,7 @@ import { PERM_PLACEMENT_RECORDS_CREATE } from "@/lib/permissions";
 export const dynamic = "force-dynamic";
 
 type OptionsResponse = {
+  students: StudentOption[];
   companies: CompanyOption[];
   jobs: JobOption[];
 };
@@ -18,9 +20,12 @@ type OptionsResponse = {
 export default async function Page() {
   await requirePermission(PERM_PLACEMENT_RECORDS_CREATE);
 
-  // The roster is not loaded here: students are named by roll number, and the
-  // backend resolves them. A season's paste is forty names out of hundreds.
-  let options: OptionsResponse = { companies: [], jobs: [] };
+  // Bulk entry is still by pasted roll number — the backend resolves those.
+  // The roster below is only for the "search a name to add one" picker, and
+  // rides along on the same `/offers/options` call the single-record form
+  // already makes; it costs nothing extra over the wire that page wasn't
+  // already paying for `companies`/`jobs`.
+  let options: OptionsResponse = { students: [], companies: [], jobs: [] };
   let backendError: string | null = null;
 
   try {
@@ -47,6 +52,7 @@ export default async function Page() {
         </section>
 
         <PlacementRecordsBulkForm
+          students={options.students}
           companies={options.companies}
           jobs={options.jobs}
           backendError={backendError}

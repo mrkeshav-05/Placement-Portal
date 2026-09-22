@@ -7,8 +7,13 @@ import {
   saveOfferBulkAction,
   type OfferBulkActionResult,
 } from "@/app/admin/placement-records/actions";
-import type { CompanyOption, JobOption } from "@/components/admin/placement-records-manager";
+import type {
+  CompanyOption,
+  JobOption,
+  StudentOption,
+} from "@/components/admin/placement-records-manager";
 import { CompanySelect } from "@/components/common/company-select";
+import { StudentSearch, type StudentSearchOption } from "@/components/common/student-search";
 import { COMPANY_OPTIONS } from "@/lib/company-options";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -51,10 +56,12 @@ function seasonOptions() {
 }
 
 export function PlacementRecordsBulkForm({
+  students,
   companies,
   jobs,
   backendError,
 }: {
+  students: StudentOption[];
   companies: CompanyOption[];
   jobs: JobOption[];
   backendError: string | null;
@@ -117,6 +124,22 @@ export function PlacementRecordsBulkForm({
   function removeRollNumber(roll: string) {
     setRollNumbers((current) => current.filter((value) => value !== roll));
   }
+
+  // A roll number is what the list is keyed on; a student without one (the
+  // roster field is nullable) has nothing this list can hold, so picking
+  // them from the name search is a no-op rather than adding an empty entry.
+  function addStudent(student: StudentSearchOption) {
+    const roll = student.rollNumber?.trim().toUpperCase();
+    if (!roll) return;
+    setRollNumbers((current) => (current.includes(roll) ? current : [...current, roll]));
+  }
+
+  const addedStudentIds = useMemo(() => {
+    const rolls = new Set(rollNumbers);
+    return new Set(
+      students.filter((student) => student.rollNumber && rolls.has(student.rollNumber)).map((s) => s.id),
+    );
+  }, [students, rollNumbers]);
 
   async function submit() {
     const formData = new FormData();
@@ -389,11 +412,27 @@ export function PlacementRecordsBulkForm({
         <CardHeader>
           <CardTitle>Add Students</CardTitle>
           <CardDescription>
-            Roll numbers, separated by commas, spaces, or newlines. A paste from a spreadsheet
-            column works as it is.
+            Search by name to add one student at a time, or paste roll numbers separated by
+            commas, spaces, or newlines — a paste from a spreadsheet column works as it is.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="bulk-student-search">Find by name or roll number</Label>
+            <StudentSearch
+              students={students}
+              onSelect={addStudent}
+              disabledIds={addedStudentIds}
+              placeholder="Start typing a student's name…"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <span className="h-px flex-1 bg-border" />
+            or paste roll numbers directly
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
           <div className="flex flex-wrap items-start gap-2">
             <Input
               id="bulk-roll-numbers"
