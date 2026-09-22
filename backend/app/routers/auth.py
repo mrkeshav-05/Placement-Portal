@@ -1,7 +1,8 @@
+import asyncio
 import logging
 import re
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import (
     INTERNAL_TOKEN_PURPOSE_REGISTER_OTP_EMAIL,
@@ -24,7 +25,6 @@ async def get_me(user: dict = Depends(get_current_user)):
 
 @router.post("/internal/send-registration-otp")
 async def send_registration_otp_email(
-    background_tasks: BackgroundTasks,
     token_payload: dict = Depends(
         require_internal_purpose_token(INTERNAL_TOKEN_PURPOSE_REGISTER_OTP_EMAIL)
     ),
@@ -49,7 +49,13 @@ async def send_registration_otp_email(
         logger.warning("[DEV] Email delivery is not configured; registration OTP for %s is %s", email, code)
         return {"sent": True}
 
-    background_tasks.add_task(
+    # Awaited rather than a fire-and-forget BackgroundTasks entry: a
+    # registration code is the one email in this service where the caller
+    # (the Next.js route) needs to know delivery actually happened, so it can
+    # tell the person their inbox will not get anything instead of showing a
+    # false "code sent" — resend.Emails.send is a blocking HTTP call, run off
+    # the event loop rather than awaited directly.
+    result = await asyncio.to_thread(
         send_notification_email,
         to_email=email,
         subject="Verify your Placement Portal email",
@@ -60,4 +66,14 @@ async def send_registration_otp_email(
             "<p>It expires in 10 minutes. If you did not request this, you can ignore this email.</p>"
         ),
     )
+    if result is None:
+        # send_notification_email already logged the specific reason
+        # (invalid key, unverified sending domain, Resend outage, ...); this
+        # is only the signal the frontend needs to relay "could not send"
+        # instead of silently reporting success for a code no inbox will
+        # ever receive.
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="The verification email could not be sent.",
+        )
     return {"sent": True}

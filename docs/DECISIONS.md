@@ -1674,3 +1674,45 @@ separate, explicitly deferred item:
   were applied to the running dev database and confirmed present via
   `\d "Application"` / `\d "JobProfile"`; the backend image was rebuilt and
   confirmed to start healthy.
+
+## 2026-09-23 — A failed registration OTP email now reports failure
+
+- **The bug being fixed**: registrations were "sending" a verification code
+  that never reached the inbox, with no error and no visible cause. The
+  root cause is configuration, not logic — `RESEND_API_KEY` is empty in
+  this deployment's `.env`, so `is_email_delivery_configured()`
+  (`backend/app/services/email.py`) is `False` and the code is only logged
+  to the backend console (confirmed live: a probe request logged `[DEV]
+  Email delivery is not configured; registration OTP for ... is ...`
+  instead of calling Resend). Setting a real `RESEND_API_KEY` and verifying
+  a sending domain that matches `EMAIL_FROM` with Resend is what actually
+  fixes delivery; `.env.example`/`.env` now say so next to the variable.
+- **The gap this pass also closed**: independent of whether a real key is
+  configured, `POST /api/v1/auth/internal/send-registration-otp`
+  (`backend/app/routers/auth.py`) always answered `{"sent": true}` even
+  when it *was* configured and Resend's own call failed (invalid key, an
+  unverified sending domain, an outage) — the send ran as a
+  `BackgroundTasks` entry, scheduled to run only after the response had
+  already gone out, so nothing the send could raise ever reached the
+  caller. The endpoint now `await`s the send (off the event loop, via
+  `asyncio.to_thread`, since `resend.Emails.send` is a blocking call) and
+  answers `502` when it returns `None`, which
+  `frontend/src/lib/registration-otp.ts`'s existing `res.ok` check already
+  turns into "Could not send the verification email. Please try again."
+  instead of silently believing a code was sent.
+- **Not changed**: the unconfigured-mailer path is deliberately left as
+  logging the code and answering success — see the existing comment on
+  `is_email_delivery_configured` and the 2026-09-22 entry that introduced
+  registration OTPs; a `RESEND_API_KEY`-less local/demo environment is
+  still meant to keep registration usable via the server log, not treat
+  every registration attempt as a hard failure.
+- **Verified**: new `backend/tests/test_auth_registration_otp.py` (5
+  cases: unconfigured mailer still answers success and logs the code;
+  configured mailer with a successful send; configured mailer with a
+  failed send now answers 502 instead of `{"sent": true}`; wrong-purpose
+  token rejected; malformed code rejected) plus the full suite —
+  `docker compose run --rm backend pytest` — 238 passed. Reproduced
+  end-to-end against the running dev stack: minted the same
+  purpose-scoped internal token the Next.js server mints, posted it to the
+  live backend, and confirmed the `[DEV] Email delivery is not configured`
+  log line fires for the actual deployment's actual (empty) config.
