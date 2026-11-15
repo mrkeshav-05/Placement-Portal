@@ -38,6 +38,13 @@ from app.services.eligibility import (
 )
 from app.services.branch import canonical_branch
 from app.services.email import send_notification_email
+from app.services.placement_policy import (
+    StandingResult,
+    placement_standing,
+    policy_allows,
+    policy_job_from_row,
+    policy_offer_from_row,
+)
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -72,9 +79,49 @@ async def sync_linked_offer(db: AsyncSession, application: Application) -> None:
     offer.decidedAt = datetime.now(timezone.utc)
 
 
+async def student_standing(
+    db: AsyncSession, user_id: str, degree: Optional[str] = None
+) -> StandingResult:
+    """
+    The student's placement-policy standing, from every offer on file. The
+    Dream line depends on the programme, so the degree is read when the caller
+    has not already loaded the student.
+    """
+    if degree is None:
+        degree = await db.scalar(select(User.degree).where(User.id == user_id))
+    offers = (
+        await db.scalars(
+            select(Offer).where(Offer.userId == user_id).options(joinedload(Offer.company))
+        )
+    ).all()
+    return placement_standing(
+        (policy_offer_from_row(o) for o in offers), degree
+    )
+
+
 # ============================================================================
 # Student Endpoints
 # ============================================================================
+
+@router.get("/standing")
+async def get_my_standing(
+    user_payload: dict = Depends(require_student),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Where the caller stands under the placement policy. The frontend uses it to
+    explain a closed Apply button; `apply_to_job` enforces the same rule.
+    """
+    result = await student_standing(db, user_payload["sub"])
+    return {
+        "standing": result.standing.value,
+        "label": result.label,
+        "reason": result.reason,
+        "companyName": result.company_name,
+        "ctc": result.ctc,
+        "dreamThreshold": result.threshold,
+    }
+
 
 @router.get("", response_model=list[ApplicationResponse])
 async def list_student_applications(
@@ -194,7 +241,14 @@ async def apply_to_job(
             detail=f"Your profile does not meet eligibility criteria: {', '.join(failed_checks)}",
         )
 
-    # 6. Create application
+    # 6. Placement policy: an offer already on file may close this drive.
+    allowed, reason = policy_allows(
+        await student_standing(db, user.id, user.degree), policy_job_from_row(job)
+    )
+    if not allowed:
+        raise HTTPException(status_code=400, detail=reason)
+
+    # 7. Create application
     app_id = str(uuid.uuid4())
     app = Application(
         id=app_id,

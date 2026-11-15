@@ -3,6 +3,8 @@ import { StudentsManager, type AdminStudentListItem } from "@/components/admin/s
 import { requireAdmin } from "@/lib/admin-session";
 import { backendFetch } from "@/lib/api-client";
 import { db } from "@/lib/db";
+import { formatRupees } from "@/lib/offer-schema";
+import type { Standing } from "@/lib/placement-policy";
 import { calculateProfileCompletion } from "@/lib/student-profile";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +23,19 @@ type StudentApplicationFlagDto = {
   totalAppliedCompanies: number;
   missedCompanies: MissedCompanyFlagDto[];
 };
+
+type StudentStandingDto = {
+  userId: string;
+  standing: Standing;
+  label: string;
+  companyName: string | null;
+  ctc: number | null;
+};
+
+function standingDetail(dto: StudentStandingDto): string | null {
+  const extra = dto.ctc != null ? formatRupees(dto.ctc) : null;
+  return [dto.companyName, extra].filter(Boolean).join(" · ") || null;
+}
 
 export default async function Page() {
   await requireAdmin();
@@ -45,6 +60,15 @@ export default async function Page() {
     console.error("Failed to fetch student application flags", err);
   }
 
+  // Students holding no counted offer are absent from this list and are OPEN.
+  let standingsByUserId = new Map<string, StudentStandingDto>();
+  try {
+    const standings = await backendFetch<StudentStandingDto[]>("/api/v1/students/admin/standings");
+    standingsByUserId = new Map(standings.map((dto) => [dto.userId, dto]));
+  } catch (err) {
+    console.error("Failed to fetch student placement standings", err);
+  }
+
   const items: AdminStudentListItem[] = students.map((student) => {
     const flag = flagsByUserId.get(student.id);
     return {
@@ -59,6 +83,11 @@ export default async function Page() {
       applicationCount: student._count.applications,
       missedStreak: flag?.longestMissedStreak ?? 0,
       missedCompanies: flag?.missedCompanies.map((c) => c.companyName) ?? [],
+      standing: standingsByUserId.get(student.id)?.standing ?? "OPEN",
+      standingDetail: (() => {
+        const dto = standingsByUserId.get(student.id);
+        return dto ? standingDetail(dto) : null;
+      })(),
     };
   });
 

@@ -1,6 +1,6 @@
 # Canonical Project Context
 
-Last updated: 2026-09-17
+Last updated: 2026-11-15
 
 ## Product
 
@@ -42,9 +42,10 @@ Important invariants:
 
 - One application per student/job profile.
 - Company names, user emails, and student roll numbers are unique where present.
-- A `Company` is the recruiter, registered at `/admin/companies/add`. Its `category` is `Dream` or `First Round` from `frontend/src/lib/company-schema.ts` and records the round the company recruits in; nothing evaluates it yet. `placementSession` is the season the record was raised for, and `turnover` is quoted as the company states it. `website` and `logoUrl` are still stored and still shown to students, but no screen edits them.
+- A `Company` is the recruiter, registered at `/admin/companies/add`. Its `category` is `Dream` or `First Round` from `frontend/src/lib/company-schema.ts` and records the round the company recruits in; the placement policy reads it as a fallback when a drive or offer carries no package figure (see the 2026-11-15 one-offer entry in `docs/DECISIONS.md`). `placementSession` is the season the record was raised for, and `turnover` is quoted as the company states it. `website` and `logoUrl` are still stored and still shown to students, but no screen edits them.
 - A `JobProfile` is the company event the admin portal composes at `/admin/events`. Its `placementYear` is the season the drive runs in and its `batch` is the graduating cohort it recruits; the two are not interchangeable. `jobCategory` is one of the four values in `frontend/src/lib/job-profile-schema.ts`, and `cap`, `companyBond`, and `duration` are quoted from the company as free text rather than parsed figures.
 - Branch codes are canonical: `CS` is the one spelling of that branch, and the legacy `CSE` is folded onto it on every write (application and database trigger) and every comparison. The B.Tech branches are `CSB`, `IT`, `CSAI`, `CS`, in `frontend/src/lib/branch.ts` and `backend/app/services/branch.py`. See the 2026-11-15 "CS is the canonical branch code" entry in `docs/DECISIONS.md`.
+- The placement policy closes drives on top of eligibility, from the offers on file: a Dream offer (FTE/PPO at or above the programme's line — 10 LPA for B.Tech, 8 LPA for M.Tech / M.Sc. / MBA / Ph.D., per Placement Policy §4.1) closes every on-campus drive, a First Round offer leaves only Dream drives, and an internship closes every drive until its PPO outcome (`Offer.ppoStatus`) is recorded: not received frees the student, received is recorded as a PPO offer. An approved NOC is recorded as an INTERNSHIP `Offer` linked by `nocRequestId`. The rules live in `backend/app/services/placement_policy.py` and its mirror `frontend/src/lib/placement-policy.ts`.
 - Job eligibility is evaluated from the student's current profile and job criteria: CGPA, 10th/12th percentage, batch, branch, degree, gender, backlogs, placement bans, and document completeness. An empty `allowedDegrees` or `allowedGenders` list, or one holding `all`/`any`, places no restriction; a null `min10Percent`/`min12Percent` places no restriction the same way; a restriction the profile cannot answer fails.
 - `NocRequest.message` is the student's remarks and `NocRequest.adminRemarks` is the placement cell's decision remarks. A decision never writes over the student's text.
 - An `Offer` is the placement record and the only source of package figures. An application is not an offer; the two are joined by an optional, unique `applicationId`. An FTE or PPO carries `ctc`, an internship carries `stipend`, and the type the offer is not clears the other. A `DECLINED` or `REVOKED` offer stays on file but is excluded from every statistic, a rule stated once in `COUNTED_OFFER_STATUSES`. The season is the batch stored on the offer, not the student's current batch.

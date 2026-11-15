@@ -99,6 +99,8 @@ export const offerFormSchema = z
     location: optionalText,
     offeredAt: optionalDate,
     joiningDate: optionalDate,
+    /** Last day of an internship. Optional and informational: the PPO outcome, not this date, decides whether the student may apply. */
+    endDate: optionalDate,
     remarks: optionalText,
   })
   // The amount is required, but which one depends on the offer type, so the
@@ -133,6 +135,7 @@ export const offerFormSchema = z
     ...data,
     ctc: isCtcType(data.type) ? data.ctc ?? null : null,
     stipend: data.type === "INTERNSHIP" ? data.stipend ?? null : null,
+    endDate: data.type === "INTERNSHIP" ? data.endDate ?? null : null,
   }));
 
 /**
@@ -158,6 +161,7 @@ export const offerBulkFormSchema = z
     ctc: optionalAmount,
     stipend: optionalAmount,
     location: optionalText,
+    endDate: optionalDate,
     remarks: optionalText,
     rollNumbers: z
       .array(z.string().trim().min(1).max(40))
@@ -191,7 +195,53 @@ export const offerBulkFormSchema = z
     ...data,
     ctc: isCtcType(data.type) ? data.ctc ?? null : null,
     stipend: data.type === "INTERNSHIP" ? data.stipend ?? null : null,
+    endDate: data.type === "INTERNSHIP" ? data.endDate ?? null : null,
   }));
+
+export const PPO_STATUSES = ["PENDING", "RECEIVED", "NOT_RECEIVED"] as const;
+
+/**
+ * An internship's PPO outcome. The CTC is required to record RECEIVED, because
+ * a received PPO is written as its own PPO offer and counts in the placement
+ * statistics; the backend repeats the rule.
+ */
+export const ppoOutcomeSchema = z
+  .object({
+    offerId: z.string().trim().min(1, "Offer ID is required."),
+    status: z.enum(PPO_STATUSES),
+    ctc: optionalAmount,
+    jobTitle: optionalText,
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === "RECEIVED" && data.ctc === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ctc"],
+        message: "Enter the PPO's annual CTC.",
+      });
+    }
+  });
+
+/** One PPO outcome for several internships; a RECEIVED outcome shares one CTC across them. */
+export const ppoBulkSchema = z
+  .object({
+    offerIds: z
+      .array(z.string().trim().min(1))
+      .min(1, "Select at least one internship.")
+      .max(200, "Update at most 200 internships at a time."),
+    status: z.enum(PPO_STATUSES),
+    ctc: optionalAmount,
+    jobTitle: optionalText,
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === "RECEIVED" && data.ctc === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ctc"],
+        message: "Enter the PPO's annual CTC.",
+      });
+    }
+  });
 
 export const offerDeleteSchema = z.object({
   offerId: z.string().trim().min(1, "Offer ID is required."),

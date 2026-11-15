@@ -85,6 +85,16 @@ enum OfferType {
   INTERNSHIP
 }
 
+enum PpoStatus {
+  /// The PPO outcome is not known yet. An internship in this state keeps its
+  /// holder out of on-campus drives.
+  PENDING
+  /// The company gave a PPO. The office records it as its own PPO offer.
+  RECEIVED
+  /// No PPO: the student is back in the placement pool.
+  NOT_RECEIVED
+}
+
 enum OfferStatus {
   OFFERED
   ACCEPTED
@@ -243,8 +253,10 @@ model Company {
   logoUrl       String?
   website       String?
   description   String?
-  // How hard the drive is to clear, in the placement cell's own words: a
-  // dream-round company may be applied to even after an offer is in hand.
+  // "Dream" or "First Round". The placement policy reads it as a fallback
+  // when a drive or offer carries no package figure; a figure at or above the
+  // student's programme line (10 LPA B.Tech, 8 LPA M.Tech/M.Sc./MBA/Ph.D.)
+  // makes a drive Dream regardless (backend/app/services/placement_policy.py).
   category      String?
   // Recruiting season the record was raised for. The same idea as
   // JobProfile.placementYear, under the label this screen uses.
@@ -397,6 +409,8 @@ model Offer {
   companyId     String
   jobProfileId  String?
   applicationId String?     @unique
+  /// The approved NOC this internship was recorded from, when it was.
+  nocRequestId  String?     @unique
   type          OfferType
   status        OfferStatus @default(OFFERED)
   source        OfferSource @default(ON_CAMPUS)
@@ -416,6 +430,16 @@ model Offer {
   /// When the student accepted or declined.
   decidedAt     DateTime?
   joiningDate   DateTime?
+  /// Last day of an internship. Informational and optional: an internship
+  /// blocks on-campus applications until its PPO outcome is recorded, not
+  /// until this date (backend/app/services/placement_policy.py).
+  endDate       DateTime?
+  /// For an INTERNSHIP: whether the company gave a PPO. PENDING blocks.
+  /// Meaningless on other types, which leave it at the default.
+  ppoStatus     PpoStatus   @default(PENDING)
+  /// Set on a PPO offer the office recorded from an internship's "PPO
+  /// received" outcome, pointing back at that internship.
+  internshipOfferId String? @unique
   remarks       String?
   createdAt     DateTime    @default(now())
   /// A DB-level default, not just Prisma's own `@updatedAt` bookkeeping: the
@@ -430,6 +454,9 @@ model Offer {
   company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   jobProfile  JobProfile?  @relation(fields: [jobProfileId], references: [id], onDelete: SetNull)
   application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  nocRequest  NocRequest?  @relation(fields: [nocRequestId], references: [id], onDelete: SetNull)
+  internshipOffer Offer?   @relation("PpoFromInternship", fields: [internshipOfferId], references: [id], onDelete: SetNull)
+  ppoOffer        Offer?   @relation("PpoFromInternship")
   createdBy   User         @relation("OfferRecorder", fields: [createdById], references: [id])
 
   @@index([batch])
@@ -487,9 +514,15 @@ model NocRequest {
   // APPROVED for these rows since there is nothing left to decide; the UI
   // tells the two apart by this flag, not by status.
   nocRequired  Boolean   @default(true)
+  // The internship's terms, which become the Offer an approval records (see
+  // backend/app/services/noc_offers.py). Nullable only for rows from before
+  // these columns; the create schema requires a stipend.
+  jobTitle     String?
+  stipend      Float?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @default(now()) @updatedAt
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offer        Offer?
 }
 
 model InterviewExperience {

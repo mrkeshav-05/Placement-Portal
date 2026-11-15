@@ -34,6 +34,23 @@ export const nocFormSchema = z
       .optional()
       .nullable()
       .transform((v) => v ?? ""),
+    // An approved NOC is recorded as an internship offer, so it needs the
+    // offer's terms: the role (optional) and the monthly stipend (required;
+    // 0 for an unpaid internship).
+    jobTitle: z
+      .string()
+      .trim()
+      .max(200, "Role must not exceed 200 characters.")
+      .optional()
+      .nullable()
+      .transform((v) => (v ? v : null)),
+    stipend: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce
+        .number({ message: "Enter the monthly stipend (0 if unpaid)." })
+        .nonnegative("Stipend cannot be negative.")
+        .max(10_000_000, "Enter the monthly stipend, not an annual figure."),
+    ),
     startDate: z.string().min(1, "Start date is required."),
     endDate: z.string().min(1, "End date is required."),
     message: z
@@ -75,6 +92,11 @@ export const nocApproveSchema = z.object({
   nocId: z.string().min(1, "NOC request ID is required."),
   adminRemarks: z.string().trim().max(2000).optional().nullable(),
   documentUrl: z.string().trim().optional().nullable(),
+  // Corrects, or for an older request supplies, the internship's stipend.
+  stipend: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.coerce.number().nonnegative("Stipend cannot be negative.").max(10_000_000).optional(),
+  ),
 });
 
 export const nocRejectSchema = z.object({

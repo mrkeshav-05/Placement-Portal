@@ -5,6 +5,7 @@ import { z } from "zod";
 import { backendFetch } from "@/lib/api-client";
 import { db } from "@/lib/db";
 import { evaluateEligibility, isEligible } from "@/lib/eligibility";
+import { placementStanding, policyAllows } from "@/lib/placement-policy";
 import { toEligibilityProfile } from "@/lib/student-profile";
 import { requireStudent } from "@/lib/student-session";
 
@@ -71,7 +72,7 @@ export async function applyToJob(
 
     // Direct Prisma fallback for standalone local mode
     const [job, resumeCount, existingApplication] = await Promise.all([
-      db.jobProfile.findUnique({ where: { id: parsed.data.jobId } }),
+      db.jobProfile.findUnique({ where: { id: parsed.data.jobId }, include: { company: true } }),
       db.resume.count({ where: { userId: student.user.id } }),
       db.application.findUnique({
         where: {
@@ -105,6 +106,27 @@ export async function applyToJob(
       }),
     );
     if (!eligible) return { error: "Your current profile does not meet this role’s criteria." };
+
+    // The same placement-policy rule the backend enforces on this path.
+    const offers = await db.offer.findMany({
+      where: { userId: student.user.id },
+      include: { company: true },
+    });
+    const policy = policyAllows(
+      placementStanding(
+        offers.map((offer) => ({
+          type: offer.type,
+          status: offer.status,
+          ctc: offer.ctc,
+          companyName: offer.company.name,
+          companyCategory: offer.company.category,
+          ppoStatus: offer.ppoStatus,
+        })),
+        student.user.degree,
+      ),
+      { type: job.type, package: job.ctcStipend, companyCategory: job.company.category },
+    );
+    if (!policy.allowed) return { error: policy.reason ?? "This drive is closed by the placement policy." };
 
     if (parsed.data.resumeId) {
       const resume = await db.resume.findFirst({

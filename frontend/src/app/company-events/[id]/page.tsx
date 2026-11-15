@@ -5,6 +5,8 @@ import { ApplyButton } from "@/components/jobs/apply-button";
 import { AuthenticatedPortalShell } from "@/components/layout/authenticated-portal-shell";
 import { db } from "@/lib/db";
 import { evaluateEligibility, isEligible } from "@/lib/eligibility";
+import { policyAllows } from "@/lib/placement-policy";
+import { fetchStudentStanding } from "@/lib/student-standing";
 import { companyColor, companyInitials, formatPortalDate, jobTypeLabel } from "@/lib/job-presenters";
 import { sanitizeRichText } from "@/lib/rich-text";
 import { toEligibilityProfile } from "@/lib/student-profile";
@@ -21,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   });
   if (!job) notFound();
 
-  const [resumes, existingApplication] = student.user
+  const [resumes, existingApplication, standing] = student.user
     ? await Promise.all([
         db.resume.findMany({
           where: { userId: student.user.id },
@@ -36,11 +38,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             },
           },
         }),
+        fetchStudentStanding(),
       ])
-    : [[], null];
+    : [[], null, null];
   const resumeCount = resumes.length;
   const profile = student.user ? toEligibilityProfile(student.user, resumeCount) : null;
-  const checks = profile
+  const policy = standing
+    ? policyAllows(standing, { type: job.type, package: job.ctcStipend, companyCategory: job.company.category })
+    : { allowed: true, reason: null };
+  const eligibilityChecks = profile
     ? evaluateEligibility(profile, {
         minCgpa: job.minCGPA,
         batch: job.batch,
@@ -53,6 +59,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         min12Percent: job.min12Percent,
       })
     : [];
+  // The placement policy reads as one more criterion, so a closed drive says why.
+  const checks = standing && standing.standing !== "OPEN" && profile
+    ? [
+        ...eligibilityChecks,
+        {
+          key: "placementPolicy",
+          label: policy.allowed ? `Placement policy: ${standing.label}, Dream drive open` : policy.reason ?? "Closed by the placement policy",
+          pass: policy.allowed,
+        },
+      ]
+    : eligibilityChecks;
   const applicationOpen = job.status === "ACTIVE" && job.registrationDeadline > new Date();
   const eligible = Boolean(profile && applicationOpen && isEligible(checks));
   const disabledReason = !student.user
@@ -61,7 +78,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       ? "Complete your profile"
       : !applicationOpen
         ? "Applications closed"
-        : !eligible
+        : !policy.allowed
+          ? "Closed by placement policy"
+          : !eligible
           ? "Not currently eligible"
           : undefined;
   const compensation = job.ctcStipendInfo ?? (job.ctcStipend === null

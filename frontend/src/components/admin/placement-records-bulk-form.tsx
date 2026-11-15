@@ -74,6 +74,7 @@ export function PlacementRecordsBulkForm({
   const [jobProfileId, setJobProfileId] = useState("");
   const [source, setSource] = useState<OfferSource>("ON_CAMPUS");
   const [type, setType] = useState<OfferType>("FTE");
+  const [endDate, setEndDate] = useState("");
   const [status, setStatus] = useState<OfferStatus>("OFFERED");
   const [amount, setAmount] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -157,6 +158,7 @@ export function PlacementRecordsBulkForm({
     formData.set("batch", String(batch));
     formData.set(isCtcType(type) ? "ctc" : "stipend", amount);
     formData.set("location", location);
+    formData.set("endDate", type === "INTERNSHIP" ? endDate : "");
     formData.set("remarks", notes);
     formData.set("rollNumbers", rollNumbers.join(","));
 
@@ -366,6 +368,18 @@ export function PlacementRecordsBulkForm({
               placeholder={isCtcType(type) ? "1800000" : "75000"}
             />
           </div>
+
+          {type === "INTERNSHIP" ? (
+            <div className="grid gap-2">
+              <Label htmlFor="bulk-end-date">Internship end date (optional)</Label>
+              <Input
+                id="bulk-end-date"
+                type="date"
+                value={endDate}
+                onChange={(input) => setEndDate(input.target.value)}
+              />
+            </div>
+          ) : null}
 
           <div className="grid gap-2">
             <Label htmlFor="bulk-job-title">

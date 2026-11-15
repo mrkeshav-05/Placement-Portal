@@ -4,6 +4,8 @@ import { backendFetch } from "@/lib/api-client";
 import type { BackendAnnouncement, BackendJob } from "@/lib/backend-types";
 import { db } from "@/lib/db";
 import { evaluateEligibility, isEligible } from "@/lib/eligibility";
+import { policyAllows } from "@/lib/placement-policy";
+import { fetchStudentStanding } from "@/lib/student-standing";
 import { companyColor, companyInitials, formatPortalDate } from "@/lib/job-presenters";
 import { toEligibilityProfile } from "@/lib/student-profile";
 import { requireStudent, studentDisplayName } from "@/lib/student-session";
@@ -40,8 +42,15 @@ export default async function DashboardPage() {
   const eligibilityProfile = student.user
     ? toEligibilityProfile(student.user, resumeCount)
     : null;
+  const standing = student.user ? await fetchStudentStanding() : null;
   const eligibleRoles = eligibilityProfile
     ? jobs.filter((job) =>
+        (!standing ||
+          policyAllows(standing, {
+            type: job.type,
+            package: job.ctcStipend,
+            companyCategory: job.company?.category ?? null,
+          }).allowed) &&
         isEligible(
           evaluateEligibility(eligibilityProfile, {
             minCgpa: job.minCGPA,

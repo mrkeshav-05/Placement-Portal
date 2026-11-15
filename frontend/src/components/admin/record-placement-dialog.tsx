@@ -116,6 +116,12 @@ export function RecordPlacementDialog({
               />
             </div>
           )}
+          {type === "INTERNSHIP" ? (
+            <div className="grid gap-2">
+              <Label htmlFor="placement-end-date">Internship end date (optional)</Label>
+              <Input id="placement-end-date" name="endDate" type="date" />
+            </div>
+          ) : null}
 
           <div className="grid gap-2">
             <Label htmlFor="placement-location">Location</Label>

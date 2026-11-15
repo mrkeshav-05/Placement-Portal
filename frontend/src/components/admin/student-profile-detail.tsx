@@ -14,6 +14,8 @@ import {
   UserRound,
   XCircle,
 } from "lucide-react";
+import { PpoOutcomeButton } from "@/components/admin/ppo-outcome-button";
+import type { PpoStatus } from "@/lib/placement-policy";
 import { StudentAcademicCorrectionDialog } from "@/components/admin/student-academic-correction-dialog";
 import {
   formatRupees,
@@ -50,6 +52,8 @@ export type AdminStudentDetail = {
   panProvided: boolean;
   resumes: Array<{ id: string; label: string; fileName: string; uploadedAt: string }>;
   applications: Array<{ id: string; company: string; role: string; status: string; appliedAt: string }>;
+  /** Placement-policy standing, derived from the offers below. */
+  placement: { standing: string; label: string; reason: string | null };
   offers: Array<{
     id: string;
     company: string;
@@ -60,6 +64,8 @@ export type AdminStudentDetail = {
     ctc: number | null;
     stipend: number | null;
     offeredAt: string;
+    /** For an internship: whether the company gave a PPO. */
+    ppoStatus: PpoStatus;
   }>;
   nocRequests: Array<{
     id: string;
@@ -98,10 +104,13 @@ function value(value: string | number | null) {
 export function StudentProfileDetail({
   student,
   canUpdateAcademic = false,
+  canRecordPpo = false,
 }: {
   student: AdminStudentDetail;
   /** Gated by `students.update` — see docs/DECISIONS.md (2026-09-22). */
   canUpdateAcademic?: boolean;
+  /** Whether the viewer may record an internship's PPO outcome (`placement_records.update`). */
+  canRecordPpo?: boolean;
 }) {
   return (
     <div className="admin-page">
@@ -322,6 +331,16 @@ export function StudentProfileDetail({
             <p>Every recorded offer, of any status</p>
           </div>
         </header>
+        <div className="admin-detail-row">
+          <span>
+            <strong>Placement policy: {student.placement.label}</strong>
+            <small>
+              {student.placement.reason
+                ? student.placement.reason.replace(/^You hold/, "Holds").replace(/^You have/, "Has").replace(/ to you\.$/, ".")
+                : "No counted offer on file; every eligible drive is open."}
+            </small>
+          </span>
+        </div>
         {student.offers.length ? (
           student.offers.map((offer) => (
             <div className="admin-detail-row" key={offer.id}>
@@ -340,6 +359,15 @@ export function StudentProfileDetail({
                 <b className={`cell-status ${offer.status.toLowerCase()}`}>
                   {OFFER_STATUS_LABELS[offer.status]}
                 </b>
+                {offer.type === "INTERNSHIP" ? (
+                  <PpoOutcomeButton
+                    offerId={offer.id}
+                    studentName={student.name}
+                    company={offer.company}
+                    current={offer.ppoStatus}
+                    canRecord={canRecordPpo}
+                  />
+                ) : null}
               </span>
             </div>
           ))

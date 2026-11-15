@@ -15,6 +15,7 @@ test("nocFormSchema accepts valid submission and trims values", () => {
     address: "  RMZ Infinity, Old Madras Road  ",
     state: "  Karnataka  ",
     pincode: "560016",
+    stipend: "40000",
     startDate: "2026-06-01",
     endDate: "2026-08-31",
     message: "  Summer internship in core search team.  ",
@@ -38,6 +39,7 @@ test("nocFormSchema rejects end date earlier than start date", () => {
     address: "RMZ Infinity",
     state: "Karnataka",
     pincode: "560016",
+    stipend: "40000",
     startDate: "2026-08-31",
     endDate: "2026-06-01",
     source: "ON_CAMPUS",
@@ -53,6 +55,7 @@ test("nocFormSchema rejects invalid 5-digit or alphanumeric pincode", () => {
     address: "Financial District",
     state: "Telangana",
     pincode: "50003", // 5 digits
+    stipend: "40000",
     startDate: "2026-06-01",
     endDate: "2026-08-31",
     source: "ON_CAMPUS",
@@ -65,6 +68,7 @@ test("nocFormSchema rejects invalid 5-digit or alphanumeric pincode", () => {
     address: "Financial District",
     state: "Telangana",
     pincode: "50003A", // letters
+    stipend: "40000",
     startDate: "2026-06-01",
     endDate: "2026-08-31",
     source: "ON_CAMPUS",
@@ -79,6 +83,7 @@ test("nocFormSchema requires a chosen source", () => {
     address: "Financial District",
     state: "Telangana",
     pincode: "500032",
+    stipend: "40000",
     startDate: "2026-06-01",
     endDate: "2026-08-31",
   });
@@ -92,6 +97,7 @@ test("nocFormSchema requires a proof document when source is off-campus", () => 
     address: "Sector 44, Cyber City",
     state: "Haryana",
     pincode: "122003",
+    stipend: "40000",
     startDate: "2026-06-01",
     endDate: "2026-08-31",
     source: "OFF_CAMPUS" as const,
@@ -118,6 +124,7 @@ test("nocFormSchema accepts nocRequired: false without a decision workflow", () 
     address: "Institute campus",
     state: "Uttar Pradesh",
     pincode: "226002",
+    stipend: "40000",
     startDate: "2026-06-01",
     endDate: "2026-08-31",
     source: "ON_CAMPUS",
@@ -176,6 +183,7 @@ test("nocFormSchema accepts a request with no state or pincode", () => {
     address: "Estancia IT Park",
     state: "",
     pincode: null,
+    stipend: "40000",
     startDate: "2026-12-01",
     endDate: "2026-12-31",
     source: "ON_CAMPUS",
@@ -190,9 +198,26 @@ test("nocFormSchema still rejects a malformed pincode when one is given", () => 
     city: "Chennai",
     address: "Estancia IT Park",
     pincode: "12",
+    stipend: "40000",
     startDate: "2026-12-01",
     endDate: "2026-12-31",
     source: "ON_CAMPUS",
   });
   assert.equal(result.success, false);
+});
+
+test("nocFormSchema requires a monthly stipend and accepts zero for an unpaid internship", () => {
+  const base = {
+    company: "Zoho",
+    city: "Chennai",
+    address: "Estancia IT Park",
+    startDate: "2027-01-05",
+    endDate: "2027-06-30",
+    source: "ON_CAMPUS",
+  };
+  assert.equal(nocFormSchema.safeParse(base).success, false);
+  const unpaid = nocFormSchema.safeParse({ ...base, stipend: "0", jobTitle: "Research Intern" });
+  assert.equal(unpaid.success, true);
+  assert.equal(unpaid.data?.stipend, 0);
+  assert.equal(unpaid.data?.jobTitle, "Research Intern");
 });

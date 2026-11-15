@@ -63,6 +63,8 @@ export type BackendJobCompany = {
   id: string;
   name: string;
   logoUrl: string | null;
+  /** "Dream" / "First Round"; absent from entries cached before it was sent. */
+  category?: string | null;
 };
 
 /**

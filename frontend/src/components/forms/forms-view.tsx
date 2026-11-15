@@ -90,6 +90,9 @@ export type LocalNoc = {
   offCampusProofUrl?: string | null;
   /** False means this row is only a record of dates/company — no decision was made. */
   nocRequired?: boolean;
+  /** The internship's role and monthly stipend, recorded on its offer once approved. */
+  jobTitle?: string | null;
+  stipend?: number | null;
   createdAt?: string;
 };
 
@@ -462,6 +465,37 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
               </div>
 
               <div className="grid gap-2">
+                <Label htmlFor="noc-job-title">Role (optional)</Label>
+                <Input
+                  id="noc-job-title"
+                  name="jobTitle"
+                  maxLength={200}
+                  placeholder="e.g. Software Engineering Intern"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="noc-stipend">
+                  Monthly stipend (₹) <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="noc-stipend"
+                  name="stipend"
+                  required
+                  type="number"
+                  min={0}
+                  step="any"
+                  placeholder="0 if unpaid"
+                />
+              </div>
+
+              <p className="text-muted-foreground text-sm sm:col-span-2">
+                Once approved, this internship is recorded as an internship offer: it counts in the
+                placement statistics, and on-campus applications stay closed until the placement cell
+                records whether you received a PPO.
+              </p>
+
+              <div className="grid gap-2">
                 <Label htmlFor="noc-start-date">
                   Start date <span className="text-destructive">*</span>
                 </Label>
@@ -648,6 +682,19 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                 </strong>
               </DetailBox>
             </div>
+
+            <DetailBox label="Role and stipend">
+              <strong className="block">
+                {[
+                  viewingNoc.jobTitle,
+                  viewingNoc.stipend != null
+                    ? `₹${Math.round(viewingNoc.stipend).toLocaleString("en-IN")}/month`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || "Not provided"}
+              </strong>
+            </DetailBox>
 
             <DetailBox label="Offer source">
               <strong className="block">

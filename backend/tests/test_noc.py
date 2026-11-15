@@ -35,6 +35,7 @@ def test_noc_create_schema_valid():
         "endDate": end,
         "message": "Summer SDE internship",
         "source": "ON_CAMPUS",
+        "stipend": 40000,
     }
     schema = NocCreate(**data)
     assert schema.company == "Amazon India"
@@ -56,6 +57,7 @@ def test_noc_create_schema_rejects_end_date_before_start_date():
             startDate=start,
             endDate=end,
             source="ON_CAMPUS",
+            stipend=40000,
         )
     assert "End date cannot be earlier than start date" in str(exc_info.value)
 
@@ -73,6 +75,7 @@ def test_noc_create_schema_rejects_invalid_pincode():
             startDate=start,
             endDate=end,
             source="ON_CAMPUS",
+            stipend=40000,
         )
 
 
@@ -88,6 +91,7 @@ def test_noc_create_schema_requires_proof_for_offcampus_source():
         startDate=start,
         endDate=end,
         source="OFF_CAMPUS",
+        stipend=40000,
     )
 
     with pytest.raises(ValidationError) as exc_info:
@@ -113,6 +117,7 @@ def test_noc_create_schema_not_required_flag():
         startDate=start,
         endDate=end,
         source="ON_CAMPUS",
+        stipend=40000,
         nocRequired=False,
     )
     assert schema.nocRequired is False
@@ -224,6 +229,7 @@ def test_student_facing_response_exposes_both_remarks_fields():
         message="Requesting an NOC for an off-campus role.",
         adminRemarks="Rejected: the organisation is not registered with the institute.",
         source="OFF_CAMPUS",
+        stipend=40000,
         verifiedByPlacementTeam=False,
         nocRequired=True,
         createdAt=now,
@@ -242,6 +248,37 @@ def test_state_and_pincode_are_optional():
         startDate=start,
         endDate=start + timedelta(days=30),
         source="ON_CAMPUS",
+        stipend=40000,
     )
     assert schema.state == ""
     assert schema.pincode == ""
+
+
+def test_noc_create_requires_stipend():
+    start = datetime.now()
+    with pytest.raises(ValidationError):
+        NocCreate(
+            company="Zoho",
+            address="Estancia IT Park",
+            city="Chennai",
+            startDate=start,
+            endDate=start + timedelta(days=30),
+            source="ON_CAMPUS",
+        )
+
+
+def test_noc_create_accepts_unpaid_internship_and_role():
+    start = datetime.now()
+    schema = NocCreate(
+        company="Zoho",
+        address="Estancia IT Park",
+        city="Chennai",
+        startDate=start,
+        endDate=start + timedelta(days=180),
+        source="OFF_CAMPUS",
+        offCampusProofUrl="/api/v1/uploads/files/noc_offcampus_proof/abc.pdf",
+        stipend=0,
+        jobTitle="Research Intern",
+    )
+    assert schema.stipend == 0
+    assert schema.jobTitle == "Research Intern"

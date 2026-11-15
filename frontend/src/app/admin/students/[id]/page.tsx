@@ -4,7 +4,8 @@ import { StudentProfileDetail, type AdminStudentDetail } from "@/components/admi
 import { requireAdmin } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import { formatPortalDate } from "@/lib/job-presenters";
-import { hasPermission, PERM_STUDENTS_UPDATE } from "@/lib/permissions";
+import { hasPermission, PERM_PLACEMENT_RECORDS_UPDATE, PERM_STUDENTS_UPDATE } from "@/lib/permissions";
+import { placementStanding } from "@/lib/placement-policy";
 import { calculateProfileCompletion } from "@/lib/student-profile";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     },
   });
   if (!student) notFound();
+  const standing = placementStanding(
+    student.offers.map((offer) => ({
+      type: offer.type,
+      status: offer.status,
+      ctc: offer.ctc,
+      companyName: offer.company.name,
+      companyCategory: offer.company.category,
+      ppoStatus: offer.ppoStatus,
+    })),
+    student.degree,
+  );
   const detail: AdminStudentDetail = {
     id: student.id,
     name: student.name ?? "Student",
@@ -55,6 +67,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     panProvided: Boolean(student.panCardEncrypted),
     resumes: student.resumes.map((resume) => ({ id: resume.id, label: resume.label, fileName: resume.fileName, uploadedAt: formatPortalDate(resume.uploadedAt) })),
     applications: student.applications.map((application) => ({ id: application.id, company: application.jobProfile.company.name, role: application.jobProfile.title, status: application.status, appliedAt: formatPortalDate(application.appliedAt) })),
+    placement: { standing: standing.standing, label: standing.label, reason: standing.reason },
     offers: student.offers.map((offer) => ({
       id: offer.id,
       company: offer.company.name,
@@ -64,6 +77,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       ctc: offer.ctc,
       stipend: offer.stipend,
       offeredAt: formatPortalDate(offer.offeredAt),
+      ppoStatus: offer.ppoStatus,
     })),
     nocRequests: student.nocRequests.map((noc) => ({
       id: noc.id,
@@ -77,7 +91,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   };
   return (
     <AuthenticatedAdminShell>
-      <StudentProfileDetail student={detail} canUpdateAcademic={hasPermission(user, PERM_STUDENTS_UPDATE)} />
+      <StudentProfileDetail student={detail} canUpdateAcademic={hasPermission(user, PERM_STUDENTS_UPDATE)} canRecordPpo={hasPermission(user, PERM_PLACEMENT_RECORDS_UPDATE)} />
     </AuthenticatedAdminShell>
   );
 }

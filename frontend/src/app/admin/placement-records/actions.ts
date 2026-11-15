@@ -9,6 +9,8 @@ import {
   offerDeleteSchema,
   offerFormSchema,
   parseRollNumbers,
+  ppoBulkSchema,
+  ppoOutcomeSchema,
 } from "@/lib/offer-schema";
 import {
   PERM_PLACEMENT_RECORDS_CREATE,
@@ -98,6 +100,7 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
     location: formData.get("location") ?? "",
     offeredAt: formData.get("offeredAt") ?? "",
     joiningDate: formData.get("joiningDate") ?? "",
+    endDate: formData.get("endDate") ?? "",
     remarks: formData.get("remarks") ?? "",
   });
 
@@ -126,6 +129,7 @@ export async function saveOfferAction(formData: FormData): Promise<OfferActionRe
     location: offer.location,
     offeredAt: offer.offeredAt?.toISOString() ?? null,
     joiningDate: offer.joiningDate?.toISOString() ?? null,
+    endDate: offer.endDate?.toISOString() ?? null,
     remarks: offer.remarks,
   };
 
@@ -168,6 +172,7 @@ export async function saveOfferBulkAction(
     ctc: formData.get("ctc") ?? "",
     stipend: formData.get("stipend") ?? "",
     location: formData.get("location") ?? "",
+    endDate: formData.get("endDate") ?? "",
     remarks: formData.get("remarks") ?? "",
     // The field holds whatever was pasted; the parser is the single definition
     // of how that becomes a list, shared with the client-side chips.
@@ -205,6 +210,7 @@ export async function saveOfferBulkAction(
         ctc: bulk.ctc,
         stipend: bulk.stipend,
         location: bulk.location,
+        endDate: bulk.endDate?.toISOString() ?? null,
         remarks: bulk.remarks,
         rollNumbers: bulk.rollNumbers,
       }),
@@ -245,4 +251,89 @@ export async function deleteOfferAction(formData: FormData): Promise<OfferAction
 
   revalidateOfferPages();
   return { success: "Placement record deleted." };
+}
+
+/**
+ * Records whether an internship led to a PPO. Until it is recorded the
+ * internship keeps its holder out of on-campus drives; "not received" frees
+ * them, and "received" writes the PPO as its own offer so it counts in the
+ * placement statistics. Backend only, like every offer write.
+ */
+export async function setPpoOutcomeAction(formData: FormData): Promise<OfferActionResult> {
+  await requirePermission(PERM_PLACEMENT_RECORDS_UPDATE);
+
+  const parsed = ppoOutcomeSchema.safeParse({
+    offerId: formData.get("offerId"),
+    status: formData.get("status"),
+    ctc: formData.get("ctc") ?? "",
+    jobTitle: formData.get("jobTitle") ?? "",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Check the PPO details." };
+  }
+
+  const { offerId, status, ctc, jobTitle } = parsed.data;
+  try {
+    await backendFetch(`/api/v1/offers/${offerId}/ppo`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, ctc: status === "RECEIVED" ? ctc ?? null : null, jobTitle }),
+    });
+  } catch (error) {
+    return { error: backendMessage(error, "Failed to record the PPO outcome.") };
+  }
+
+  revalidateOfferPages();
+  revalidatePath("/admin/students");
+  return {
+    success:
+      status === "RECEIVED"
+        ? "PPO recorded as a placement."
+        : status === "NOT_RECEIVED"
+          ? "Recorded as no PPO. The student can apply again."
+          : "PPO outcome set back to pending.",
+  };
+}
+
+/**
+ * One PPO outcome for several internships, from the PPO worklist. A partial
+ * result, like the bulk offer entry: what could not be updated comes back with
+ * its reason and the rest are written.
+ */
+export async function setPpoOutcomesBulkAction(
+  formData: FormData,
+): Promise<OfferActionResult & { updated?: number; skipped?: { offerId: string; reason: string }[] }> {
+  await requirePermission(PERM_PLACEMENT_RECORDS_UPDATE);
+
+  const parsed = ppoBulkSchema.safeParse({
+    offerIds: formData.getAll("offerId").map(String),
+    status: formData.get("status"),
+    ctc: formData.get("ctc") ?? "",
+    jobTitle: formData.get("jobTitle") ?? "",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Check the PPO details." };
+  }
+
+  const { offerIds, status, ctc, jobTitle } = parsed.data;
+  let result: { updated: number; skipped?: { offerId: string; reason: string }[] };
+  try {
+    result = await backendFetch("/api/v1/offers/ppo-outcomes/bulk", {
+      method: "POST",
+      body: JSON.stringify({ offerIds, status, ctc: status === "RECEIVED" ? ctc ?? null : null, jobTitle }),
+    });
+  } catch (error) {
+    return { error: backendMessage(error, "Failed to record the PPO outcomes.") };
+  }
+
+  revalidateOfferPages();
+  revalidatePath("/admin/students");
+  const skipped = result.skipped ?? [];
+  if (!result.updated) {
+    return { error: skipped[0]?.reason ?? "Nothing was updated.", updated: 0, skipped };
+  }
+  return {
+    success: `Updated ${result.updated} internship${result.updated === 1 ? "" : "s"}.`,
+    updated: result.updated,
+    skipped,
+  };
 }

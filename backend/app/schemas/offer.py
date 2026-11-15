@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -41,6 +41,8 @@ class OfferBase(BaseModel):
     location: Optional[str] = Field(None, max_length=200)
     offeredAt: Optional[datetime] = None
     joiningDate: Optional[datetime] = None
+    # Last day of an internship; it closes on-campus applications until then.
+    endDate: Optional[datetime] = None
     remarks: Optional[str] = Field(None, max_length=2000)
 
 
@@ -108,9 +110,37 @@ class OfferUpdate(BaseModel):
     location: Optional[str] = Field(None, max_length=200)
     offeredAt: Optional[datetime] = None
     joiningDate: Optional[datetime] = None
+    endDate: Optional[datetime] = None
     remarks: Optional[str] = Field(None, max_length=2000)
     companyId: Optional[str] = None
     jobProfileId: Optional[str] = None
+
+
+class PpoOutcomeUpdate(BaseModel):
+    """The PPO outcome of an internship. `ctc` is required to record RECEIVED."""
+
+    status: Literal["PENDING", "RECEIVED", "NOT_RECEIVED"]
+    ctc: Optional[float] = Field(None, ge=0)
+    jobTitle: Optional[str] = Field(None, max_length=200)
+
+
+class PpoBulkUpdate(BaseModel):
+    """One PPO outcome applied to several internships. `ctc` is shared by all of them for RECEIVED."""
+
+    offerIds: list[str] = Field(..., min_length=1, max_length=200)
+    status: Literal["PENDING", "RECEIVED", "NOT_RECEIVED"]
+    ctc: Optional[float] = Field(None, ge=0)
+    jobTitle: Optional[str] = Field(None, max_length=200)
+
+
+class PpoBulkRejection(BaseModel):
+    offerId: str
+    reason: str
+
+
+class PpoBulkResult(BaseModel):
+    updated: int
+    skipped: list[PpoBulkRejection] = []
 
 
 class OfferResponse(OfferBase):
@@ -119,6 +149,12 @@ class OfferResponse(OfferBase):
     companyId: str
     jobProfileId: Optional[str] = None
     applicationId: Optional[str] = None
+    nocRequestId: Optional[str] = None
+    # For an internship: whether a PPO was given. PENDING keeps its holder out
+    # of on-campus drives.
+    ppoStatus: str = "PENDING"
+    # On a PPO recorded from an internship's outcome: that internship.
+    internshipOfferId: Optional[str] = None
     decidedAt: Optional[datetime] = None
     createdAt: datetime
     updatedAt: datetime

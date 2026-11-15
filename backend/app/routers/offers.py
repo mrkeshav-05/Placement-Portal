@@ -41,6 +41,7 @@ from app.models.db import (
     OfferSource,
     OfferStatus,
     OfferType,
+    PpoStatus,
     Role,
     User,
 )
@@ -53,7 +54,12 @@ from app.schemas.offer import (
     OfferResponse,
     OfferStudentSummary,
     OfferUpdate,
+    PpoBulkRejection,
+    PpoBulkResult,
+    PpoBulkUpdate,
+    PpoOutcomeUpdate,
 )
+from app.services.ppo import resolve_pending_internship, set_ppo_outcome
 
 router = APIRouter(prefix="/offers", tags=["offers"])
 
@@ -121,6 +127,9 @@ def _to_response(offer: Offer) -> OfferResponse:
         companyId=offer.companyId,
         jobProfileId=offer.jobProfileId,
         applicationId=offer.applicationId,
+        nocRequestId=offer.nocRequestId,
+        ppoStatus=offer.ppoStatus.value if hasattr(offer.ppoStatus, "value") else str(offer.ppoStatus),
+        internshipOfferId=offer.internshipOfferId,
         # The recorded role wins; the drive's title is the fallback, which is
         # what every row written before the column existed relies on.
         jobTitle=offer.jobTitle or (offer.job_profile.title if offer.job_profile else None),
@@ -134,6 +143,7 @@ def _to_response(offer: Offer) -> OfferResponse:
         offeredAt=offer.offeredAt,
         decidedAt=offer.decidedAt,
         joiningDate=offer.joiningDate,
+        endDate=offer.endDate,
         remarks=offer.remarks,
         createdAt=offer.createdAt,
         updatedAt=offer.updatedAt,
@@ -348,11 +358,14 @@ async def create_offer(
             else None
         ),
         joiningDate=data.joiningDate,
+        endDate=data.endDate if offer_type == OfferType.INTERNSHIP else None,
         remarks=(data.remarks or "").strip() or None,
         createdById=caller.get("sub") or caller.get("id"),
         updatedAt=datetime.now(timezone.utc),
     )
     db.add(offer)
+    if offer_type == OfferType.PPO and offer_status in (OfferStatus.OFFERED, OfferStatus.ACCEPTED):
+        await resolve_pending_internship(db, data.userId, data.companyId)
     await db.commit()
     await cache.invalidate(cache.TOPIC_ANALYTICS)
 
@@ -476,12 +489,15 @@ async def create_offers_in_bulk(
                 offeredAt=offered_at,
                 decidedAt=decided_at,
                 joiningDate=data.joiningDate,
+                endDate=data.endDate if offer_type == OfferType.INTERNSHIP else None,
                 remarks=(data.remarks or "").strip() or None,
                 createdById=recorder,
                 updatedAt=datetime.now(timezone.utc),
             )
         )
         created_ids.append(offer_id)
+        if offer_type == OfferType.PPO and offer_status in (OfferStatus.OFFERED, OfferStatus.ACCEPTED):
+            await resolve_pending_internship(db, student.id, data.companyId)
 
     if created_ids:
         await db.commit()
@@ -526,6 +542,8 @@ async def update_offer(
         offer.offeredAt = data.offeredAt
     if "joiningDate" in data.model_fields_set:
         offer.joiningDate = data.joiningDate
+    if "endDate" in data.model_fields_set:
+        offer.endDate = data.endDate
     if "remarks" in data.model_fields_set:
         offer.remarks = (data.remarks or "").strip() or None
 
@@ -556,12 +574,99 @@ async def update_offer(
         offer.source = _parse_source(data.source)
 
     await _require_amount_for_type(offer.type, offer.ctc, offer.stipend)
+    # Only an internship has an end date; switching type must not leave one.
+    if offer.type != OfferType.INTERNSHIP:
+        offer.endDate = None
     offer.updatedAt = datetime.now(timezone.utc)
     await db.commit()
     await cache.invalidate(cache.TOPIC_ANALYTICS)
 
     saved = await db.scalar(_loaded(select(Offer)).where(Offer.id == offer_id))
     return _to_response(saved)
+
+
+@router.patch("/{offer_id}/ppo", response_model=OfferResponse)
+async def record_ppo_outcome(
+    offer_id: str,
+    data: PpoOutcomeUpdate,
+    caller: dict = Depends(require_permission(PERM_PLACEMENT_RECORDS_UPDATE)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Record whether an internship led to a PPO. Until it is recorded the
+    internship keeps its holder out of on-campus drives; "not received" frees
+    them, and "received" writes the PPO as its own offer (needs its CTC) so it
+    counts in the placement statistics.
+    """
+    internship = await db.scalar(_loaded(select(Offer)).where(Offer.id == offer_id))
+    if not internship:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Offer not found.")
+
+    await set_ppo_outcome(
+        db,
+        internship,
+        PpoStatus(data.status),
+        ctc=data.ctc,
+        job_title=data.jobTitle,
+        recorder_id=caller.get("sub") or caller.get("id"),
+    )
+    await db.commit()
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
+
+    saved = await db.scalar(
+        _loaded(select(Offer)).where(Offer.id == offer_id).execution_options(populate_existing=True)
+    )
+    return _to_response(saved)
+
+
+@router.post("/ppo-outcomes/bulk", response_model=PpoBulkResult)
+async def record_ppo_outcomes_in_bulk(
+    data: PpoBulkUpdate,
+    caller: dict = Depends(require_permission(PERM_PLACEMENT_RECORDS_UPDATE)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Record one PPO outcome for several internships at once.
+
+    A partial result, like the bulk offer entry: an offer that cannot take the
+    outcome (not found, not an internship) comes back with its reason and the
+    rest are written. A RECEIVED outcome needs a CTC, shared by every offer in
+    the request.
+    """
+    outcome = PpoStatus(data.status)
+    if outcome == PpoStatus.RECEIVED and data.ctc is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Enter the PPO's annual CTC: it is recorded as a PPO offer.",
+        )
+
+    ids = list(dict.fromkeys(data.offerIds))
+    found = {
+        offer.id: offer
+        for offer in (await db.scalars(select(Offer).where(Offer.id.in_(ids)))).all()
+    }
+    recorder = caller.get("sub") or caller.get("id")
+
+    updated = 0
+    skipped: list[PpoBulkRejection] = []
+    for offer_id in ids:
+        offer = found.get(offer_id)
+        if offer is None:
+            skipped.append(PpoBulkRejection(offerId=offer_id, reason="Offer not found."))
+            continue
+        try:
+            await set_ppo_outcome(
+                db, offer, outcome, ctc=data.ctc, job_title=data.jobTitle, recorder_id=recorder
+            )
+        except HTTPException as exc:
+            skipped.append(PpoBulkRejection(offerId=offer_id, reason=str(exc.detail)))
+            continue
+        updated += 1
+
+    if updated:
+        await db.commit()
+        await cache.invalidate(cache.TOPIC_ANALYTICS)
+    return PpoBulkResult(updated=updated, skipped=skipped)
 
 
 @router.delete("/{offer_id}")

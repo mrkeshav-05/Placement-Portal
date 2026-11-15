@@ -9,6 +9,19 @@ import { nocApproveSchema, nocRejectSchema, nocVerifySchema } from "@/lib/noc-sc
 
 export type NocActionResult = { error?: string; success?: string };
 
+/** The backend's `detail` when it sent one, else the raw message. */
+function backendError(err: unknown, fallback: string): string {
+  const message = err instanceof Error ? err.message : "";
+  try {
+    const detail = JSON.parse(message)?.detail;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) return detail.map((d: { msg?: string }) => d.msg ?? "").filter(Boolean).join(", ") || fallback;
+  } catch {
+    // Not JSON: fall through.
+  }
+  return message || fallback;
+}
+
 export async function approveNocAction(formData: FormData): Promise<NocActionResult> {
   await requirePermission(PERM_NOC_APPROVE);
 
@@ -20,40 +33,35 @@ export async function approveNocAction(formData: FormData): Promise<NocActionRes
     nocId: rawNocId,
     adminRemarks: rawRemarks || undefined,
     documentUrl: rawDocUrl || undefined,
+    stipend: formData.get("stipend"),
   });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid approval parameters." };
   }
 
-  const { nocId, adminRemarks, documentUrl } = parsed.data;
+  const { nocId, adminRemarks, documentUrl, stipend } = parsed.data;
 
+  // No Prisma fallback: approving records the internship offer, which only
+  // the backend does (app/services/noc_offers.py). A status flip on its own
+  // would approve the NOC without the offer the placement policy reads.
   try {
-    try {
-      await backendFetch(`/api/v1/noc/admin/${nocId}/approve`, {
-        method: "POST",
-        body: JSON.stringify({
-          adminRemarks: adminRemarks ?? undefined,
-          documentUrl: documentUrl ?? undefined,
-        }),
-      });
-    } catch {
-      // Direct Prisma fallback
-      await db.nocRequest.update({
-        where: { id: nocId },
-        data: {
-          status: "APPROVED",
-          adminRemarks: adminRemarks ?? undefined,
-          documentUrl: documentUrl ?? undefined,
-        },
-      });
-    }
+    await backendFetch(`/api/v1/noc/admin/${nocId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({
+        adminRemarks: adminRemarks ?? undefined,
+        documentUrl: documentUrl ?? undefined,
+        stipend,
+      }),
+    });
   } catch (err) {
     console.error("Failed to approve NOC", err);
-    return { error: err instanceof Error ? err.message : "Failed to approve NOC request." };
+    return { error: backendError(err, "Failed to approve NOC request.") };
   }
 
   revalidatePath("/admin/noc-requests");
+  revalidatePath("/admin/placement-records");
+  revalidatePath("/admin/students");
   revalidatePath("/forms");
   return { success: "NOC request approved successfully." };
 }
@@ -75,30 +83,21 @@ export async function rejectNocAction(formData: FormData): Promise<NocActionResu
 
   const { nocId, adminRemarks } = parsed.data;
 
+  // No Prisma fallback, for the same reason as approval: rejecting an
+  // approved request revokes its internship offer on the backend.
   try {
-    try {
-      await backendFetch(`/api/v1/noc/admin/${nocId}/reject`, {
-        method: "POST",
-        body: JSON.stringify({
-          adminRemarks,
-        }),
-      });
-    } catch {
-      // Direct Prisma fallback
-      await db.nocRequest.update({
-        where: { id: nocId },
-        data: {
-          status: "REJECTED",
-          adminRemarks,
-        },
-      });
-    }
+    await backendFetch(`/api/v1/noc/admin/${nocId}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ adminRemarks }),
+    });
   } catch (err) {
     console.error("Failed to reject NOC", err);
-    return { error: err instanceof Error ? err.message : "Failed to reject NOC request." };
+    return { error: backendError(err, "Failed to reject NOC request.") };
   }
 
   revalidatePath("/admin/noc-requests");
+  revalidatePath("/admin/placement-records");
+  revalidatePath("/admin/students");
   revalidatePath("/forms");
   return { success: "NOC request rejected." };
 }

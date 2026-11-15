@@ -97,6 +97,7 @@ const nav: NavItem[] = [
     children: [
       { label: "View placement records", href: "/admin/placement-records" },
       { label: "Add placement records", href: "/admin/placement-records/add" },
+      { label: "Update PPO status", href: "/admin/placement-records/ppo" },
     ],
   },
   { section: "Records", label: "Students", href: "/admin/students", icon: GraduationCap },

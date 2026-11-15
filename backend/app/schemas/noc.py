@@ -29,9 +29,14 @@ class NocBase(BaseModel):
     startDate: datetime
     endDate: datetime
     message: Optional[str] = Field(None, max_length=2000)
+    # The internship's role, recorded on the Offer an approval creates.
+    jobTitle: Optional[str] = Field(None, max_length=200)
 
 
 class NocCreate(NocBase):
+    # Monthly stipend in rupees; 0 for an unpaid internship. Required because
+    # an approved NOC is recorded as an internship offer, which carries one.
+    stipend: float = Field(..., ge=0, le=10_000_000)
     source: Literal["ON_CAMPUS", "OFF_CAMPUS"]
     # The student's proof of an off-campus offer, staged beforehand via
     # POST /uploads/noc-offcampus-proof — required exactly when source is
@@ -61,6 +66,9 @@ class NocCreate(NocBase):
 class NocApproveRequest(BaseModel):
     adminRemarks: Optional[str] = Field(None, max_length=2000)
     documentUrl: Optional[str] = None
+    # The office may correct (or, for a request filed before the field
+    # existed, supply) the stipend recorded on the internship offer.
+    stipend: Optional[float] = Field(None, ge=0, le=10_000_000)
 
 
 class NocRejectRequest(BaseModel):
@@ -87,6 +95,9 @@ class NocResponse(NocBase):
     offCampusProofUrl: Optional[str] = None
     verifiedByPlacementTeam: bool
     nocRequired: bool
+    stipend: Optional[float] = None
+    # The internship offer this NOC is recorded as, once approved.
+    offerId: Optional[str] = None
     createdAt: datetime
     updatedAt: datetime
 

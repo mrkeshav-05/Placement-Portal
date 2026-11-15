@@ -22,6 +22,8 @@ import {
 } from "@/lib/offer-schema";
 import { CompanySelect } from "@/components/common/company-select";
 import { COMPANY_OPTIONS } from "@/lib/company-options";
+import { PpoOutcomeDialog } from "@/components/admin/ppo-outcome-dialog";
+import { PPO_STATUS_LABELS, type PpoStatus } from "@/lib/placement-policy";
 import { PortalDialog } from "@/components/common/portal-dialog";
 import {
   DataTable,
@@ -77,6 +79,9 @@ export type OfferRecord = {
   location: string | null;
   offeredAt: string | null;
   joiningDate: string | null;
+  endDate: string | null;
+  /** For an internship: whether the company gave a PPO. PENDING keeps the student out of drives. */
+  ppoStatus: PpoStatus;
   remarks: string | null;
   student: {
     id: string;
@@ -87,6 +92,14 @@ export type OfferRecord = {
     degree: string | null;
   } | null;
   company: { id: string; name: string } | null;
+};
+
+// Reuses the status chip colours: pending reads as "offered" (amber), received
+// as "accepted" (green), no PPO as "declined" (muted red).
+const PPO_BADGE: Record<PpoStatus, string> = {
+  PENDING: "offered",
+  RECEIVED: "accepted",
+  NOT_RECEIVED: "declined",
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-IN", {
@@ -135,6 +148,7 @@ export function PlacementRecordsManager({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<OfferRecord | null | undefined>(undefined);
+  const [ppoFor, setPpoFor] = useState<OfferRecord | null>(null);
   const [formType, setFormType] = useState<OfferType>("FTE");
   const [formSource, setFormSource] = useState<OfferSource>("ON_CAMPUS");
   const [formCompanyId, setFormCompanyId] = useState("");
@@ -272,6 +286,18 @@ export function PlacementRecordsManager({
         ),
       },
       {
+        id: "ppo",
+        header: "PPO",
+        width: "130px",
+        sortValue: (offer) => (offer.type === "INTERNSHIP" ? offer.ppoStatus : null),
+        cell: (offer) =>
+          offer.type === "INTERNSHIP" ? (
+            <b className={`cell-status ${PPO_BADGE[offer.ppoStatus]}`}>{PPO_STATUS_LABELS[offer.ppoStatus]}</b>
+          ) : (
+            <span className="dt-muted">—</span>
+          ),
+      },
+      {
         id: "batch",
         header: "Season",
         width: "100px",
@@ -302,10 +328,19 @@ export function PlacementRecordsManager({
             {
               id: "actions",
               header: "Actions",
-              width: "110px",
+              width: "140px",
               hideable: false,
               cell: (offer: OfferRecord) => (
                 <span className="row-actions">
+                  {canUpdate && offer.type === "INTERNSHIP" ? (
+                    <button
+                      title="Record the PPO outcome"
+                      aria-label="Record the PPO outcome"
+                      onClick={() => setPpoFor(offer)}
+                    >
+                      <Award />
+                    </button>
+                  ) : null}
                   {canUpdate ? (
                     <button
                       title={`Edit the offer for ${offer.student?.name ?? "this student"}`}
@@ -377,6 +412,13 @@ export function PlacementRecordsManager({
         options: Object.entries(OFFER_STATUS_LABELS).map(([value, label]) => ({ value, label })),
         value: (offer) => offer.status,
       },
+      {
+        id: "ppo",
+        label: "PPO",
+        options: Object.entries(PPO_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+        // Internships only: every other offer type has no PPO outcome to filter on.
+        value: (offer) => (offer.type === "INTERNSHIP" ? offer.ppoStatus : ""),
+      },
     ],
     [seasons, offers],
   );
@@ -411,6 +453,7 @@ export function PlacementRecordsManager({
         ? formatRupees(offer.ctc)
         : formatStipend(offer.stipend),
       Status: OFFER_STATUS_LABELS[offer.status],
+      "PPO Outcome": offer.type === "INTERNSHIP" ? PPO_STATUS_LABELS[offer.ppoStatus] : "",
       Season: offer.batch,
       Location: offer.location ?? "",
       "Offer Date": formatDate(offer.offeredAt),
@@ -489,6 +532,16 @@ export function PlacementRecordsManager({
             : "Add the season's first offer; the dashboard fills in from here."
         }
       />
+
+      {ppoFor ? (
+        <PpoOutcomeDialog
+          offerId={ppoFor.id}
+          studentName={ppoFor.student?.name ?? ppoFor.student?.rollNumber ?? "Student"}
+          company={ppoFor.company?.name ?? "Company"}
+          current={ppoFor.ppoStatus}
+          onClose={() => setPpoFor(null)}
+        />
+      ) : null}
 
       {editing !== undefined ? (
         <PortalDialog
@@ -669,6 +722,17 @@ export function PlacementRecordsManager({
                   />
                 </div>
               )}
+              {formType === "INTERNSHIP" ? (
+                <div className="grid gap-2">
+                  <Label htmlFor="offer-end-date">Internship end date (optional)</Label>
+                  <Input
+                    id="offer-end-date"
+                    name="endDate"
+                    type="date"
+                    defaultValue={dateInputValue(editing?.endDate ?? null)}
+                  />
+                </div>
+              ) : null}
               <div className="grid gap-2">
                 <Label htmlFor="offer-location">Location</Label>
                 <Input

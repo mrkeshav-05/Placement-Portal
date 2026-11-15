@@ -53,6 +53,7 @@ function internshipKpis(overview: AdminOverview): Kpi[] {
           ? [
               ["Median", `${rupeesPerMonth(stipend.median)}/mo`],
               ["Average", `${rupeesPerMonth(stipend.average)}/mo`],
+              ["Highest", `${rupeesPerMonth(stipend.highest)}/mo`],
               ["Lowest", `${rupeesPerMonth(stipend.lowest)}/mo`],
             ]
           : undefined,
@@ -60,23 +61,34 @@ function internshipKpis(overview: AdminOverview): Kpi[] {
       },
     },
     {
-      label: "Highest stipend",
-      value: stipend.count ? `${rupeesPerMonth(stipend.highest)}/mo` : "—",
-      detail: stipend.count
-        ? `Lowest ${rupeesPerMonth(stipend.lowest)}/month`
-        : "Appears once a stipend is recorded",
+      label: "PPO outcomes",
+      value: summary.ppo ? `${summary.ppo.pending} pending` : "—",
+      detail: summary.ppo
+        ? `${summary.ppo.received} received · ${summary.ppo.notReceived} no PPO`
+        : "Appears once the PPO outcomes load",
+      tone: summary.ppo && summary.ppo.pending > 0 ? "warn" : undefined,
+      pop: summary.ppo
+        ? {
+            rows: [
+              ["Pending", String(summary.ppo.pending)],
+              ["Received (counted as a PPO)", String(summary.ppo.received)],
+              ["No PPO", String(summary.ppo.notReceived)],
+            ],
+            note: "An internship keeps its holder out of on-campus drives until its PPO outcome is recorded. Record it on Placement records or the student's page: no PPO frees the student, a received PPO is counted as a placement.",
+          }
+        : undefined,
     },
     {
       label: "Students eligible",
       value: String(summary.eligibleStudents),
-      detail: "No offer yet, still open to recruiters",
+      detail: "No offer, or no PPO: open to recruiters",
       pop: {
         rows: [
           ["Batch size", String(totals.seasonStudents)],
           ["Holding an offer", String(totals.seasonStudents - summary.eligibleStudents)],
           ["Eligible", String(summary.eligibleStudents)],
         ],
-        note: "A student leaves this count as soon as any internship, full-time or PPO offer is recorded for them.",
+        note: "A student leaves this count when an internship, full-time or PPO offer is recorded, and returns when their internship's PPO outcome is recorded as not received.",
       },
     },
     {
@@ -108,10 +120,20 @@ function placementKpis(overview: AdminOverview): Kpi[] {
         totals.placements === 1 ? "offer" : "offers"
       }`,
       progress: totals.placementRate,
-      pop: {
-        rows: overview.placementsByDegree.slice(0, 5).map((d) => [d.label, String(d.count)]),
-        note: "Students holding a full-time or PPO offer, by degree. Updates when such an offer is recorded.",
-      },
+      pop: overview.policy
+        ? {
+            rows: [
+              ["Dream", String(overview.policy.dreamPlaced)],
+              ["First Round", String(overview.policy.firstRoundPlaced)],
+              ["Internship, PPO pending", String(overview.policy.interning)],
+              ["Open", String(overview.policy.open)],
+            ],
+            note: "Season students by placement policy (Dream line: 10 LPA for B.Tech, 8 LPA for M.Tech / M.Sc. / MBA / Ph.D.). Dream holders and students whose internship has no PPO outcome yet can no longer apply on campus; First Round holders may still apply to Dream drives.",
+          }
+        : {
+            rows: overview.placementsByDegree.slice(0, 5).map((d) => [d.label, String(d.count)]),
+            note: "Students holding a full-time or PPO offer, by degree. Updates when such an offer is recorded.",
+          },
     },
     {
       label: "Median / average package",

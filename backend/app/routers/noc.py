@@ -17,6 +17,7 @@ from app.core.security import (
 )
 from app.core.storage import upload_pdf, validate_pdf
 from app.dependencies import get_db, require_student
+from app.core import cache
 from app.models.db import NocRequest, NocSource, NocStatus, Notification, User
 from app.schemas.noc import (
     AdminNocResponse,
@@ -29,6 +30,7 @@ from app.schemas.noc import (
     NocVerifyRequest,
 )
 from app.services.email import send_notification_email
+from app.services.noc_offers import record_noc_internship, revoke_noc_internship
 
 router = APIRouter(prefix="/noc", tags=["noc"])
 
@@ -69,10 +71,18 @@ def _to_admin_noc_response(noc: NocRequest) -> AdminNocResponse:
         offCampusProofUrl=noc.offCampusProofUrl,
         verifiedByPlacementTeam=noc.verifiedByPlacementTeam,
         nocRequired=noc.nocRequired,
+        jobTitle=noc.jobTitle,
+        stipend=noc.stipend,
+        offerId=noc.offer.id if noc.offer else None,
         createdAt=noc.createdAt,
         updatedAt=noc.updatedAt,
         student=student_summary,
     )
+
+
+def _to_noc_response(noc: NocRequest) -> NocResponse:
+    """The student's view: the admin response without the student summary."""
+    return NocResponse(**_to_admin_noc_response(noc).model_dump(exclude={"student"}))
 
 
 # ===========================================================================
@@ -87,10 +97,11 @@ async def list_nocs(
     """List all NOC requests submitted by the calling student."""
     nocs = await db.scalars(
         select(NocRequest)
+        .options(selectinload(NocRequest.offer))
         .where(NocRequest.userId == user_payload["sub"])
         .order_by(NocRequest.createdAt.desc())
     )
-    return nocs.all()
+    return [_to_noc_response(noc) for noc in nocs.all()]
 
 
 @router.post("", response_model=NocResponse)
@@ -121,12 +132,25 @@ async def create_noc(
         source=NocSource(data.source),
         offCampusProofUrl=data.offCampusProofUrl.strip() if data.offCampusProofUrl else None,
         nocRequired=data.nocRequired,
+        jobTitle=(data.jobTitle or "").strip() or None,
+        stipend=data.stipend,
         updatedAt=datetime.now(timezone.utc),
     )
     db.add(noc)
+
+    # Nothing to decide, so this internship is on file from the start.
+    if not data.nocRequired:
+        student = await db.scalar(select(User).where(User.id == user_payload["sub"]))
+        if student:
+            await db.flush()
+            await record_noc_internship(db, noc, student, recorder_id=student.id)
+
     await db.commit()
-    await db.refresh(noc)
-    return noc
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
+    saved = await db.scalar(
+        select(NocRequest).options(selectinload(NocRequest.offer)).where(NocRequest.id == noc.id)
+    )
+    return _to_noc_response(saved)
 
 
 @router.patch("/{noc_id}/cancel")
@@ -218,7 +242,7 @@ async def list_admin_nocs(
     """List all student NOC requests with filters, search, and student profile info."""
     stmt = (
         select(NocRequest)
-        .options(selectinload(NocRequest.user))
+        .options(selectinload(NocRequest.user), selectinload(NocRequest.offer))
         .order_by(NocRequest.createdAt.desc())
     )
 
@@ -266,7 +290,7 @@ async def get_admin_noc_detail(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieve detailed information about a single NOC request."""
-    stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
+    stmt = select(NocRequest).options(selectinload(NocRequest.user), selectinload(NocRequest.offer)).where(NocRequest.id == noc_id)
     noc = await db.scalar(stmt)
     if not noc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
@@ -288,7 +312,7 @@ async def approve_noc(
     db: AsyncSession = Depends(get_db),
 ):
     """Approve a student NOC request, attach document URL or remarks, and notify student."""
-    stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
+    stmt = select(NocRequest).options(selectinload(NocRequest.user), selectinload(NocRequest.offer)).where(NocRequest.id == noc_id)
     noc = await db.scalar(stmt)
     if not noc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
@@ -298,7 +322,17 @@ async def approve_noc(
         noc.adminRemarks = data.adminRemarks.strip() or None
     if data.documentUrl is not None:
         noc.documentUrl = data.documentUrl.strip() if data.documentUrl.strip() else None
+    if data.stipend is not None:
+        noc.stipend = data.stipend
     noc.updatedAt = datetime.now(timezone.utc)
+
+    # An approved NOC is an internship offer: it counts in the statistics and
+    # closes on-campus applications until the internship ends.
+    if not noc.user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student not found.")
+    await record_noc_internship(
+        db, noc, noc.user, recorder_id=admin_payload.get("sub") or admin_payload.get("id")
+    )
 
     # In-app notification for the student
     notif = Notification(
@@ -310,7 +344,8 @@ async def approve_noc(
     )
     db.add(notif)
     await db.commit()
-    await db.refresh(noc)
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
+    noc = await db.scalar(stmt.execution_options(populate_existing=True))
 
     # Non-blocking background email
     if noc.user and noc.user.email:
@@ -339,7 +374,7 @@ async def reject_noc(
     db: AsyncSession = Depends(get_db),
 ):
     """Reject a student NOC request with a reason and notify student."""
-    stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
+    stmt = select(NocRequest).options(selectinload(NocRequest.user), selectinload(NocRequest.offer)).where(NocRequest.id == noc_id)
     noc = await db.scalar(stmt)
     if not noc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
@@ -348,6 +383,8 @@ async def reject_noc(
     if data.adminRemarks:
         noc.adminRemarks = data.adminRemarks.strip()
     noc.updatedAt = datetime.now(timezone.utc)
+    # Rejecting a request that was approved earlier withdraws its internship.
+    await revoke_noc_internship(db, noc)
 
     reason_text = f" Reason: {noc.adminRemarks}" if noc.adminRemarks else ""
 
@@ -361,7 +398,8 @@ async def reject_noc(
     )
     db.add(notif)
     await db.commit()
-    await db.refresh(noc)
+    await cache.invalidate(cache.TOPIC_ANALYTICS)
+    noc = await db.scalar(stmt.execution_options(populate_existing=True))
 
     # Non-blocking background email
     if noc.user and noc.user.email:
@@ -394,7 +432,7 @@ async def verify_noc_offcampus_proof(
     gates or is gated by the decision, it is only a record that someone
     looked at the document.
     """
-    stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
+    stmt = select(NocRequest).options(selectinload(NocRequest.user), selectinload(NocRequest.offer)).where(NocRequest.id == noc_id)
     noc = await db.scalar(stmt)
     if not noc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
@@ -402,7 +440,7 @@ async def verify_noc_offcampus_proof(
     noc.verifiedByPlacementTeam = data.verified
     noc.updatedAt = datetime.now(timezone.utc)
     await db.commit()
-    await db.refresh(noc)
+    noc = await db.scalar(stmt.execution_options(populate_existing=True))
 
     return _to_admin_noc_response(noc)
 
@@ -415,7 +453,7 @@ async def upload_signed_noc_document(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload signed NOC certificate PDF and attach directly to request."""
-    stmt = select(NocRequest).options(selectinload(NocRequest.user)).where(NocRequest.id == noc_id)
+    stmt = select(NocRequest).options(selectinload(NocRequest.user), selectinload(NocRequest.offer)).where(NocRequest.id == noc_id)
     noc = await db.scalar(stmt)
     if not noc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="NOC request not found.")
@@ -430,7 +468,7 @@ async def upload_signed_noc_document(
     noc.documentUrl = upload_res["secure_url"]
     noc.updatedAt = datetime.now(timezone.utc)
     await db.commit()
-    await db.refresh(noc)
+    noc = await db.scalar(stmt.execution_options(populate_existing=True))
 
     return {"url": noc.documentUrl, "noc": _to_admin_noc_response(noc)}
 

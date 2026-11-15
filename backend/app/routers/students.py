@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.security import PERM_STUDENTS_UPDATE, PERM_STUDENTS_VIEW, require_permission
 from app.dependencies import get_db
-from app.models.db import Application, JobProfile, JobStatus, Resume, Role, User
+from app.models.db import Application, JobProfile, JobStatus, Offer, Resume, Role, User
 from app.schemas.student import (
     MissedCompanyFlag,
     StudentAcademicCorrection,
@@ -15,6 +15,14 @@ from app.schemas.student import (
     StudentApplicationFlag,
 )
 from app.services.eligibility import to_eligibility_profile
+from app.services.placement_policy import (
+    Standing,
+    StandingResult,
+    placement_standing,
+    policy_allows,
+    policy_job_from_row,
+    policy_offer_from_row,
+)
 from app.services.student_flags import compute_missed_streak
 
 router = APIRouter(prefix="/students", tags=["students"])
@@ -45,6 +53,46 @@ async def update_student_academic_record(
     await db.commit()
     await db.refresh(student)
     return student
+
+
+async def _standings(db: AsyncSession) -> dict[str, StandingResult]:
+    """Every student's placement-policy standing, keyed by user id."""
+    offers = (
+        await db.scalars(
+            select(Offer).options(selectinload(Offer.company), selectinload(Offer.user))
+        )
+    ).all()
+    by_student: dict[str, list] = {}
+    degrees: dict[str, str | None] = {}
+    for offer in offers:
+        by_student.setdefault(offer.userId, []).append(policy_offer_from_row(offer))
+        degrees[offer.userId] = offer.user.degree if offer.user else None
+    return {
+        user_id: placement_standing(items, degrees.get(user_id))
+        for user_id, items in by_student.items()
+    }
+
+
+@router.get("/admin/standings")
+async def list_student_standings(
+    admin_payload: dict = Depends(require_permission(PERM_STUDENTS_VIEW)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Placement-policy standing of every student holding at least one offer.
+    A student missing from the list is OPEN.
+    """
+    return [
+        {
+            "userId": user_id,
+            "standing": result.standing.value,
+            "label": result.label,
+            "companyName": result.company_name,
+            "ctc": result.ctc,
+        }
+        for user_id, result in (await _standings(db)).items()
+        if result.standing != Standing.OPEN
+    ]
 
 
 @router.get("/admin/flags", response_model=list[StudentApplicationFlag])
@@ -95,6 +143,11 @@ async def list_students_with_missed_streaks(
         for job in jobs
     ]
 
+    # The policy decides which drives a student could have applied to: a
+    # placed student skipping drives they are barred from has missed nothing.
+    policy_jobs = {job.id: policy_job_from_row(job) for job in jobs}
+    standings = await _standings(db)
+
     application_rows = await db.execute(select(Application.userId, Application.jobProfileId))
     applied_by_student: dict[str, set[str]] = {}
     for user_id, job_profile_id in application_rows.all():
@@ -107,9 +160,16 @@ async def list_students_with_missed_streaks(
         if not profile:
             continue
 
+        standing = standings.get(student.id)
+        open_jobs = (
+            jobs_in_order
+            if standing is None or standing.standing == Standing.OPEN
+            else [j for j in jobs_in_order if policy_allows(standing, policy_jobs[j["id"]])[0]]
+        )
+
         streak = compute_missed_streak(
             profile=profile,
-            jobs_in_chronological_order=jobs_in_order,
+            jobs_in_chronological_order=open_jobs,
             applied_job_ids=applied_by_student.get(student.id, set()),
         )
 

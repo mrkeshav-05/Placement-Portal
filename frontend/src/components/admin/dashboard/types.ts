@@ -62,6 +62,11 @@ export type AdminOverview = {
     eligibleStudents: number;
     topRecruiter: { label: string; count: number } | null;
     recruiters: Distribution[];
+    /**
+     * Internships by PPO outcome. A pending internship keeps its holder out of
+     * on-campus drives. Optional: an overview cached before the field existed lacks it.
+     */
+    ppo?: { pending: number; received: number; notReceived: number };
   };
   /** Internship-to-full-time conversion, derived from the offers on file. */
   conversion: {
@@ -69,6 +74,17 @@ export type AdminOverview = {
     interns: number;
     rate: number;
     ppoWithoutInternship: number;
+  };
+  /**
+   * Season students by placement-policy standing (Dream offer at or above the programme's line,
+   * First Round offer below it, internship with the PPO outcome pending, or open). Optional because
+   * an overview cached before the field existed lacks it.
+   */
+  policy?: {
+    dreamPlaced: number;
+    firstRoundPlaced: number;
+    interning: number;
+    open: number;
   };
   placementsByDegree: Distribution[];
   internshipsByDegree: Distribution[];

@@ -107,6 +107,12 @@ class OfferStatus(str, enum.Enum):
     REVOKED = "REVOKED"
 
 
+class PpoStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    RECEIVED = "RECEIVED"
+    NOT_RECEIVED = "NOT_RECEIVED"
+
+
 class OfferSource(str, enum.Enum):
     ON_CAMPUS = "ON_CAMPUS"
     OFF_CAMPUS = "OFF_CAMPUS"
@@ -317,6 +323,11 @@ class Offer(Base):
     applicationId: Mapped[str | None] = mapped_column(
         String, ForeignKey("Application.id", ondelete="SET NULL"), unique=True, nullable=True
     )
+    # The approved NOC this internship was recorded from, when it was. See
+    # app/services/noc_offers.py.
+    nocRequestId: Mapped[str | None] = mapped_column(
+        String, ForeignKey("NocRequest.id", ondelete="SET NULL"), unique=True, nullable=True
+    )
     type: Mapped[OfferType] = mapped_column(Enum(OfferType, name="OfferType"))
     status: Mapped[OfferStatus] = mapped_column(
         Enum(OfferStatus, name="OfferStatus"), default=OfferStatus.OFFERED
@@ -337,6 +348,19 @@ class Offer(Base):
     offeredAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     decidedAt: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     joiningDate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Last day of an internship. Informational and optional: an internship
+    # blocks on-campus applications until its PPO outcome is recorded, not
+    # until this date (see app/services/placement_policy.py).
+    endDate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # For an INTERNSHIP: whether the company gave a PPO. PENDING blocks.
+    ppoStatus: Mapped[PpoStatus] = mapped_column(
+        Enum(PpoStatus, name="PpoStatus"), default=PpoStatus.PENDING, server_default="PENDING"
+    )
+    # On a PPO offer recorded from an internship's "PPO received" outcome:
+    # the internship it came from.
+    internshipOfferId: Mapped[str | None] = mapped_column(
+        String, ForeignKey("Offer.id", ondelete="SET NULL"), unique=True, nullable=True
+    )
     remarks: Mapped[str | None] = mapped_column(Text, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updatedAt: Mapped[datetime] = mapped_column(
@@ -348,6 +372,7 @@ class Offer(Base):
     company: Mapped["Company"] = relationship(back_populates="offers")
     job_profile: Mapped["JobProfile | None"] = relationship(back_populates="offers")
     application: Mapped["Application | None"] = relationship(back_populates="offer")
+    noc_request: Mapped["NocRequest | None"] = relationship(back_populates="offer")
     created_by: Mapped["User"] = relationship(back_populates="recorded_offers", foreign_keys=[createdById])
 
 
@@ -448,10 +473,16 @@ class NocRequest(Base):
     # the placement cell — no decision is made and status goes straight to
     # APPROVED. See create_noc.
     nocRequired: Mapped[bool] = mapped_column(Boolean, default=True)
+    # The internship's terms, which become the Offer an approval records.
+    # Nullable only because rows from before these columns have none; the
+    # create schema requires a stipend.
+    jobTitle: Mapped[str | None] = mapped_column(String, nullable=True)
+    stipend: Mapped[float | None] = mapped_column(Float, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updatedAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
     user: Mapped["User"] = relationship(back_populates="noc_requests")
+    offer: Mapped["Offer | None"] = relationship(back_populates="noc_request")
 
 
 class InterviewExperience(Base):

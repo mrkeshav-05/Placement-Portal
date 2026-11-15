@@ -90,6 +90,7 @@ test("FACULTY reads NOC requests, placement records, and the overview, and nothi
   assert.equal(canAccessAdminRoute(faculty, "/admin/placement-records"), true);
   // No route-level grant beyond those three.
   assert.equal(canAccessAdminRoute(faculty, "/admin/placement-records/add"), false);
+  assert.equal(canAccessAdminRoute(faculty, "/admin/placement-records/ppo"), false);
   assert.equal(canAccessAdminRoute(faculty, "/admin/students"), false);
   assert.equal(canAccessAdminRoute(faculty, "/admin/applications"), false);
   assert.equal(canAccessAdminRoute(faculty, "/admin/users"), false);
@@ -203,6 +204,7 @@ test("canAccessAdminRoute guards routes based on permission requirements", () =>
   // Nor does reading the season's offers imply recording a drive's worth of them.
   assert.equal(canAccessAdminRoute(volunteer, "/admin/placement-records"), true);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/placement-records/add"), false);
+  assert.equal(canAccessAdminRoute(volunteer, "/admin/placement-records/ppo"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/applications"), true);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/users"), false);
   assert.equal(canAccessAdminRoute(volunteer, "/admin/settings"), false);

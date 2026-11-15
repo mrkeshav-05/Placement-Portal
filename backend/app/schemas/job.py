@@ -100,6 +100,9 @@ class JobCompanySummary(BaseModel):
     id: str
     name: str
     logoUrl: Optional[str] = None
+    # "Dream" / "First Round": read by the placement policy to classify a
+    # drive that carries no package figure of its own.
+    category: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

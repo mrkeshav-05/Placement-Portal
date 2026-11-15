@@ -23,6 +23,9 @@ interface BackendNocAdminDto {
   offCampusProofUrl?: string | null;
   verifiedByPlacementTeam: boolean;
   nocRequired: boolean;
+  jobTitle?: string | null;
+  stipend?: number | null;
+  offerId?: string | null;
   createdAt: string;
   updatedAt: string;
   student?: {
@@ -73,6 +76,9 @@ export default async function Page() {
       offCampusProofUrl: noc.offCampusProofUrl ?? null,
       verifiedByPlacementTeam: noc.verifiedByPlacementTeam,
       nocRequired: noc.nocRequired,
+      jobTitle: noc.jobTitle ?? null,
+      stipend: noc.stipend ?? null,
+      offerId: noc.offerId ?? null,
       createdAt: typeof noc.createdAt === "string" ? noc.createdAt : new Date(noc.createdAt).toISOString(),
       updatedAt: typeof noc.updatedAt === "string" ? noc.updatedAt : new Date(noc.updatedAt).toISOString(),
     }));
@@ -126,6 +132,9 @@ export default async function Page() {
       offCampusProofUrl: noc.offCampusProofUrl,
       verifiedByPlacementTeam: noc.verifiedByPlacementTeam,
       nocRequired: noc.nocRequired,
+      jobTitle: noc.jobTitle,
+      stipend: noc.stipend,
+      offerId: null,
       createdAt: noc.createdAt.toISOString(),
       updatedAt: noc.updatedAt.toISOString(),
     }));

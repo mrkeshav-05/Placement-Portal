@@ -10,7 +10,7 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from app.models.db import OfferStatus, OfferType
+from app.models.db import OfferStatus, OfferType, PpoStatus
 
 # A REVOKED offer never stood and a DECLINED one was given up, so neither is
 # part of the season's placement record. Both rows stay in the table: the
@@ -97,6 +97,8 @@ class OfferView:
     company_id: str
     company_name: str
     type: OfferType
+    # Only read for internships.
+    ppo_status: PpoStatus = PpoStatus.PENDING
 
 
 def converted_students(offers: Iterable[OfferView]) -> set[str]:
@@ -123,15 +125,21 @@ def internship_summary(offers: Iterable[OfferView], season_student_ids: Iterable
     """
     Internship-side headline counts for one season.
 
-    `eligible` is the season's students holding no counted offer of any kind:
-    the pool still open to a recruiter. It shrinks as soon as an internship,
-    full-time or PPO offer is recorded for a student.
+    `eligible` is the season's students still open to a recruiter: holding no
+    counted offer, or only internships whose company gave no PPO. An internship
+    whose PPO outcome is pending keeps its holder out, so a student leaves the
+    pool when an internship is recorded and returns when "no PPO" is recorded.
+    `ppo` counts internships by that outcome.
     """
     offers = list(offers)
     student_ids = set(season_student_ids)
     interns = [o for o in offers if o.type == OfferType.INTERNSHIP]
     interns_by_student = {o.user_id for o in interns}
-    holders = {o.user_id for o in offers}
+    holders = {
+        o.user_id
+        for o in offers
+        if not (o.type == OfferType.INTERNSHIP and o.ppo_status == PpoStatus.NOT_RECEIVED)
+    }
 
     by_company = counts_by_label(o.company_name for o in interns)
     return {
@@ -141,6 +149,11 @@ def internship_summary(offers: Iterable[OfferView], season_student_ids: Iterable
             {"label": by_company[0][0], "count": by_company[0][1]} if by_company else None
         ),
         "recruiters": [{"label": label, "count": count} for label, count in by_company[:5]],
+        "ppo": {
+            "pending": sum(1 for o in interns if o.ppo_status == PpoStatus.PENDING),
+            "received": sum(1 for o in interns if o.ppo_status == PpoStatus.RECEIVED),
+            "notReceived": sum(1 for o in interns if o.ppo_status == PpoStatus.NOT_RECEIVED),
+        },
     }
 
 

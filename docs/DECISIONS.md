@@ -1758,3 +1758,27 @@ CS and CSE name the same B.Tech branch, but both spellings had reached the datab
 - Consequence: CS students become eligible for the drives previously open only to "CSE". That is the intended meaning, not a widening.
 
 To add another alias, add it to all four definitions and write a migration that rewrites existing rows.
+
+## 2026-11-15 — One-offer placement policy, and an approved NOC is an internship offer
+
+The placement cell's rule is now enforced rather than only labelled. `Company.category` was stored but unread, and a student holding an offer could apply to every drive.
+
+- **Dream vs First Round is a package line that depends on the student's programme** (Placement Policy §4.1): 10 LPA for B.Tech, 8 LPA for M.Tech / M.Sc. / MBA / Ph.D., inclusive in both cases ("or above"). The programme is read from the profile's free-text `degree`, compared on letters and digits only; an unset or unrecognised degree is read as B.Tech, the higher line. Because the line belongs to the student, the same drive can be Dream for one student and First Round for another, so drives are classified per student rather than once. An FTE or PPO at or above the line is Dream: its holder may apply to no further on-campus drive. Below it is First Round: its holder may apply to Dream drives only, and never to an internship-only drive. The figure decides when there is one; `Company.category` is the fallback for an offer with no CTC, and for a drive it marks the drive Dream on its own, because a drive's `ctcStipend` may be a stipend rather than a CTC. (An earlier draft of this entry used a single 12 LPA line; it was corrected the same day to the policy document's programme-specific lines.)
+- **An internship blocks until its PPO outcome is recorded**, not until its end date (corrected the same day; see below). `Offer.ppoStatus` is `PENDING`, `RECEIVED` or `NOT_RECEIVED`.
+- **An approved NOC is recorded as an INTERNSHIP `Offer`** (`Offer.nocRequestId`, unique), so it counts in the statistics and blocks on-campus applications until its end date. NOCs now carry `stipend` (required on create) and `jobTitle`. An off-campus internship for a Dream-placed student is still requested through an NOC, which the policy never blocks.
+- **Two engines, one rule**, the same arrangement as eligibility: `backend/app/services/placement_policy.py` enforces it, `frontend/src/lib/placement-policy.ts` explains it and covers the standalone Prisma apply fallback. Their tests pin the same cases.
+- The admin NOC approve/reject server actions no longer fall back to a Prisma status write: that path would approve without recording the offer.
+
+Not decided here: an admin override for individual exceptions, and whether becoming Dream-placed should withdraw the student's open applications. Both are listed in `docs/FEATURE_STATUS.md`.
+
+## 2026-11-15 — An internship blocks until its PPO outcome is recorded
+
+The first version of the one-offer policy released a student when an internship's end date passed. That is wrong for this institute: an internship ending does not mean the student may apply to opportunities. The company decides on a PPO afterwards, and only that decision, recorded by the placement cell, releases the student.
+
+- **Any counted internship offer blocks every on-campus drive while its `Offer.ppoStatus` is `PENDING`**, which is the default. It applies to every internship on file, including those recorded before the column existed and those an approved NOC records. A Dream offer in hand still decides first; a pending internship outranks a First Round offer (a First Round holder with a pending internship is blocked from Dream drives too).
+- **`NOT_RECEIVED` returns the student to the pool.** They are open again and count as eligible on the dashboard.
+- **`RECEIVED` is recorded as a real PPO `Offer`** (`type = PPO`, `internshipOfferId` pointing at the internship, the CTC the office enters), so it is counted in the placement statistics and judged by the programme's Dream / First Round line like any full-time offer. Setting the outcome back to `NOT_RECEIVED` or `PENDING` revokes that PPO offer (kept on file, excluded from every count). A PPO recorded by hand from the same company settles the pending internship as `RECEIVED`. Rejecting an approved NOC revokes its internship and any PPO recorded from it.
+- **`Offer.endDate` is optional and informational.** It no longer affects the policy; the record forms no longer require it.
+- Recorded by `PATCH /api/v1/offers/{id}/ppo` (`placement_records.update`), from the placement records table and from the student's detail page. The dashboard's internship row shows pending / received / no-PPO counts.
+- Migration `20261115170000_internship_ppo_status` adds the column rather than editing `20261115160000_placement_policy`, which had already been applied.
+

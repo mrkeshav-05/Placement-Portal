@@ -9,6 +9,14 @@ import {
   type DataTableFilter,
 } from "@/components/common/data-table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { STANDING_LABELS, type Standing } from "@/lib/placement-policy";
+
+// Badge per placement-policy standing. Open renders as a muted dash.
+const STANDING_BADGE: Record<Exclude<Standing, "OPEN">, string> = {
+  DREAM_PLACED: "green",
+  FIRST_ROUND_PLACED: "blue",
+  INTERNING: "purple",
+};
 
 export type AdminStudentListItem = {
   id: string;
@@ -22,6 +30,10 @@ export type AdminStudentListItem = {
   applicationCount: number;
   missedStreak: number;
   missedCompanies: string[];
+  /** Placement-policy standing; OPEN unless an offer on file says otherwise. */
+  standing: Standing;
+  /** The offer behind the standing, e.g. "Google · ₹24.00 LPA" or "Zoho · until 30 Jun 2027". */
+  standingDetail: string | null;
 };
 
 export function StudentsManager({ students }: { students: AdminStudentListItem[] }) {
@@ -87,6 +99,38 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
         width: "130px",
         sortValue: (student) => student.applicationCount,
         cell: (student) => <span>{student.applicationCount}</span>,
+      },
+      {
+        id: "placement",
+        header: "Placement",
+        width: "200px",
+        sortValue: (student) => student.standing,
+        cell: (student) =>
+          student.standing === "OPEN" ? (
+            <small className="dt-muted">Open</small>
+          ) : (
+            <span title={student.standingDetail ?? undefined}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  padding: "3px 8px",
+                  borderRadius: "9999px",
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  background: `var(--badge-${STANDING_BADGE[student.standing]}-bg)`,
+                  color: `var(--badge-${STANDING_BADGE[student.standing]}-text)`,
+                }}
+              >
+                {STANDING_LABELS[student.standing]}
+              </span>
+              {student.standingDetail ? (
+                <>
+                  <br />
+                  <small>{student.standingDetail}</small>
+                </>
+              ) : null}
+            </span>
+          ),
       },
       {
         id: "followUp",
@@ -159,6 +203,15 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
         value: (student) => student.branch,
         options: branches.map((branch) => ({ value: branch, label: branch })),
       },
+      {
+        id: "placement",
+        label: "Placement",
+        value: (student) => student.standing,
+        options: (Object.keys(STANDING_LABELS) as Standing[]).map((standing) => ({
+          value: standing,
+          label: STANDING_LABELS[standing],
+        })),
+      },
     ];
   }, [students]);
 
@@ -197,7 +250,7 @@ export function StudentsManager({ students }: { students: AdminStudentListItem[]
         searchPlaceholder="Search name, email, roll number, or branch"
         filters={filters}
         columnStorageKey="students"
-        minWidth={940}
+        minWidth={1140}
         toolbarExtras={
           <label className="dt-check">
             <input

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatStipend } from "@/lib/offer-schema";
 import {
   Calendar,
   CheckCircle2,
@@ -89,6 +90,11 @@ export type AdminNocItem = {
   verifiedByPlacementTeam: boolean;
   /** False means this row only records dates/company; no decision was made. */
   nocRequired: boolean;
+  /** The internship's terms, recorded on its offer when approved. */
+  jobTitle: string | null;
+  stipend: number | null;
+  /** The internship offer this NOC is recorded as, once approved. */
+  offerId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -494,6 +500,10 @@ export function NocRequestsManager({
       if (docUrl) {
         approveFormData.append("documentUrl", docUrl);
       }
+      const stipend = formData.get("stipend");
+      if (typeof stipend === "string" && stipend.trim()) {
+        approveFormData.append("stipend", stipend.trim());
+      }
 
       const res = await approveNocAction(approveFormData);
       setResult(res);
@@ -710,6 +720,19 @@ export function NocRequestsManager({
               </strong>
             </DetailBox>
 
+            <DetailBox label="Internship offer">
+              <strong className="mt-1 block">
+                {[detailItem.jobTitle, detailItem.stipend != null ? formatStipend(detailItem.stipend) : "Stipend not provided"]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </strong>
+              <p className="text-muted-foreground mt-1 text-xs">
+                {detailItem.offerId
+                  ? "Recorded in placement records; counts in statistics and closes on-campus applications until its PPO outcome is recorded."
+                  : "Recorded as an internship offer once approved."}
+              </p>
+            </DetailBox>
+
             {/* Student Remarks */}
             {detailItem.message && (
               <DetailBox label="Student Remarks / Statement of Purpose">
@@ -812,7 +835,25 @@ export function NocRequestsManager({
 
             <p className="text-muted-foreground text-xs">
               Approving NOC for <strong>{approvingItem.studentName || approvingItem.rollNumber}</strong> at <strong>{approvingItem.company}</strong>.
+              This records an internship offer: it counts in the statistics and closes the student&apos;s
+              on-campus applications until the PPO outcome is recorded.
             </p>
+
+            <div className="grid gap-2">
+              <Label htmlFor="noc-approve-stipend">
+                Monthly stipend (₹){approvingItem.stipend == null ? <span className="text-destructive"> *</span> : null}
+              </Label>
+              <Input
+                id="noc-approve-stipend"
+                name="stipend"
+                type="number"
+                min={0}
+                step="any"
+                required={approvingItem.stipend == null}
+                defaultValue={approvingItem.stipend ?? undefined}
+                placeholder="0 if unpaid"
+              />
+            </div>
 
             <div className="grid gap-2">
               <Label htmlFor="noc-approve-remarks">Approval remarks / notes (optional)</Label>

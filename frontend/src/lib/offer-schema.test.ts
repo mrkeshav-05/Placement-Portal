@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  ppoBulkSchema,
+  ppoOutcomeSchema,
   formatRupees,
   formatStipend,
   isCtcType,
@@ -31,7 +33,7 @@ test("an internship requires a monthly stipend", () => {
   assert.equal(missing.success, false);
   assert.equal(missing.error?.issues[0]?.path[0], "stipend");
 
-  const valid = offerFormSchema.safeParse({ ...base, type: "INTERNSHIP", stipend: "75000" });
+  const valid = offerFormSchema.safeParse({ ...base, type: "INTERNSHIP", stipend: "75000", endDate: "2027-06-30" });
   assert.equal(valid.success, true);
   assert.equal(valid.data?.stipend, 75_000);
 });
@@ -53,6 +55,7 @@ test("an offer keeps only the amount its type uses", () => {
     type: "INTERNSHIP",
     ctc: "2400000",
     stipend: "50000",
+    endDate: "2027-06-30",
   });
   assert.equal(internship.ctc, null);
   assert.equal(internship.stipend, 50_000);
@@ -149,6 +152,7 @@ test("a bulk run prices itself by type, exactly as a single record does", () => 
     type: "INTERNSHIP",
     ctc: "1800000",
     stipend: "50000",
+    endDate: "2027-06-30",
   });
   assert.equal(internship.ctc, null);
   assert.equal(internship.stipend, 50_000);
@@ -162,4 +166,33 @@ test("packages read in the units the office uses", () => {
   assert.equal(formatRupees(null), "—");
   assert.equal(formatStipend(75_000), "₹75,000/month");
   assert.equal(formatStipend(null), "—");
+});
+
+test("an internship's end date is optional, and other offer types drop it", () => {
+  const without = offerFormSchema.safeParse({ ...base, type: "INTERNSHIP", stipend: "75000" });
+  assert.equal(without.success, true);
+  assert.equal(without.data?.endDate, null);
+
+  const fte = offerFormSchema.parse({ ...base, type: "FTE", ctc: "1800000", endDate: "2027-06-30" });
+  assert.equal(fte.endDate, null);
+});
+
+test("a received PPO needs its CTC; the other outcomes do not", () => {
+  const missing = ppoOutcomeSchema.safeParse({ offerId: "off_1", status: "RECEIVED" });
+  assert.equal(missing.success, false);
+  assert.equal(missing.error?.issues[0]?.path[0], "ctc");
+
+  const received = ppoOutcomeSchema.safeParse({ offerId: "off_1", status: "RECEIVED", ctc: "1400000" });
+  assert.equal(received.success, true);
+  assert.equal(received.data?.ctc, 1_400_000);
+
+  assert.equal(ppoOutcomeSchema.safeParse({ offerId: "off_1", status: "NOT_RECEIVED" }).success, true);
+  assert.equal(ppoOutcomeSchema.safeParse({ offerId: "off_1", status: "MAYBE" }).success, false);
+});
+
+test("a bulk PPO update needs offers, and a received outcome needs a shared CTC", () => {
+  assert.equal(ppoBulkSchema.safeParse({ offerIds: [], status: "NOT_RECEIVED" }).success, false);
+  assert.equal(ppoBulkSchema.safeParse({ offerIds: ["a", "b"], status: "NOT_RECEIVED" }).success, true);
+  assert.equal(ppoBulkSchema.safeParse({ offerIds: ["a"], status: "RECEIVED" }).success, false);
+  assert.equal(ppoBulkSchema.safeParse({ offerIds: ["a"], status: "RECEIVED", ctc: "1200000" }).success, true);
 });

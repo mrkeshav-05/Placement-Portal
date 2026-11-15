@@ -30,6 +30,11 @@ from app.models.db import (
     User,
 )
 from app.services.branch import canonical_branch_or_none
+from app.services.placement_policy import (
+    Standing,
+    placement_standing,
+    policy_offer_from_row,
+)
 from app.services.placement_stats import (
     COUNTED_OFFER_STATUSES,
     PLACEMENT_TYPES,
@@ -167,6 +172,7 @@ async def admin_overview(
             },
             "internshipSummary": internship_summary([], []),
             "conversion": conversion_summary([]),
+            "policy": _policy_summary([], []),
             "placementsByDegree": [],
             "internshipsByDegree": [],
             "internshipsByBranch": [],
@@ -205,6 +211,7 @@ async def admin_overview(
                 company_id=o.companyId,
                 company_name=(o.company.name if o.company else "") or "Not specified",
                 type=o.type,
+                ppo_status=o.ppoStatus,
             )
             for o in offers
         ]
@@ -237,6 +244,7 @@ async def admin_overview(
             },
             "internshipSummary": internship_summary(views, season_student_ids),
             "conversion": conversion_summary(views),
+            "policy": _policy_summary(offers, season_student_ids),
             # Distributions count students, not offers, so each figure reads
             # against the season's student total.
             "placementsByDegree": _distribution(
@@ -268,6 +276,31 @@ async def admin_overview(
     # student, so there is no viewer dimension to add to the key.
     payload = await cache.get_or_set(cache.TOPIC_ANALYTICS, {"season": season}, load)
     return {**payload, "live": live}
+
+
+def _policy_summary(offers, season_student_ids) -> dict:
+    """
+    The season's students by placement-policy standing: Dream-placed (closed to
+    every drive), First Round (Dream drives only), on an active internship
+    (closed until it ends), and open. Sums to the season's student count.
+    """
+    by_student: dict[str, list] = {}
+    degrees: dict[str, Optional[str]] = {}
+    for offer in offers:
+        by_student.setdefault(offer.userId, []).append(policy_offer_from_row(offer))
+        degrees[offer.userId] = offer.user.degree if offer.user else None
+
+    # A student with no offer is OPEN whatever their programme's Dream line.
+    counts = {standing: 0 for standing in Standing}
+    for user_id in season_student_ids:
+        result = placement_standing(by_student.get(user_id, []), degrees.get(user_id))
+        counts[result.standing] += 1
+    return {
+        "dreamPlaced": counts[Standing.DREAM_PLACED],
+        "firstRoundPlaced": counts[Standing.FIRST_ROUND_PLACED],
+        "interning": counts[Standing.INTERNING],
+        "open": counts[Standing.OPEN],
+    }
 
 
 def _top_recruiters(offers) -> list[dict]:
