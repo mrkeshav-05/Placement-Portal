@@ -52,7 +52,7 @@ export function ApplicationsView({ applications }: { applications: StudentApplic
   );
 
   return (
-    <div className="module-page">
+    <div className="module-page !max-w-[1280px]">
       <section className="page-heading">
         <div>
           <span className="eyebrow">Recruitment Pipeline</span>

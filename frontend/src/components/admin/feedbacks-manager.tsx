@@ -329,7 +329,7 @@ export function FeedbacksManager({
   );
 
   return (
-    <div className="admin-page">
+    <div className="admin-page wide-page">
       <section className="admin-heading">
         <div>
           <span className="eyebrow">Management</span>
