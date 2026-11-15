@@ -17,6 +17,9 @@ from app.core.security import (
 from app.dependencies import get_db, require_student
 from app.models.db import InterviewExperience, InterviewExperienceStatus, Notification, User
 from app.schemas.interview_experience import (
+    BankCompanyDetailResponse,
+    BankCompanyResponse,
+    BankGroupResponse,
     AdminInterviewExperienceResponse,
     InterviewExperienceAuthorSummary,
     InterviewExperienceCreate,
@@ -25,6 +28,7 @@ from app.schemas.interview_experience import (
     InterviewExperienceReviewRequest,
 )
 from app.services.email import send_notification_email
+from app.services.interview_bank import build_groups, company_key, company_summaries, display_company
 
 router = APIRouter(prefix="/interview-experiences", tags=["interview-experiences"])
 
@@ -50,6 +54,9 @@ def _to_admin_response(exp: InterviewExperience) -> AdminInterviewExperienceResp
         role=exp.role,
         batch=exp.batch,
         interviewType=exp.interviewType,
+        opportunityType=exp.opportunityType,
+        difficulty=exp.difficulty,
+        outcome=exp.outcome,
         dsaQuestions=exp.dsaQuestions,
         oopsQuestions=exp.oopsQuestions,
         dbmsQuestions=exp.dbmsQuestions,
@@ -133,6 +140,65 @@ async def list_companies_with_experiences(
     return list(result.all())
 
 
+def _approved():
+    return select(InterviewExperience).where(
+        InterviewExperience.status == InterviewExperienceStatus.APPROVED
+    )
+
+
+@router.get("/bank/companies", response_model=list[BankCompanyResponse])
+async def question_bank_companies(
+    search: Optional[str] = Query(None, description="Company name, matched word by word"),
+    user_payload: dict = Depends(require_student),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Companies with approved experiences, merged across spellings, most-shared
+    first. The question bank's landing list.
+    """
+    rows = (await db.scalars(_approved())).all()
+    return company_summaries(rows, search=search)
+
+
+@router.get("/bank", response_model=BankCompanyDetailResponse)
+async def question_bank_company(
+    company: str = Query(..., min_length=1, description="Company name; spelling and case are ignored"),
+    user_payload: dict = Depends(require_student),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Every approved experience for one company, merged by role + opportunity
+    type. Not paginated: one company holds tens of rows, and the bank is only
+    useful when it is complete.
+    """
+    key = company_key(company)
+    if not key:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Enter a company name.")
+    # Narrow in SQL on the first word, then match the exact key in Python.
+    first_word = key.split(" ")[0]
+    candidates = (
+        await db.scalars(
+            _approved().where(func.lower(InterviewExperience.companyName).like(f"%{first_word}%"))
+        )
+    ).all()
+    rows = [row for row in candidates if company_key(row.companyName) == key]
+    if not rows:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No experiences shared for this company yet.")
+
+    groups = [
+        BankGroupResponse(
+            role=group.role,
+            opportunityType=group.opportunityType,
+            count=len(group.experiences),
+            batches=group.batches,
+            interviewTypes=group.interviewTypes,
+            experiences=group.experiences,
+        )
+        for group in build_groups(rows)
+    ]
+    return BankCompanyDetailResponse(company=display_company(rows), total=len(rows), groups=groups)
+
+
 @router.get("/mine", response_model=list[InterviewExperienceResponse])
 async def list_my_experiences(
     user_payload: dict = Depends(require_student),
@@ -163,6 +229,9 @@ async def submit_interview_experience(
         role=data.role.strip(),
         batch=data.batch,
         interviewType=data.interviewType.strip(),
+        opportunityType=data.opportunityType,
+        difficulty=data.difficulty,
+        outcome=data.outcome,
         dsaQuestions=data.dsaQuestions,
         oopsQuestions=data.oopsQuestions,
         dbmsQuestions=data.dbmsQuestions,

@@ -1,22 +1,18 @@
 "use client";
 
 import {
-  Braces,
   Briefcase,
   Building2,
   Calendar,
   CheckCircle2,
   Clock3,
-  Cpu,
-  FileText,
-  Lightbulb,
   MessageSquareText,
   Plus,
   Search,
   Sparkles,
-  Users,
   XCircle,
 } from "lucide-react";
+export type { InterviewExperienceItem } from "./interview-sections";
 import { useMemo, useState, useTransition } from "react";
 import { submitInterviewExperienceAction } from "@/app/interview-experiences/actions";
 import { CompanyPicker } from "@/components/common/company-picker";
@@ -36,6 +32,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -43,206 +42,31 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { COMPANY_OPTIONS } from "@/lib/company-options";
-import { INTERVIEW_TYPE_OPTIONS } from "@/lib/interview-experience-schema";
-
-export type InterviewExperienceItem = {
-  id: string;
-  companyName: string;
-  role: string;
-  batch: number;
-  interviewType: string;
-  dsaQuestions?: string | null;
-  oopsQuestions?: string | null;
-  dbmsQuestions?: string | null;
-  osQuestions?: string | null;
-  cnQuestions?: string | null;
-  sqlQuestions?: string | null;
-  systemDesignQuestions?: string | null;
-  csFundamentalsQuestions?: string | null;
-  resumeQuestions?: string | null;
-  projectsDiscussed?: string | null;
-  codingQuestions?: string | null;
-  aptitudeQuestions?: string | null;
-  hrQuestions?: string | null;
-  behavioralQuestions?: string | null;
-  resources?: string | null;
-  unansweredQuestions?: string | null;
-  tips?: string | null;
-  status: "PENDING" | "APPROVED" | "REJECTED" | string;
-  reviewNote?: string | null;
-  createdAt: string;
-};
-
-type SectionKey = keyof InterviewExperienceItem;
-
-type Section = { key: SectionKey; label: string; placeholder: string };
-
-/**
- * The seventeen optional sections, in five themed groups.
- *
- * The composer used to present all seventeen as one flat column of empty
- * textareas, which reads as seventeen obligations rather than a menu to pick
- * from. Grouping lets the form open with one group expanded, and gives the
- * browse list a vocabulary of topics to tag and filter by, so a student
- * hunting for system-design rounds does not have to open every card.
- */
-const SECTION_GROUPS: {
-  id: string;
-  label: string;
-  /** The short form used for card tags and the topic filter. */
-  tag: string;
-  icon: typeof Braces;
-  sections: Section[];
-}[] = [
-  {
-    id: "coding",
-    label: "Coding and DSA",
-    tag: "DSA",
-    icon: Braces,
-    sections: [
-      {
-        key: "dsaQuestions",
-        label: "DSA questions asked",
-        placeholder: "e.g. Reverse a linked list, find the LCA of a BST...",
-      },
-      {
-        key: "codingQuestions",
-        label: "Coding question(s) asked",
-        placeholder: "Describe the full coding problem statement(s)...",
-      },
-    ],
-  },
-  {
-    id: "fundamentals",
-    label: "CS fundamentals",
-    tag: "CS fundamentals",
-    icon: Cpu,
-    sections: [
-      {
-        key: "oopsQuestions",
-        label: "OOPS questions",
-        placeholder: "e.g. Explain polymorphism with an example...",
-      },
-      {
-        key: "dbmsQuestions",
-        label: "DBMS questions",
-        placeholder: "e.g. Normalization, indexing, ACID properties...",
-      },
-      {
-        key: "sqlQuestions",
-        label: "SQL questions",
-        placeholder: "Any SQL queries or concepts asked...",
-      },
-      {
-        key: "osQuestions",
-        label: "Operating System questions",
-        placeholder: "e.g. Deadlocks, paging, scheduling algorithms...",
-      },
-      {
-        key: "cnQuestions",
-        label: "Computer Networks questions",
-        placeholder: "e.g. TCP vs UDP, OSI layers...",
-      },
-      {
-        key: "systemDesignQuestions",
-        label: "System Design / LLD / HLD questions",
-        placeholder: "e.g. Design a URL shortener...",
-      },
-      {
-        key: "csFundamentalsQuestions",
-        label: "CS fundamentals / miscellaneous",
-        placeholder: "Any other CS fundamentals asked...",
-      },
-    ],
-  },
-  {
-    id: "resume",
-    label: "Resume and projects",
-    tag: "Resume",
-    icon: FileText,
-    sections: [
-      {
-        key: "resumeQuestions",
-        label: "Resume-based questions",
-        placeholder: "Questions asked specifically about your resume...",
-      },
-      {
-        key: "projectsDiscussed",
-        label: "Projects discussed",
-        placeholder: "Which projects came up and what was asked...",
-      },
-    ],
-  },
-  {
-    id: "hr",
-    label: "Aptitude, HR and behavioural",
-    tag: "HR",
-    icon: Users,
-    sections: [
-      {
-        key: "aptitudeQuestions",
-        label: "Puzzle / aptitude questions",
-        placeholder: "Any puzzles or aptitude questions...",
-      },
-      {
-        key: "hrQuestions",
-        label: "HR questions",
-        placeholder: "e.g. Why this company, salary expectations...",
-      },
-      {
-        key: "behavioralQuestions",
-        label: "Behavioural questions",
-        placeholder: "e.g. Tell me about a time you faced conflict in a team...",
-      },
-    ],
-  },
-  {
-    id: "advice",
-    label: "Reflection and advice",
-    tag: "Tips",
-    icon: Lightbulb,
-    sections: [
-      {
-        key: "unansweredQuestions",
-        label: "Questions you could not answer",
-        placeholder: "Be honest — this helps others prepare better.",
-      },
-      {
-        key: "resources",
-        label: "Resources that helped",
-        placeholder: "Books, courses, playlists, sheets...",
-      },
-      {
-        key: "tips",
-        label: "Tips for future candidates",
-        placeholder: "Your advice for students appearing next...",
-      },
-    ],
-  },
-];
-
-const ALL_SECTIONS = SECTION_GROUPS.flatMap((group) => group.sections);
-
-const DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-};
-
-function text(item: InterviewExperienceItem, key: SectionKey): string {
-  const value = item[key];
-  return typeof value === "string" ? value : "";
-}
-
-function groupsPresent(item: InterviewExperienceItem) {
-  return SECTION_GROUPS.filter((group) =>
-    group.sections.some((section) => text(item, section.key).trim()),
-  );
-}
-
-function sectionsPresent(item: InterviewExperienceItem) {
-  return ALL_SECTIONS.filter((section) => text(item, section.key).trim());
-}
+import {
+  ALL_SECTIONS,
+  DATE_FORMAT,
+  SECTION_GROUPS,
+  groupsPresent,
+  sectionsPresent,
+  text,
+  type BankCompany,
+  type BankCompanyDetail,
+  type InterviewExperienceItem,
+  type SectionKey,
+} from "./interview-sections";
+import { QuestionBankCompany, QuestionBankLanding } from "./question-bank";
+import {
+  COMMON_BATCHES,
+  DIFFICULTY_OPTIONS,
+  OUTCOME_OPTIONS,
+  INTERVIEW_TYPE_OPTIONS,
+  OPPORTUNITY_TYPE_OPTIONS,
+  OTHER_BATCHES,
+  ROLE_OPTIONS,
+  difficultyLabel,
+  opportunityTypeLabel,
+  outcomeLabel,
+} from "@/lib/interview-experience-schema";
 
 /** Every word a submission contains, so search reaches the answers too. */
 function haystack(item: InterviewExperienceItem) {
@@ -328,6 +152,12 @@ function ExperienceCard({
           <MessageSquareText className="size-3.5" />
           {item.interviewType}
         </span>
+        {opportunityTypeLabel(item.opportunityType) ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Sparkles className="size-3.5" />
+            {opportunityTypeLabel(item.opportunityType)}
+          </span>
+        ) : null}
       </div>
 
       {(topics.length > 0 || showStatus) && (
@@ -389,10 +219,19 @@ export function InterviewExperiencesView({
   approvedExperiences,
   myExperiences,
   companies,
+  bankCompanies,
+  bankDetail,
+  bankMissing,
 }: {
   approvedExperiences: InterviewExperienceItem[];
   myExperiences: InterviewExperienceItem[];
   companies: string[];
+  /** Question bank: every company with approved experiences. */
+  bankCompanies: BankCompany[];
+  /** The company chosen through `?company=`, merged by role and opportunity type. */
+  bankDetail: BankCompanyDetail | null;
+  /** A requested company that has no approved experiences. */
+  bankMissing: string | null;
 }) {
   const [query, setQuery] = useState("");
   const [companyFilter, setCompanyFilter] = useState("");
@@ -400,6 +239,10 @@ export function InterviewExperiencesView({
   const [viewing, setViewing] = useState<InterviewExperienceItem | null>(null);
   const [composing, setComposing] = useState(false);
   const [interviewType, setInterviewType] = useState("");
+  const [opportunityType, setOpportunityType] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [outcome, setOutcome] = useState("");
+  const [batch, setBatch] = useState("");
   // Only which sections carry text, not the text itself, so a keystroke
   // re-renders the composer at most twice: on the first character, and on the
   // last one deleted.
@@ -439,6 +282,10 @@ export function InterviewExperiencesView({
   function openComposer() {
     setFormError(null);
     setInterviewType("");
+    setOpportunityType("");
+    setDifficulty("");
+    setOutcome("");
+    setBatch("");
     setFilled({});
     setComposing(true);
   }
@@ -488,13 +335,29 @@ export function InterviewExperiencesView({
         </Alert>
       )}
 
-      <Tabs defaultValue="browse" className="gap-4">
+      <Tabs defaultValue="bank" className="gap-4">
         <TabsList>
-          <TabsTrigger value="browse">Browse ({approvedExperiences.length})</TabsTrigger>
+          <TabsTrigger value="bank">Question bank</TabsTrigger>
+          <TabsTrigger value="recent">Recent experiences ({approvedExperiences.length})</TabsTrigger>
           <TabsTrigger value="mine">My submissions ({myExperiences.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="browse" className="grid gap-4">
+        <TabsContent value="bank" className="grid gap-4">
+          {bankMissing ? (
+            <Alert variant="info">
+              <AlertDescription>
+                No approved experiences for “{bankMissing}” yet. Pick another company below, or share yours.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+          {bankDetail ? (
+            <QuestionBankCompany detail={bankDetail} onOpen={setViewing} />
+          ) : (
+            <QuestionBankLanding companies={bankCompanies} onShare={openComposer} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="recent" className="grid gap-4">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_200px_200px]">
             <div className="relative">
               <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -629,28 +492,69 @@ export function InterviewExperiencesView({
                 </Alert>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
+              {/* Six columns so the five fields sit as two even rows: two wide
+                  fields over three narrower ones. */}
+              <div className="grid gap-4 sm:grid-cols-6">
+                <div className="grid gap-2 sm:col-span-3">
                   <Label htmlFor="ie-company">Company name</Label>
                   <CompanyPicker id="ie-company" name="companyName" options={COMPANY_OPTIONS} />
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-3">
                   <Label htmlFor="ie-role">Role</Label>
-                  <Input id="ie-role" name="role" required minLength={2} placeholder="e.g. SDE-1" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="ie-batch">Batch</Label>
-                  <Input
-                    id="ie-batch"
-                    name="batch"
-                    type="number"
-                    required
-                    min={2000}
-                    max={2100}
-                    placeholder="e.g. 2026"
+                  <CompanyPicker
+                    id="ie-role"
+                    name="role"
+                    options={ROLE_OPTIONS}
+                    placeholder="Select or add a role"
+                    icon={Briefcase}
+                    noun="role"
                   />
                 </div>
-                <div className="grid gap-2">
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="ie-batch">Batch</Label>
+                  <input type="hidden" name="batch" value={batch} />
+                  <Select value={batch} onValueChange={setBatch}>
+                    <SelectTrigger id="ie-batch" className="w-full">
+                      <SelectValue placeholder="Select a batch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Most common</SelectLabel>
+                        {COMMON_BATCHES.map((year) => (
+                          <SelectItem key={year} value={String(year)}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Other batches</SelectLabel>
+                        {OTHER_BATCHES.map((year) => (
+                          <SelectItem key={year} value={String(year)}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="ie-opportunity">Opportunity type</Label>
+                  <input type="hidden" name="opportunityType" value={opportunityType} />
+                  <Select value={opportunityType} onValueChange={setOpportunityType}>
+                    <SelectTrigger id="ie-opportunity" className="w-full">
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OPPORTUNITY_TYPE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
                   <Label htmlFor="ie-type">Interview type</Label>
                   <input type="hidden" name="interviewType" value={interviewType} />
                   <Select value={interviewType} onValueChange={setInterviewType}>
@@ -661,6 +565,38 @@ export function InterviewExperiencesView({
                       {INTERVIEW_TYPE_OPTIONS.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2 sm:col-span-3">
+                  <Label htmlFor="ie-difficulty">How hard was it? (optional)</Label>
+                  <input type="hidden" name="difficulty" value={difficulty} />
+                  <Select value={difficulty} onValueChange={setDifficulty}>
+                    <SelectTrigger id="ie-difficulty" className="w-full">
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DIFFICULTY_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2 sm:col-span-3">
+                  <Label htmlFor="ie-outcome">Result (optional)</Label>
+                  <input type="hidden" name="outcome" value={outcome} />
+                  <Select value={outcome} onValueChange={setOutcome}>
+                    <SelectTrigger id="ie-outcome" className="w-full">
+                      <SelectValue placeholder="Select result" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OUTCOME_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -732,7 +668,7 @@ export function InterviewExperiencesView({
       {viewing && (
         <PortalDialog
           onClose={() => setViewing(null)}
-          eyebrow={viewing.interviewType}
+          eyebrow={[viewing.interviewType, opportunityTypeLabel(viewing.opportunityType)].filter(Boolean).join(" · ")}
           title={`${viewing.companyName} · ${viewing.role}`}
           className="flex max-h-[88vh] flex-col gap-0 overflow-hidden sm:max-w-[720px]"
         >
@@ -749,6 +685,11 @@ export function InterviewExperiencesView({
               <span>
                 {sectionsPresent(viewing).length} of {ALL_SECTIONS.length} sections
               </span>
+              {[difficultyLabel(viewing.difficulty), outcomeLabel(viewing.outcome)].filter(Boolean).map((extra) => (
+                <Badge key={extra} variant="outline" className="text-[10px] font-semibold">
+                  {extra}
+                </Badge>
+              ))}
               {viewing.status !== "APPROVED" && <StatusBadge status={viewing.status} />}
             </div>
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 QUESTION_FIELDS = (
@@ -41,6 +41,12 @@ class InterviewExperienceBase(BaseModel):
     role: str = Field(..., min_length=2, max_length=150)
     batch: int = Field(..., ge=2000, le=2100)
     interviewType: str = Field(..., min_length=2, max_length=100)
+    # Intern, Intern + FTE or FTE. Optional so rows from before the field
+    # existed still serialise; the student form requires it.
+    opportunityType: Optional[Literal["INTERN", "INTERN_FTE", "FTE"]] = None
+    # Optional context shown beside an entry in the question bank.
+    difficulty: Optional[Literal["EASY", "MEDIUM", "HARD"]] = None
+    outcome: Optional[Literal["SELECTED", "NOT_SELECTED", "NOT_DISCLOSED"]] = None
     dsaQuestions: Optional[str] = Field(None, max_length=8000)
     oopsQuestions: Optional[str] = Field(None, max_length=8000)
     dbmsQuestions: Optional[str] = Field(None, max_length=8000)
@@ -104,3 +110,30 @@ class InterviewExperienceMetricsResponse(BaseModel):
     pending: int
     approved: int
     rejected: int
+
+
+class BankCompanyResponse(BaseModel):
+    """One company in the question bank's search list."""
+
+    company: str
+    count: int
+    roles: list[str]
+    latestBatch: int
+    lastSharedAt: datetime
+
+
+class BankGroupResponse(BaseModel):
+    """Every experience for one role + opportunity type at a company."""
+
+    role: str
+    opportunityType: str
+    count: int
+    batches: list[int]
+    interviewTypes: list[str]
+    experiences: list[InterviewExperienceResponse]
+
+
+class BankCompanyDetailResponse(BaseModel):
+    company: str
+    total: int
+    groups: list[BankGroupResponse]

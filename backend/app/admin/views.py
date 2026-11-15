@@ -42,7 +42,7 @@ _PREVIEW_COLUMNS: dict[str, list[str]] = {
     "JobProfile": ["id", "title", "companyId", "type", "status", "batch", "registrationDeadline"],
     "Offer": ["id", "userId", "companyId", "jobTitle", "type", "status", "batch", "ctc", "stipend"],
     "NocRequest": ["id", "userId", "company", "city", "status", "startDate", "endDate"],
-    "InterviewExperience": ["id", "userId", "companyName", "role", "batch", "interviewType", "status"],
+    "InterviewExperience": ["id", "userId", "companyName", "role", "batch", "interviewType", "opportunityType", "status"],
     "CalendarEvent": ["id", "title", "type", "visibility", "startsAt", "endsAt", "companyId"],
 }
 

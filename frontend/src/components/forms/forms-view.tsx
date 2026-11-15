@@ -575,7 +575,7 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                 />
                 <div className="grid gap-0.5">
                   <Label htmlFor="noc-not-required" className="font-normal">
-                    For the purpose of intimation to the college, tick this only if you don't need an NOC for this.
+                    For the purpose of intimation to the college, tick this only if you don&apos;t need an NOC for this.
                   </Label>
                   <input type="hidden" name="nocRequired" value={String(nocRequired)} />
                   <p className="text-muted-foreground text-[11px]">

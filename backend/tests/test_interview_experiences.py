@@ -126,3 +126,17 @@ def test_interview_experience_response_model_from_attributes():
     resp = InterviewExperienceResponse.model_validate(exp)
     assert resp.companyName == "Microsoft"
     assert resp.status == "APPROVED"
+
+
+def test_opportunity_type_accepts_only_the_three_kinds():
+    base = dict(
+        companyName="Amazon",
+        role="SDE",
+        batch=2027,
+        interviewType="On-Campus",
+        dsaQuestions="Two sum",
+    )
+    assert InterviewExperienceCreate(**base, opportunityType="INTERN_FTE").opportunityType == "INTERN_FTE"
+    assert InterviewExperienceCreate(**base).opportunityType is None
+    with pytest.raises(ValidationError):
+        InterviewExperienceCreate(**base, opportunityType="FULL")

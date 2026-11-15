@@ -26,6 +26,11 @@ export const interviewExperienceFormSchema = z
       .int("Batch must be a year, e.g. 2026.")
       .min(2000, "Enter a valid graduating batch year.")
       .max(2100, "Enter a valid graduating batch year."),
+    opportunityType: z.enum(["INTERN", "INTERN_FTE", "FTE"], {
+      message: "Choose whether this was for an internship, internship + FTE, or FTE.",
+    }),
+    difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
+    outcome: z.enum(["SELECTED", "NOT_SELECTED", "NOT_DISCLOSED"]).optional(),
     interviewType: z
       .string()
       .trim()
@@ -87,3 +92,67 @@ export const INTERVIEW_TYPE_OPTIONS = [
   "Internship",
   "Full-Time",
 ] as const;
+
+/** What the interview was for. The value is what is stored. */
+export const OPPORTUNITY_TYPE_OPTIONS = [
+  { value: "INTERN", label: "Intern" },
+  { value: "INTERN_FTE", label: "Intern + FTE" },
+  { value: "FTE", label: "FTE" },
+] as const;
+
+export function opportunityTypeLabel(value: string | null | undefined): string | null {
+  return OPPORTUNITY_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? null;
+}
+
+/** Roles students most often interview for. Anything else can still be typed in. */
+export const ROLE_OPTIONS = [
+  "SDE",
+  "SDE Intern",
+  "Software Engineer",
+  "Associate Software Engineer",
+  "Data Analyst",
+  "Business Analyst",
+  "Data Scientist",
+  "Data Engineer",
+  "Machine Learning Engineer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "DevOps Engineer",
+  "Cloud Engineer",
+  "QA / Test Engineer",
+  "Product Analyst",
+  "Technical Analyst",
+  "Associate Consultant",
+  "Systems Engineer",
+  "Cybersecurity Analyst",
+  "Product Manager",
+] as const;
+
+/** Batches most submissions are for, offered first. */
+export const COMMON_BATCHES = [2026, 2027, 2028] as const;
+
+/** Every other batch from 2015 up to a few years ahead, newest first. */
+export const OTHER_BATCHES: number[] = Array.from({ length: 2032 - 2015 + 1 }, (_, i) => 2032 - i).filter(
+  (year) => !(COMMON_BATCHES as readonly number[]).includes(year),
+);
+
+export const DIFFICULTY_OPTIONS = [
+  { value: "EASY", label: "Easy" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HARD", label: "Hard" },
+] as const;
+
+export const OUTCOME_OPTIONS = [
+  { value: "SELECTED", label: "Selected" },
+  { value: "NOT_SELECTED", label: "Not selected" },
+  { value: "NOT_DISCLOSED", label: "Prefer not to say" },
+] as const;
+
+export function difficultyLabel(value: string | null | undefined): string | null {
+  return DIFFICULTY_OPTIONS.find((option) => option.value === value)?.label ?? null;
+}
+
+export function outcomeLabel(value: string | null | undefined): string | null {
+  return OUTCOME_OPTIONS.find((option) => option.value === value)?.label ?? null;
+}

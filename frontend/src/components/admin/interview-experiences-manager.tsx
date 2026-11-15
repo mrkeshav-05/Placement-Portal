@@ -1,5 +1,6 @@
 "use client";
 
+import { difficultyLabel, opportunityTypeLabel, outcomeLabel } from "@/lib/interview-experience-schema";
 import {
   Briefcase,
   Calendar,
@@ -49,8 +50,8 @@ function DetailBox({
 }
 
 const QUESTION_SECTIONS: { key: string; label: string }[] = [
-  { key: "dsaQuestions", label: "DSA questions asked" },
-  { key: "codingQuestions", label: "Coding question(s) asked" },
+  { key: "dsaQuestions", label: "DSA question - 1" },
+  { key: "codingQuestions", label: "DSA question - 2" },
   { key: "oopsQuestions", label: "OOPS questions" },
   { key: "dbmsQuestions", label: "DBMS questions" },
   { key: "sqlQuestions", label: "SQL questions" },
@@ -75,6 +76,9 @@ export type AdminInterviewExperienceItem = {
   role: string;
   batch: number;
   interviewType: string;
+  opportunityType?: string | null;
+  difficulty?: string | null;
+  outcome?: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED" | string;
   reviewNote?: string | null;
   createdAt: string;
@@ -452,7 +456,7 @@ export function InterviewExperiencesManager({ experiences }: { experiences: Admi
                 }
               >
                 <strong className="mt-1 block">
-                  {detailItem.batch} · {detailItem.interviewType}
+                  {[detailItem.batch, detailItem.interviewType, opportunityTypeLabel(detailItem.opportunityType), difficultyLabel(detailItem.difficulty), outcomeLabel(detailItem.outcome)].filter(Boolean).join(" · ")}
                 </strong>
               </DetailBox>
             </div>

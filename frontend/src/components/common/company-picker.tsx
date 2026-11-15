@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, ChevronDown, Plus } from "lucide-react";
+import { Building2, ChevronDown, Plus, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,9 @@ export function CompanyPicker({
   defaultValue = "",
   placeholder = "Select a company",
   allowCustom = true,
+  icon: Icon = Building2,
+  noun = "company",
+  onValueChange,
 }: {
   /** Put the surrounding `Label`'s `htmlFor` on the trigger, not the hidden input. */
   id?: string;
@@ -40,6 +43,10 @@ export function CompanyPicker({
   defaultValue?: string;
   placeholder?: string;
   allowCustom?: boolean;
+  /** The picker also serves other lists (roles); these three adapt its wording. */
+  icon?: LucideIcon;
+  noun?: string;
+  onValueChange?: (value: string) => void;
 }) {
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
@@ -47,6 +54,7 @@ export function CompanyPicker({
 
   function commit(next: string) {
     setValue(next);
+    onValueChange?.(next);
     setSearch("");
     setOpen(false);
   }
@@ -68,7 +76,7 @@ export function CompanyPicker({
         className="w-full justify-start font-normal"
         onClick={() => setOpen(true)}
       >
-        <Building2 className="text-muted-foreground" />
+        <Icon className="text-muted-foreground" />
         <span className={value ? "" : "text-muted-foreground"}>{value || placeholder}</span>
         <ChevronDown className="ml-auto opacity-60" />
       </Button>
@@ -76,17 +84,17 @@ export function CompanyPicker({
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        title="Select a company"
-        description="Search the recruiters already on record, or enter a new name."
+        title={`Select a ${noun}`}
+        description={`Search the list, or enter your own ${noun}.`}
       >
         <CommandInput
           value={search}
           onValueChange={setSearch}
-          placeholder="Search companies…"
+          placeholder={`Search ${noun}s…`}
         />
         <CommandList>
           {canUseTyped ? null : (
-            <CommandEmpty>No company matches “{typed}”.</CommandEmpty>
+            <CommandEmpty>No {noun} matches “{typed}”.</CommandEmpty>
           )}
 
           {canUseTyped ? (

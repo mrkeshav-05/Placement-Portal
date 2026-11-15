@@ -35,6 +35,9 @@ export async function submitInterviewExperienceAction(
     role: formData.get("role"),
     batch: formData.get("batch"),
     interviewType: formData.get("interviewType"),
+    opportunityType: formData.get("opportunityType"),
+    difficulty: formData.get("difficulty") || undefined,
+    outcome: formData.get("outcome") || undefined,
   };
   for (const field of QUESTION_FIELD_NAMES) {
     raw[field] = formData.get(field) || undefined;

@@ -499,6 +499,13 @@ model InterviewExperience {
   role                    String
   batch                   Int
   interviewType           String
+  /// Intern, Intern + FTE or FTE (INTERN / INTERN_FTE / FTE). Null on rows
+  /// submitted before the field existed.
+  opportunityType         String?
+  /// EASY / MEDIUM / HARD, as the student found it. Optional.
+  difficulty              String?
+  /// SELECTED / NOT_SELECTED / NOT_DISCLOSED. Optional.
+  outcome                 String?
   dsaQuestions            String?
   oopsQuestions           String?
   dbmsQuestions           String?
