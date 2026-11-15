@@ -92,6 +92,15 @@
   --brand-900: #152841;
   --brand-950: #0c1727;
 
+  /* Slate ramp: a neutral graphite for the admin sidebar, so it reads as a
+     different product surface from the student blue. */
+  --slate-800: #232a34;
+  --slate-950: #0f1319;
+  --on-slate-soft: #d9dee6;
+  --on-slate-muted: #98a2b1;
+  /* The logo's green, lifted to read on the blue sidebar. */
+  --mint-300: #7fd69a;
+
   /* The dark theme's black base. The page and input wells are true black and
      cards sit just above it; every other dark surface, border, and header comes
      from the deep end of the brand ramp above. `--black-900` keeps a trace of
@@ -1087,3 +1096,127 @@
   /* Searchable company picker (cmdk). Trigger mirrors the shared input styling
      so it sits flush with the other fields inside .form-grid. */
 }
+
+/* ---------------------------------------------------------------------------
+   Portal sidebars: two flat, solid panels so a user always knows which side of
+   the product they are on. Student is the institute blue with the logo's green
+   as its accent; admin is a neutral graphite with its arch orange. Each
+   has a light-theme and a dark-theme surface. Only the sidebar variables are
+   rebound here; the page content beside the panel keeps the normal tokens.
+   --------------------------------------------------------------------------- */
+.sidebar-student {
+  --sb-bg: var(--brand-800);
+  --sb-text: var(--on-brand-soft);
+  --sb-muted: var(--on-brand-muted);
+  --sb-accent: var(--mint-300);
+}
+.sidebar-admin {
+  --sb-bg: var(--slate-800);
+  --sb-text: var(--on-slate-soft);
+  --sb-muted: var(--on-slate-muted);
+  --sb-accent: var(--orange);
+}
+[data-theme="dark"] .sidebar-student, .dark .sidebar-student { --sb-bg: var(--brand-950); }
+[data-theme="dark"] .sidebar-admin, .dark .sidebar-admin { --sb-bg: var(--slate-950); }
+
+.sidebar-student, .sidebar-admin {
+  --sidebar: var(--sb-bg);
+  --sidebar-foreground: var(--sb-text);
+  --sidebar-accent: rgba(255, 255, 255, 0.07);
+  --sidebar-accent-foreground: var(--on-brand);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: var(--sb-text);
+  /* The shared menu button paints its active state from these two. */
+  --navy-soft-bg: rgba(255, 255, 255, 0.1);
+  --navy: var(--on-brand);
+}
+
+.sidebar-logo {
+  flex: none; display: grid; place-items: center; box-sizing: border-box;
+  width: 42px; height: 42px; padding: 5px; border-radius: 10px;
+  background: var(--on-brand);
+}
+[data-collapsible="icon"] .sidebar-logo { width: 34px; height: 34px; padding: 3px; }
+.sidebar-role {
+  display: block; margin-top: 2px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--sb-accent);
+}
+
+/* The list scrolls inside the panel (thin, quiet bar) instead of running under
+   the footer, and the rows are compact enough that it rarely has to. */
+.sidebar-student [data-sidebar="content"], .sidebar-admin [data-sidebar="content"] {
+  padding: 4px 8px 8px; gap: 0; overflow-y: auto; min-height: 0;
+  scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.sidebar-student [data-sidebar="header"], .sidebar-admin [data-sidebar="header"] { padding: 14px 16px; }
+.sidebar-student [data-sidebar="group"], .sidebar-admin [data-sidebar="group"] { padding: 6px 0 4px; }
+.sidebar-student [data-sidebar="group"] + [data-sidebar="group"],
+.sidebar-admin [data-sidebar="group"] + [data-sidebar="group"] { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.sidebar-student [data-sidebar="group-label"], .sidebar-admin [data-sidebar="group-label"] {
+  height: 24px; padding: 0 10px; margin: 0;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--sb-muted);
+}
+.sidebar-student [data-sidebar="menu"], .sidebar-admin [data-sidebar="menu"] { gap: 1px; }
+
+.sidebar-student [data-sidebar="menu-button"], .sidebar-admin [data-sidebar="menu-button"] {
+  position: relative; height: 34px; padding: 0 10px; border-radius: 8px;
+  font-size: 13.5px; color: var(--sb-text);
+}
+.sidebar-student [data-sidebar="menu-button"] > svg, .sidebar-admin [data-sidebar="menu-button"] > svg { color: var(--sb-muted); }
+.sidebar-student [data-sidebar="menu-button"]:hover, .sidebar-admin [data-sidebar="menu-button"]:hover { color: var(--on-brand); }
+.sidebar-student [data-sidebar="menu-button"]:hover > svg, .sidebar-admin [data-sidebar="menu-button"]:hover > svg { color: var(--on-brand); }
+.sidebar-student [data-sidebar="menu-button"][data-active="true"], .sidebar-admin [data-sidebar="menu-button"][data-active="true"] { color: var(--on-brand); }
+.sidebar-student [data-sidebar="menu-button"][data-active="true"] > svg, .sidebar-admin [data-sidebar="menu-button"][data-active="true"] > svg { color: var(--sb-accent); }
+/* Active marker: a short bar of the accent on the left edge. */
+.sidebar-student [data-sidebar="menu-button"][data-active="true"]::before, .sidebar-admin [data-sidebar="menu-button"][data-active="true"]::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--sb-accent);
+}
+.sidebar-student [data-sidebar="menu-sub"], .sidebar-admin [data-sidebar="menu-sub"] { border-left-color: rgba(255, 255, 255, 0.14); margin: 2px 0 4px 18px; padding: 0 0 0 8px; gap: 1px; }
+.sidebar-student [data-sidebar="menu-sub-button"], .sidebar-admin [data-sidebar="menu-sub-button"] { height: 30px; font-size: 13px; color: var(--sb-muted); }
+.sidebar-student [data-sidebar="menu-sub-button"]:hover, .sidebar-admin [data-sidebar="menu-sub-button"]:hover { color: var(--on-brand); }
+.sidebar-student [data-sidebar="menu-sub-button"][data-active="true"], .sidebar-admin [data-sidebar="menu-sub-button"][data-active="true"] { color: var(--on-brand); background: rgba(255, 255, 255, 0.1); }
+
+.sidebar-help {
+  display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--sb-accent);
+}
+
+/* Admin footer: collapse, theme toggle and the account pill on the panel. */
+.sidebar-admin [data-sidebar="footer"] { padding: 0; }
+.sidebar-admin-bar { display: flex; align-items: center; gap: 8px; padding: 12px; }
+.sidebar-admin-tools { display: flex; align-items: center; gap: 6px; flex: none; }
+.sidebar-admin-tools .theme-toggle-btn, .sidebar-admin-tools [data-sidebar="trigger"] { width: 34px; height: 34px; border-radius: 9px; }
+.sidebar-admin-bar .admin-user { width: 100%; min-width: 0; padding: 4px 10px 4px 4px; }
+.sidebar-admin-bar .admin-user > div { min-width: 0; text-align: left; }
+.sidebar-admin-bar .admin-user strong, .sidebar-admin-bar .admin-user small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-admin-bar .admin-user small { text-transform: capitalize; }
+[data-collapsible="icon"] .sidebar-admin-bar, [data-collapsible="icon"] .sidebar-admin-tools { flex-direction: column; padding: 10px 0; }
+[data-collapsible="icon"] .sidebar-admin-bar .admin-user { width: auto; padding: 3px; }
+.sidebar-admin [data-sidebar="footer"] button { color: var(--sb-text); }
+.sidebar-admin .theme-toggle-btn { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.14); color: var(--sb-text); }
+.sidebar-admin .theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.14); color: var(--on-brand); border-color: rgba(255, 255, 255, 0.28); transform: none; box-shadow: none; }
+.sidebar-admin .admin-user { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.14); }
+.sidebar-admin .admin-user > span { background: var(--sb-accent); color: var(--slate-950); }
+.sidebar-admin .admin-user strong { color: var(--on-brand); }
+.sidebar-admin .admin-user small { color: var(--sb-muted); }
+
+/* Collapsed icon rail. The expanded-panel rules above carry padding, label
+   heights and a help card that are unlayered and so outrank the shadcn
+   collapsible utilities; undo them here so the rail stays one centred column. */
+[data-collapsible="icon"] .sidebar-student [data-sidebar="header"],
+[data-collapsible="icon"] .sidebar-admin [data-sidebar="header"] { padding: 12px 0; }
+[data-collapsible="icon"] .sidebar-student [data-sidebar="header"] > div,
+[data-collapsible="icon"] .sidebar-admin [data-sidebar="header"] > div { justify-content: center; }
+[data-collapsible="icon"] .sidebar-student [data-sidebar="group-label"],
+[data-collapsible="icon"] .sidebar-admin [data-sidebar="group-label"] { display: none; }
+[data-collapsible="icon"] .sidebar-student [data-sidebar="group"],
+[data-collapsible="icon"] .sidebar-admin [data-sidebar="group"] { padding: 6px 0; }
+/* Icon only: drop the label and the group chevron so the 32px button holds
+   just its icon, which the button's own padding already centres. */
+[data-collapsible="icon"] .sidebar-student [data-sidebar="menu-button"] > :not(svg:first-child),
+[data-collapsible="icon"] .sidebar-admin [data-sidebar="menu-button"] > :not(svg:first-child) { display: none; }
+[data-collapsible="icon"] .sidebar-help { display: none; }

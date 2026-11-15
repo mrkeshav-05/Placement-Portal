@@ -34,6 +34,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -48,6 +49,8 @@ import {
 
 type NavLink = { label: string; href: string };
 type NavItem = {
+  /** Sidebar section this entry is listed under. */
+  section: string;
   label: string;
   icon: typeof BarChart3;
   /** Either a page of its own, or a group that expands into several. */
@@ -56,8 +59,9 @@ type NavItem = {
 };
 
 const nav: NavItem[] = [
-  { label: "Overview", href: "/admin/dashboard", icon: BarChart3 },
+  { section: "Overview", label: "Overview", href: "/admin/dashboard", icon: BarChart3 },
   {
+    section: "Communication",
     label: "Announcements",
     icon: BellRing,
     children: [
@@ -67,6 +71,7 @@ const nav: NavItem[] = [
     ],
   },
   {
+    section: "Recruitment",
     label: "Companies",
     icon: Building2,
     children: [
@@ -76,6 +81,7 @@ const nav: NavItem[] = [
     ],
   },
   {
+    section: "Recruitment",
     label: "Events",
     icon: BriefcaseBusiness,
     children: [
@@ -83,8 +89,9 @@ const nav: NavItem[] = [
       { label: "Add event", href: "/admin/events/add" },
     ],
   },
-  { label: "Calendar", href: "/admin/calendar", icon: CalendarDays },
+  { section: "Recruitment", label: "Calendar", href: "/admin/calendar", icon: CalendarDays },
   {
+    section: "Records",
     label: "Placement records",
     icon: Award,
     children: [
@@ -92,14 +99,16 @@ const nav: NavItem[] = [
       { label: "Add placement records", href: "/admin/placement-records/add" },
     ],
   },
-  { label: "Students", href: "/admin/students", icon: GraduationCap },
-  { label: "Users & RBAC", href: "/admin/users", icon: ShieldCheck },
-  { label: "Feedbacks", href: "/admin/feedbacks", icon: FileQuestion },
-  { label: "NOC requests", href: "/admin/noc-requests", icon: FileText },
-  { label: "Interview experiences", href: "/admin/interview-experiences", icon: MessageSquareText },
-  { label: "Team", href: "/admin/team", icon: Users },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+  { section: "Records", label: "Students", href: "/admin/students", icon: GraduationCap },
+  { section: "Administration", label: "Users & RBAC", href: "/admin/users", icon: ShieldCheck },
+  { section: "Support", label: "Feedbacks", href: "/admin/feedbacks", icon: FileQuestion },
+  { section: "Support", label: "NOC requests", href: "/admin/noc-requests", icon: FileText },
+  { section: "Support", label: "Interview experiences", href: "/admin/interview-experiences", icon: MessageSquareText },
+  { section: "Administration", label: "Team", href: "/admin/team", icon: Users },
+  { section: "Administration", label: "Settings", href: "/admin/settings", icon: Settings },
 ];
+
+const SECTION_ORDER = ["Overview", "Communication", "Recruitment", "Records", "Support", "Administration"];
 
 export function AdminShell({
   children,
@@ -121,6 +130,10 @@ export function AdminShell({
         : item,
     )
     .filter((item) => (item.children ? item.children.length > 0 : allowedPaths.includes(item.href!)));
+  const sections = SECTION_ORDER.map((label) => ({
+    label,
+    items: visibleNav.filter((item) => item.section === label),
+  })).filter((section) => section.items.length > 0);
   const [profileOpen, setProfileOpen] = useState(false);
   const isOverview = path === "/admin/dashboard";
 
@@ -132,7 +145,7 @@ export function AdminShell({
   // the sidebar footer near the bottom, so it never opens off-screen.
   function renderProfileMenu(align: "down" | "up") {
     return (
-      <div className="relative">
+      <div className={align === "up" ? "relative min-w-0 flex-1 group-data-[collapsible=icon]:flex-none" : "relative"}>
         <button
           onClick={() => setProfileOpen(!profileOpen)}
           className="admin-user bg-transparent border-none p-0 text-left cursor-pointer"
@@ -187,36 +200,38 @@ export function AdminShell({
           halfway through a task should not have to reopen the whole nav to
           move to the next screen. The rail is what makes `tooltip` below
           worth setting. */}
-      <Sidebar collapsible="icon">
+      <Sidebar collapsible="icon" className="sidebar-admin">
         <SidebarHeader className="border-b border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
           <div className="flex items-center gap-3">
             {/* The PNG already carries its own alpha channel; the white card
                 behind it (bg-white + border) was covering that up and reading
                 as an opaque tile rather than a mark. Sized up and dropped
                 onto the sidebar's own background instead. */}
-            <Image
-              className="size-12 shrink-0 object-contain group-data-[collapsible=icon]:size-8"
-              src="/iiitl-emblem.png"
-              alt=""
-              width={48}
-              height={48}
-              priority
-            />
+            <span className="sidebar-logo">
+              <Image
+                className="size-full object-contain"
+                src="/iiitl-emblem.png"
+                alt=""
+                width={48}
+                height={48}
+                priority
+              />
+            </span>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <strong className="block truncate text-[15px] font-semibold text-[var(--ink)]">
+              <strong className="block truncate text-[15px] font-semibold text-[var(--on-brand)]">
                 T&amp;P Admin
               </strong>
-              <span className="block truncate text-[12px] font-medium text-[var(--muted)]">
-                IIIT Lucknow
-              </span>
+              <span className="sidebar-role">Admin console</span>
             </div>
           </div>
         </SidebarHeader>
 
         <SidebarContent>
-          <SidebarGroup>
+          {sections.map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
             <SidebarMenu>
-              {visibleNav.map(({ label, href, icon: Icon, children }) => {
+              {section.items.map(({ label, href, icon: Icon, children }) => {
                 if (!children) {
                   return (
                     <SidebarMenuItem key={href}>
@@ -246,7 +261,7 @@ export function AdminShell({
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           tooltip={label}
-                          className={holdsCurrentPage ? "text-[var(--navy)]" : undefined}
+                          className={holdsCurrentPage ? "text-[var(--on-brand)]" : undefined}
                         >
                           <Icon />
                           <span>{label}</span>
@@ -272,6 +287,7 @@ export function AdminShell({
               })}
             </SidebarMenu>
           </SidebarGroup>
+          ))}
         </SidebarContent>
 
         {!isOverview ? (
@@ -284,12 +300,12 @@ export function AdminShell({
                 rail is narrower than trigger+toggle+avatar laid out in a row,
                 so everything stacks into one column instead of overflowing
                 past the rail's edge. */}
-            <div className="flex items-center justify-between gap-2 px-2 py-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
-              <div className="flex items-center gap-1.5 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
-                <SidebarTrigger />
-                <ThemeToggle />
-              </div>
+            <div className="sidebar-admin-bar">
               {renderProfileMenu("up")}
+              <div className="sidebar-admin-tools">
+                <ThemeToggle />
+                <SidebarTrigger />
+              </div>
             </div>
           </SidebarFooter>
         ) : null}

@@ -55,6 +55,21 @@ def _stats_payload(stats: AmountStats) -> dict:
     }
 
 
+def _one_per_student(offers) -> list:
+    """
+    One offer per student, so a distribution counts students rather than
+    offers: a student holding two internship offers is still one student out
+    of the batch.
+    """
+    seen: set[str] = set()
+    unique = []
+    for offer in offers:
+        if offer.userId not in seen:
+            seen.add(offer.userId)
+            unique.append(offer)
+    return unique
+
+
 def _distribution(labels) -> list[dict]:
     return [{"label": label, "count": count} for label, count in counts_by_label(labels)]
 
@@ -154,6 +169,7 @@ async def admin_overview(
             "conversion": conversion_summary([]),
             "placementsByDegree": [],
             "internshipsByDegree": [],
+            "internshipsByBranch": [],
             "placementsByBranch": [],
             "topRecruiters": [],
             "applicationFunnel": _empty_funnel(),
@@ -180,6 +196,8 @@ async def admin_overview(
         ppo = [o for o in placements if o.type == OfferType.PPO]
 
         placed_students = {o.userId for o in placements}
+        placement_holders = _one_per_student(placements)
+        internship_holders = _one_per_student(internships)
 
         views = [
             OfferView(
@@ -219,17 +237,23 @@ async def admin_overview(
             },
             "internshipSummary": internship_summary(views, season_student_ids),
             "conversion": conversion_summary(views),
+            # Distributions count students, not offers, so each figure reads
+            # against the season's student total.
             "placementsByDegree": _distribution(
-                o.user.degree if o.user else None for o in placements
+                o.user.degree if o.user else None for o in placement_holders
             ),
             "internshipsByDegree": _distribution(
-                o.user.degree if o.user else None for o in internships
+                o.user.degree if o.user else None for o in internship_holders
             ),
-            # Each offer is counted once under its student's canonical branch,
-            # so a legacy CSE row lands in the CS bar rather than its own.
+            "internshipsByBranch": _distribution(
+                canonical_branch_or_none(o.user.branch) if o.user else None
+                for o in internship_holders
+            ),
+            # Each student is counted once under their canonical branch, so a
+            # legacy CSE row lands in the CS bar rather than its own.
             "placementsByBranch": _distribution(
                 canonical_branch_or_none(o.user.branch) if o.user else None
-                for o in placements
+                for o in placement_holders
             ),
             "topRecruiters": _top_recruiters(offers),
             "applicationFunnel": await _funnel(db, season),

@@ -25,6 +25,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -34,16 +35,26 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-const navigation = [
-  ["Dashboard", "/dashboard", LayoutDashboard],
-  ["Company events", "/company-events", Building2],
-  ["Applications", "/applications", ClipboardList],
-  ["Calendar", "/calendar", CalendarDays],
-  ["Interview experiences", "/interview-experiences", MessageSquareText],
-  ["Feedback or query", "/feedback", FileQuestion],
-  ["Profile", "/profile", CircleUserRound],
-  ["Documents (Forms & NOC)", "/forms", FileText],
-  ["Contact & team", "/contact", Users],
+const navigationGroups = [
+  { label: "Overview", items: [["Dashboard", "/dashboard", LayoutDashboard]] },
+  {
+    label: "Recruitment",
+    items: [
+      ["Company events", "/company-events", Building2],
+      ["Applications", "/applications", ClipboardList],
+      ["Calendar", "/calendar", CalendarDays],
+      ["Interview experiences", "/interview-experiences", MessageSquareText],
+    ],
+  },
+  {
+    label: "Support",
+    items: [
+      ["Feedback or query", "/feedback", FileQuestion],
+      ["Documents (Forms & NOC)", "/forms", FileText],
+      ["Contact & team", "/contact", Users],
+    ],
+  },
+  { label: "Account", items: [["Profile", "/profile", CircleUserRound]] },
 ] as const;
 
 export function PortalShell({
@@ -59,58 +70,61 @@ export function PortalShell({
   return (
     <SidebarProvider>
       {/* Icon rail on collapse, matching the admin shell. */}
-      <Sidebar collapsible="icon">
+      <Sidebar collapsible="icon" className="sidebar-student">
         <SidebarHeader className="border-b border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
           <div className="flex items-center gap-3">
             {/* Matches the admin shell: the PNG already has its own alpha
                 channel, so the white card behind it only covered that up. */}
-            <Image
-              className="size-12 shrink-0 object-contain group-data-[collapsible=icon]:size-8"
-              src="/iiitl-emblem.png"
-              alt=""
-              width={48}
-              height={48}
-              priority
-            />
+            <span className="sidebar-logo">
+              <Image
+                className="size-full object-contain"
+                src="/iiitl-emblem.png"
+                alt=""
+                width={48}
+                height={48}
+                priority
+              />
+            </span>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <strong className="block truncate text-[15px] font-semibold text-[var(--ink)]">
+              <strong className="block truncate text-[15px] font-semibold text-[var(--on-brand)]">
                 Placement Cell
               </strong>
-              <span className="block truncate text-[12px] font-medium text-[var(--muted)]">
-                IIIT Lucknow
-              </span>
+              <span className="sidebar-role">Student portal</span>
             </div>
           </div>
         </SidebarHeader>
 
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarMenu>
-              {navigation.map(([label, href, Icon]) => (
-                <SidebarMenuItem key={href}>
-                  <SidebarMenuButton asChild isActive={pathname === href} tooltip={label}>
-                    <Link href={href}>
-                      <Icon />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
+          {navigationGroups.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarMenu>
+                {group.items.map(([label, href, Icon]) => (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton asChild isActive={pathname === href} tooltip={label}>
+                      <Link href={href}>
+                        <Icon />
+                        <span>{label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
         </SidebarContent>
 
         <SidebarFooter>
           {/* Not a link: the contact route already has a nav entry, and this
               only says who to ask. Hidden in icon mode, where there is no room
               for two lines of prose. */}
-          <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-alt)] p-3 group-data-[collapsible=icon]:hidden">
-            <Bell size={18} className="shrink-0 text-[var(--blue)]" />
+          <div className="sidebar-help group-data-[collapsible=icon]:hidden">
+            <Bell size={18} className="shrink-0" />
             <div className="min-w-0">
-              <strong className="block truncate text-[13px] font-semibold text-[var(--ink)]">
+              <strong className="block truncate text-[13px] font-semibold text-[var(--on-brand)]">
                 Need assistance?
               </strong>
-              <span className="block truncate text-[12px] text-[var(--muted)]">
+              <span className="block truncate text-[12px] text-[var(--on-brand-muted)]">
                 Contact the placement team
               </span>
             </div>

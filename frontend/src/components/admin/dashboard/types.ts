@@ -72,6 +72,7 @@ export type AdminOverview = {
   };
   placementsByDegree: Distribution[];
   internshipsByDegree: Distribution[];
+  internshipsByBranch: Distribution[];
   placementsByBranch: Distribution[];
   topRecruiters: Recruiter[];
   applicationFunnel: ApplicationFunnel;

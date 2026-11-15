@@ -1,6 +1,6 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ActivityCard } from "./dashboard/activity-card";
-import { DistributionCard } from "./dashboard/distribution-card";
+import { DistributionCards } from "./dashboard/distribution-card";
 import { KpiStrip } from "./dashboard/kpi-strip";
 import { NeedsAttention } from "./dashboard/needs-attention";
 import { PackagesCard } from "./dashboard/packages-card";
@@ -77,10 +77,12 @@ export function AdminDashboard({
             />
             <RecruitersCard recruiters={overview.topRecruiters} />
             <PackagesCard packages={overview.packages} wide />
-            <DistributionCard
+            <DistributionCards
               placementsByBranch={overview.placementsByBranch}
               placementsByDegree={overview.placementsByDegree}
               internshipsByDegree={overview.internshipsByDegree}
+              internshipsByBranch={overview.internshipsByBranch ?? []}
+              seasonStudents={overview.totals.seasonStudents}
             />
             <ActivityCard overview={overview} extras={extras} />
           </section>
