@@ -476,26 +476,20 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="noc-state">
-                  State <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="noc-state">State (optional)</Label>
                 <Input
                   id="noc-state"
                   name="state"
-                  required
                   minLength={2}
                   placeholder="e.g. Karnataka"
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="noc-pincode">
-                  Pincode <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="noc-pincode">Pincode (optional)</Label>
                 <Input
                   id="noc-pincode"
                   name="pincode"
-                  required
                   pattern="[0-9]{6}"
                   title="6-digit pincode"
                   placeholder="6-digit postal code"
@@ -581,12 +575,12 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
                 />
                 <div className="grid gap-0.5">
                   <Label htmlFor="noc-not-required" className="font-normal">
-                    An NOC is not required for this internship
+                    For the purpose of intimation to the college, tick this only if you don't need an NOC for this.
                   </Label>
                   <input type="hidden" name="nocRequired" value={String(nocRequired)} />
                   <p className="text-muted-foreground text-[11px]">
-                    Use this only to record the company and dates on file. No certificate is
-                    issued and there is nothing for the placement cell to approve or reject.
+                    The company and dates are recorded on file only. No certificate is issued and
+                    there is nothing for the placement cell to approve or reject.
                   </p>
                 </div>
               </div>

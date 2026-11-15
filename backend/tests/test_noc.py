@@ -231,3 +231,17 @@ def test_student_facing_response_exposes_both_remarks_fields():
     )
     assert response.message == "Requesting an NOC for an off-campus role."
     assert response.adminRemarks == "Rejected: the organisation is not registered with the institute."
+
+
+def test_state_and_pincode_are_optional():
+    start = datetime.now()
+    schema = NocCreate(
+        company="Zoho",
+        address="Estancia IT Park",
+        city="Chennai",
+        startDate=start,
+        endDate=start + timedelta(days=30),
+        source="ON_CAMPUS",
+    )
+    assert schema.state == ""
+    assert schema.pincode == ""

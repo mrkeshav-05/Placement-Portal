@@ -168,3 +168,31 @@ test("a decision never carries the student's own message", () => {
   const reject = nocRejectSchema.safeParse({ nocId: "noc_123", message: "student text" });
   assert.equal(reject.success, false);
 });
+
+test("nocFormSchema accepts a request with no state or pincode", () => {
+  const parsed = nocFormSchema.parse({
+    company: "Zoho",
+    city: "Chennai",
+    address: "Estancia IT Park",
+    state: "",
+    pincode: null,
+    startDate: "2026-12-01",
+    endDate: "2026-12-31",
+    source: "ON_CAMPUS",
+  });
+  assert.equal(parsed.state, "");
+  assert.equal(parsed.pincode, "");
+});
+
+test("nocFormSchema still rejects a malformed pincode when one is given", () => {
+  const result = nocFormSchema.safeParse({
+    company: "Zoho",
+    city: "Chennai",
+    address: "Estancia IT Park",
+    pincode: "12",
+    startDate: "2026-12-01",
+    endDate: "2026-12-31",
+    source: "ON_CAMPUS",
+  });
+  assert.equal(result.success, false);
+});

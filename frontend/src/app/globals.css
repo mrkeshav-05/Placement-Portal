@@ -92,12 +92,6 @@
   --brand-900: #152841;
   --brand-950: #0c1727;
 
-  /* Slate ramp: a neutral graphite for the admin sidebar, so it reads as a
-     different product surface from the student blue. */
-  --slate-800: #232a34;
-  --slate-950: #0f1319;
-  --on-slate-soft: #d9dee6;
-  --on-slate-muted: #98a2b1;
   /* The logo's green, lifted to read on the blue sidebar. */
   --mint-300: #7fd69a;
 
@@ -1111,13 +1105,13 @@
   --sb-accent: var(--mint-300);
 }
 .sidebar-admin {
-  --sb-bg: var(--slate-800);
-  --sb-text: var(--on-slate-soft);
-  --sb-muted: var(--on-slate-muted);
+  --sb-bg: var(--brand-800);
+  --sb-text: var(--on-brand-soft);
+  --sb-muted: var(--on-brand-muted);
   --sb-accent: var(--orange);
 }
 [data-theme="dark"] .sidebar-student, .dark .sidebar-student { --sb-bg: var(--brand-950); }
-[data-theme="dark"] .sidebar-admin, .dark .sidebar-admin { --sb-bg: var(--slate-950); }
+[data-theme="dark"] .sidebar-admin, .dark .sidebar-admin { --sb-bg: var(--brand-950); }
 
 .sidebar-student, .sidebar-admin {
   --sidebar: var(--sb-bg);
@@ -1200,7 +1194,7 @@
 .sidebar-admin .theme-toggle-btn { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.14); color: var(--sb-text); }
 .sidebar-admin .theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.14); color: var(--on-brand); border-color: rgba(255, 255, 255, 0.28); transform: none; box-shadow: none; }
 .sidebar-admin .admin-user { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.14); }
-.sidebar-admin .admin-user > span { background: var(--sb-accent); color: var(--slate-950); }
+.sidebar-admin .admin-user > span { background: var(--sb-accent); color: var(--brand-950); }
 .sidebar-admin .admin-user strong { color: var(--on-brand); }
 .sidebar-admin .admin-user small { color: var(--sb-muted); }
 

@@ -23,8 +23,9 @@ class NocBase(BaseModel):
     company: str = Field(..., min_length=2, max_length=200)
     address: str = Field(..., min_length=2, max_length=500)
     city: str = Field(..., min_length=2, max_length=100)
-    state: str = Field(..., min_length=2, max_length=100)
-    pincode: str = Field(..., pattern=r"^[0-9]{6}$", description="6-digit postal code")
+    # Optional: an empty string means "not given" (the columns stay NOT NULL).
+    state: str = Field("", max_length=100)
+    pincode: str = Field("", pattern=r"^([0-9]{6})?$", description="6-digit postal code, or empty")
     startDate: datetime
     endDate: datetime
     message: Optional[str] = Field(None, max_length=2000)

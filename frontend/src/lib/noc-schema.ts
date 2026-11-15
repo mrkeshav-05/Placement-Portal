@@ -17,15 +17,23 @@ export const nocFormSchema = z
       .trim()
       .min(2, "Address must be at least 2 characters.")
       .max(500, "Address must not exceed 500 characters."),
+    // State and pincode are optional. An empty value is stored as "" (the
+    // columns stay NOT NULL) and display code already skips blanks.
     state: z
       .string()
       .trim()
-      .min(2, "State must be at least 2 characters.")
-      .max(100, "State must not exceed 100 characters."),
+      .max(100, "State must not exceed 100 characters.")
+      .refine((v) => v.length === 0 || v.length >= 2, "State must be at least 2 characters.")
+      .optional()
+      .nullable()
+      .transform((v) => v ?? ""),
     pincode: z
       .string()
       .trim()
-      .regex(/^[0-9]{6}$/, "Pincode must be exactly 6 digits."),
+      .regex(/^([0-9]{6})?$/, "Pincode must be exactly 6 digits.")
+      .optional()
+      .nullable()
+      .transform((v) => v ?? ""),
     startDate: z.string().min(1, "Start date is required."),
     endDate: z.string().min(1, "End date is required."),
     message: z
