@@ -61,6 +61,7 @@ export function CalendarView({
   currentUserId,
   canCreateShared,
   backendError,
+  fit = false,
 }: {
   mode: "staff" | "student";
   view: View;
@@ -71,6 +72,8 @@ export function CalendarView({
   currentUserId: string;
   canCreateShared: boolean;
   backendError: string | null;
+  /** On large screens, fit the month inside the viewport instead of scrolling. */
+  fit?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -150,7 +153,7 @@ export function CalendarView({
   const today = todayKey();
 
   return (
-    <div className="grid gap-4">
+    <div className={cn("grid gap-4", fit && "lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:gap-3")}>
       <div className="flex flex-wrap items-center gap-2">
         <Button asChild variant="outline" size="sm">
           <Link href={href(view, today)}>Today</Link>
@@ -253,6 +256,7 @@ export function CalendarView({
           onSelectEvent={setSelected}
           onCreateAt={canCreate ? (day) => openCreate(day) : undefined}
           onShowDay={(day) => router.push(href("week", day))}
+          fill={fit}
         />
       ) : view === "week" ? (
         <WeekGrid

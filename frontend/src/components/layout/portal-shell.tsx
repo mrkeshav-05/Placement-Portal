@@ -45,7 +45,7 @@ const navigation = [
   ["Feedback or query", "/feedback/new", FileQuestion],
   ["My feedbacks", "/feedback", BriefcaseBusiness],
   ["Profile", "/profile", CircleUserRound],
-  ["Forms & documents", "/forms", FileText],
+  ["Documents (Forms & NOC)", "/forms", FileText],
   ["Contact us", "/contact", Phone],
   ["Our team", "/team", Users],
 ] as const;
@@ -156,6 +156,14 @@ export function PortalShell({
                       <strong className="block text-xs font-bold text-[var(--ink)] truncate">{student.name}</strong>
                       <span className="block text-[10px] text-[var(--muted)] truncate">{student.subtitle}</span>
                     </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[var(--ink)] hover:bg-[var(--surface-alt)] font-semibold rounded-xl no-underline transition-colors"
+                    >
+                      <CircleUserRound size={15} />
+                      My profile
+                    </Link>
                     <Link
                       href="/account/password"
                       onClick={() => setProfileOpen(false)}

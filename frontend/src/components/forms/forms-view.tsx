@@ -31,12 +31,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 const downloads = [
   {
-    name: "Placement Policy 2026–27",
-    size: "Official PDF",
-    url: "/documents/placement-policy-2026-27.pdf",
-    filename: "placement-policy-2026-27.pdf",
-  },
-  {
     name: "Student Resume Template",
     size: "Template Guide PDF",
     url: "/documents/student-resume-template.pdf",
@@ -100,7 +94,7 @@ export type LocalNoc = {
 };
 
 export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
-  const [tab, setTab] = useState("guidelines");
+  const [tab, setTab] = useState("noc");
   const [modal, setModal] = useState(false);
   const [viewingNoc, setViewingNoc] = useState<LocalNoc | null>(null);
   const [previewDocUrl, setPreviewDocUrl] = useState<{ url: string; title: string } | null>(null);
@@ -195,12 +189,12 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
   }
 
   return (
-    <div className="module-page">
+    <div className="module-page !max-w-[1040px]">
       <section className="page-heading">
         <div>
           <span className="eyebrow">Resources</span>
-          <h1>Forms & documents</h1>
-          <p>Placement guidelines, NOC requests, and official downloads.</p>
+          <h1>Documents (Forms & NOC)</h1>
+          <p>Request a No Objection Certificate, read the placement policy, and download official forms.</p>
         </div>
       </section>
 
@@ -213,8 +207,8 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
 
       <div className="tabs">
         {[
-          ["guidelines", "T&P guidelines"],
           ["noc", `NOC requests (${initialNocs.length})`],
+          ["guidelines", "T&P guidelines"],
           ["downloads", "Downloads"],
         ].map(([id, label]) => (
           <Button
@@ -238,36 +232,42 @@ export function FormsView({ initialNocs = [] }: { initialNocs?: LocalNoc[] }) {
               <p>Participation in placement activities indicates acceptance of the institute placement policy.</p>
             </div>
           </div>
-          <h2>Student placement guidelines</h2>
-          <ol>
-            <li>Keep your academic and contact information accurate at all times.</li>
-            <li>Apply only after reviewing the complete role description and eligibility criteria.</li>
-            <li>Attendance in registered tests and interviews is mandatory unless formally excused.</li>
-            <li>Misrepresentation of academic or personal information may result in a placement ban.</li>
-            <li>Communicate with recruiters only through the designated placement coordinators.</li>
-            <li>Report off-campus offers to the Training & Placement Cell promptly.</li>
-          </ol>
+          <div className="section-action mt-4">
+            <div>
+              <h2>Placement Policy 2026–27</h2>
+              <p className="text-muted-foreground mt-1 text-xs">Indian Institute of Information Technology, Lucknow</p>
+            </div>
+            <a
+              href="/documents/placement-policy-2026-27.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--blue)] inline-flex items-center gap-1.5 text-xs font-bold no-underline hover:underline"
+            >
+              <Download size={14} />
+              Open in new tab
+            </a>
+          </div>
+          <iframe
+            src="/documents/placement-policy-2026-27.pdf#view=FitH"
+            title="Placement Policy 2026–27"
+            className="mt-4 h-[75vh] min-h-[480px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface-alt)]"
+          />
         </section>
       )}
 
       {tab === "noc" && (
         <section className="noc-section">
-          <div className="notice warning">
-            <ShieldAlert />
-            <div>
-              <strong>Important academic notice</strong>
-              <p>
-                An NOC grants permission for training but does not waive attendance, credits, examinations, or other academic requirements.
-              </p>
-            </div>
-          </div>
-
           <div className="section-action">
             <div>
               <h2>Your NOC requests</h2>
+              <p>
+                {initialNocs.length
+                  ? `${initialNocs.length} submitted · ${initialNocs.filter((n) => n.status === "PENDING").length} pending review · ${initialNocs.filter((n) => n.status === "APPROVED" && n.nocRequired !== false).length} approved`
+                  : "Request a No Objection Certificate for an internship or training."}
+              </p>
             </div>
             <Button type="button" className="h-auto" onClick={openModal}>
-              <Plus />
+              <Plus strokeWidth={2.5} />
               Request NOC
             </Button>
           </div>

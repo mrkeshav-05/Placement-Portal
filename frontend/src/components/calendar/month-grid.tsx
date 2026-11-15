@@ -22,6 +22,7 @@ export function MonthGrid({
   onSelectEvent,
   onCreateAt,
   onShowDay,
+  fill = false,
 }: {
   anchor: DayKey;
   events: BackendCalendarEvent[];
@@ -29,26 +30,28 @@ export function MonthGrid({
   /** Absent when the viewer cannot add entries. */
   onCreateAt?: (day: DayKey) => void;
   onShowDay: (day: DayKey) => void;
+  /** Stretch to the height the parent gives it instead of sizing to content. */
+  fill?: boolean;
 }) {
   const weeks = monthMatrix(anchor);
   const byDay = groupByDay(events);
   const today = todayKey();
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card" role="grid" aria-label="Month">
-      <div className="grid grid-cols-7 border-b bg-[var(--surface-alt)]" role="row">
+    <div className={cn("overflow-hidden rounded-xl border bg-card", fill && "lg:flex lg:min-h-0 lg:flex-1 lg:flex-col")} role="grid" aria-label="Month">
+      <div className="grid grid-cols-7 border-b bg-[var(--navy)]" role="row">
         {weeks[0].map((day) => (
           <div
             key={day}
             role="columnheader"
-            className="px-2 py-2 text-center text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+            className="px-2 py-2.5 text-center text-xs font-semibold tracking-wide text-white/90 uppercase"
           >
             {formatShortWeekday(day)}
           </div>
         ))}
       </div>
       {weeks.map((week) => (
-        <div key={week[0]} className="grid grid-cols-7 border-b last:border-b-0" role="row">
+        <div key={week[0]} className={cn("grid grid-cols-7 border-b last:border-b-0", fill && "lg:min-h-0 lg:flex-1")} role="row">
           {week.map((day) => {
             const dayEvents = byDay.get(day) ?? [];
             const hidden = dayEvents.length - MAX_CHIPS;
@@ -59,6 +62,7 @@ export function MonthGrid({
                 role="gridcell"
                 className={cn(
                   "group relative min-h-[88px] border-r p-1 last:border-r-0 sm:min-h-[112px] sm:p-1.5",
+                  fill && "lg:min-h-0 lg:overflow-hidden",
                   !inMonth && "bg-[var(--surface-alt)]/50",
                   onCreateAt && "cursor-pointer hover:bg-[var(--surface-highlight)]/40",
                 )}

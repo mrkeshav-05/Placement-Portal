@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BriefcaseBusiness, MapPin, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, CalendarClock, Hourglass, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,8 @@ export type StudentJobListItem = {
   type: string;
   location: string;
   deadline: string;
+  /** Raw deadline timestamp, used for the summary tiles. */
+  deadlineAt: string;
   status: "Active" | "Closed";
 };
 
@@ -31,6 +33,23 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
   const [type, setType] = useState("All");
   const [status, setStatus] = useState("All");
   const jobTypes = ["All", ...Array.from(new Set(allJobs.map((job) => job.type)))];
+  const [now] = useState(() => Date.now());
+  const summary = useMemo(() => {
+    const week = 7 * 24 * 60 * 60 * 1000;
+    const open = allJobs
+      .filter((job) => job.status === "Active")
+      .map((job) => ({ job, at: new Date(job.deadlineAt).getTime() }))
+      .filter((entry) => !Number.isNaN(entry.at) && entry.at >= now)
+      .sort((a, b) => a.at - b.at);
+    const next = open[0];
+    const days = next ? Math.max(0, Math.ceil((next.at - now) / (24 * 60 * 60 * 1000))) : null;
+    return {
+      open: allJobs.filter((job) => job.status === "Active").length,
+      closingSoon: open.filter((entry) => entry.at - now <= week).length,
+      next: next?.job,
+      nextIn: days === null ? "" : days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`,
+    };
+  }, [allJobs, now]);
   const jobs = useMemo(
     () =>
       allJobs.filter(
@@ -52,10 +71,22 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
           <h1>Company events</h1>
           <p>Explore active campus hiring drives and review automated eligibility criteria.</p>
         </div>
-        <div className="job-count">
-          <BriefcaseBusiness size={20} />
-          <strong>{allJobs.filter((job) => job.status === "Active").length}</strong>
-          <span>active openings</span>
+        <div className="job-stats">
+          <article>
+            <BriefcaseBusiness size={18} />
+            <strong>{summary.open}</strong>
+            <span>Open for applications</span>
+          </article>
+          <article>
+            <Hourglass size={18} />
+            <strong>{summary.closingSoon}</strong>
+            <span>Closing within 7 days</span>
+          </article>
+          <article>
+            <CalendarClock size={18} />
+            <strong>{summary.next ? summary.nextIn : "-"}</strong>
+            <span>{summary.next ? `Next: ${summary.next.company}` : "No upcoming deadline"}</span>
+          </article>
         </div>
       </section>
 

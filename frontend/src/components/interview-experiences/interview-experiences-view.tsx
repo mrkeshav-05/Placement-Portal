@@ -464,17 +464,21 @@ export function InterviewExperiencesView({
   }
 
   return (
-    <div className="module-page">
-      <section className="page-heading">
+    <div className="module-page !max-w-[1040px]">
+      <section className="page-heading mb-6">
         <div>
           <span className="eyebrow">Community</span>
           <h1>Interview experiences</h1>
           <p>Real questions asked in real interviews, shared by your seniors and peers.</p>
         </div>
-        <button onClick={openComposer}>
-          <Plus />
+        <Button
+          onClick={openComposer}
+          size="lg"
+          className="h-11 shrink-0 gap-2 rounded-xl bg-[var(--navy)] px-5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(var(--brand-rgb),0.25)] hover:bg-[var(--navy)]/90 [&_svg]:size-[18px]"
+        >
+          <Plus strokeWidth={2.5} />
           Share your experience
-        </button>
+        </Button>
       </section>
 
       {actionSuccess && (

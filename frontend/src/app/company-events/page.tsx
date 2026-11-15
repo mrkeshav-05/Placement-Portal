@@ -23,6 +23,7 @@ export default async function Page() {
       type: jobTypeLabel(job.type),
       location: job.locations.join(" / ") || "Location not specified",
       deadline: formatPortalDate(job.registrationDeadline, true),
+      deadlineAt: String(job.registrationDeadline),
       status: jobStatusLabel(job.status) as "Active" | "Closed",
     };
   });

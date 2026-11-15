@@ -48,17 +48,17 @@ export function WeekGrid({
   return (
     <div className="overflow-x-auto rounded-xl border bg-card">
       <div className="min-w-[720px]">
-        <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))] border-b bg-[var(--surface-alt)]">
+        <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))] border-b bg-[var(--navy)] text-white">
           <div />
           {days.map((day) => (
-            <div key={day} className="border-l px-2 py-2 text-center">
-              <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <div key={day} className="border-l border-white/15 px-2 py-2 text-center">
+              <div className="text-xs font-semibold tracking-wide text-white/80 uppercase">
                 {formatShortWeekday(day)}
               </div>
               <div
                 className={cn(
                   "mx-auto mt-0.5 grid size-8 place-items-center rounded-full text-base font-semibold",
-                  day === today ? "bg-primary text-primary-foreground" : "text-foreground",
+                  day === today ? "bg-white text-[var(--navy)]" : "text-white",
                 )}
               >
                 {formatDayNumber(day)}
