@@ -87,3 +87,72 @@ def placement_rate(placed_students: int, total_students: int) -> int:
     if total_students <= 0:
         return 0
     return round(placed_students / total_students * 100)
+
+
+@dataclass(frozen=True)
+class OfferView:
+    """The four fields of an offer the headline figures need."""
+
+    user_id: str
+    company_id: str
+    company_name: str
+    type: OfferType
+
+
+def converted_students(offers: Iterable[OfferView]) -> set[str]:
+    """
+    Students whose internship turned into a full-time role.
+
+    Either the office recorded a PPO (which is a conversion by definition), or
+    the student holds an internship offer and a full-time/PPO offer from the
+    same company. Derived from the offers on file, so recording an offer is
+    all it takes for the figure to move; nothing is flagged by hand.
+    """
+    offers = list(offers)
+    interns = {(o.user_id, o.company_id) for o in offers if o.type == OfferType.INTERNSHIP}
+    converted = {o.user_id for o in offers if o.type == OfferType.PPO}
+    converted |= {
+        o.user_id
+        for o in offers
+        if o.type in PLACEMENT_TYPES and (o.user_id, o.company_id) in interns
+    }
+    return converted
+
+
+def internship_summary(offers: Iterable[OfferView], season_student_ids: Iterable[str]) -> dict:
+    """
+    Internship-side headline counts for one season.
+
+    `eligible` is the season's students holding no counted offer of any kind:
+    the pool still open to a recruiter. It shrinks as soon as an internship,
+    full-time or PPO offer is recorded for a student.
+    """
+    offers = list(offers)
+    student_ids = set(season_student_ids)
+    interns = [o for o in offers if o.type == OfferType.INTERNSHIP]
+    interns_by_student = {o.user_id for o in interns}
+    holders = {o.user_id for o in offers}
+
+    by_company = counts_by_label(o.company_name for o in interns)
+    return {
+        "studentsWithOffers": len(interns_by_student),
+        "eligibleStudents": len(student_ids - holders),
+        "topRecruiter": (
+            {"label": by_company[0][0], "count": by_company[0][1]} if by_company else None
+        ),
+        "recruiters": [{"label": label, "count": count} for label, count in by_company[:5]],
+    }
+
+
+def conversion_summary(offers: Iterable[OfferView]) -> dict:
+    """Internship-to-full-time conversion: how many, out of how many interns."""
+    offers = list(offers)
+    interns = {o.user_id for o in offers if o.type == OfferType.INTERNSHIP}
+    converted = converted_students(offers)
+    ppo_only = len(converted - interns)
+    return {
+        "converted": len(converted),
+        "interns": len(interns),
+        "rate": placement_rate(len(converted & interns), len(interns)),
+        "ppoWithoutInternship": ppo_only,
+    }

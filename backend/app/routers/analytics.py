@@ -34,7 +34,10 @@ from app.services.placement_stats import (
     COUNTED_OFFER_STATUSES,
     PLACEMENT_TYPES,
     AmountStats,
+    OfferView,
+    conversion_summary,
     counts_by_label,
+    internship_summary,
     placement_rate,
     summarize_amounts,
 )
@@ -147,6 +150,8 @@ async def admin_overview(
                 key: _stats_payload(summarize_amounts([]))
                 for key in ("placement", "ppo", "combined", "internship")
             },
+            "internshipSummary": internship_summary([], []),
+            "conversion": conversion_summary([]),
             "placementsByDegree": [],
             "internshipsByDegree": [],
             "placementsByBranch": [],
@@ -176,6 +181,21 @@ async def admin_overview(
 
         placed_students = {o.userId for o in placements}
 
+        views = [
+            OfferView(
+                user_id=o.userId,
+                company_id=o.companyId,
+                company_name=(o.company.name if o.company else "") or "Not specified",
+                type=o.type,
+            )
+            for o in offers
+        ]
+        season_student_ids = (
+            await db.scalars(
+                select(User.id).where(User.role == Role.STUDENT, User.batch == season)
+            )
+        ).all()
+
         return {
             "season": season,
             "seasons": seasons,
@@ -197,6 +217,8 @@ async def admin_overview(
                 "combined": _stats_payload(summarize_amounts(o.ctc for o in placements)),
                 "internship": _stats_payload(summarize_amounts(o.stipend for o in internships)),
             },
+            "internshipSummary": internship_summary(views, season_student_ids),
+            "conversion": conversion_summary(views),
             "placementsByDegree": _distribution(
                 o.user.degree if o.user else None for o in placements
             ),

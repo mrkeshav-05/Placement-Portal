@@ -151,3 +151,64 @@ def test_top_recruiters_split_placements_from_internships():
 
     assert ranked[0] == {"label": "Acme", "count": 3, "placements": 2, "internships": 1}
     assert ranked[1] == {"label": "Globex", "count": 1, "placements": 0, "internships": 1}
+
+
+# --- internship / conversion headline figures ------------------------------
+
+from app.services.placement_stats import (  # noqa: E402
+    OfferView,
+    conversion_summary,
+    converted_students,
+    internship_summary,
+)
+
+
+def _offer(user: str, company: str, kind: OfferType) -> OfferView:
+    return OfferView(user_id=user, company_id=company.lower(), company_name=company, type=kind)
+
+
+def test_a_ppo_or_a_same_company_full_time_offer_is_a_conversion():
+    offers = [
+        _offer("a", "Amazon", OfferType.INTERNSHIP),
+        _offer("a", "Amazon", OfferType.FTE),  # converted: same company
+        _offer("b", "Zoho", OfferType.INTERNSHIP),
+        _offer("b", "Atlassian", OfferType.FTE),  # different company: not a conversion
+        _offer("c", "Cisco", OfferType.PPO),  # PPO is a conversion on its own
+    ]
+    assert converted_students(offers) == {"a", "c"}
+
+
+def test_conversion_rate_is_out_of_students_who_interned():
+    offers = [
+        _offer("a", "Amazon", OfferType.INTERNSHIP),
+        _offer("a", "Amazon", OfferType.PPO),
+        _offer("b", "Zoho", OfferType.INTERNSHIP),
+        _offer("c", "Cisco", OfferType.PPO),
+    ]
+    summary = conversion_summary(offers)
+    assert summary["converted"] == 2
+    assert summary["interns"] == 2
+    assert summary["rate"] == 50
+    assert summary["ppoWithoutInternship"] == 1
+
+
+def test_eligible_students_are_those_with_no_offer_of_any_kind():
+    offers = [
+        _offer("a", "Amazon", OfferType.INTERNSHIP),
+        _offer("b", "Zoho", OfferType.FTE),
+    ]
+    summary = internship_summary(offers, ["a", "b", "c", "d"])
+    assert summary["studentsWithOffers"] == 1
+    assert summary["eligibleStudents"] == 2
+
+
+def test_top_internship_recruiter_counts_internship_offers_only():
+    offers = [
+        _offer("a", "Amazon", OfferType.INTERNSHIP),
+        _offer("b", "Amazon", OfferType.INTERNSHIP),
+        _offer("c", "Zoho", OfferType.INTERNSHIP),
+        _offer("d", "Zoho", OfferType.FTE),
+        _offer("e", "Zoho", OfferType.FTE),
+    ]
+    assert internship_summary(offers, [])["topRecruiter"] == {"label": "Amazon", "count": 2}
+    assert internship_summary([], [])["topRecruiter"] is None

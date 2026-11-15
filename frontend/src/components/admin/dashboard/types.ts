@@ -55,6 +55,21 @@ export type AdminOverview = {
     combined: AmountStats;
     internship: AmountStats;
   };
+  /** Internship-side headline counts, derived from the offers on file. */
+  internshipSummary: {
+    studentsWithOffers: number;
+    /** Season students holding no counted offer of any kind. */
+    eligibleStudents: number;
+    topRecruiter: { label: string; count: number } | null;
+    recruiters: Distribution[];
+  };
+  /** Internship-to-full-time conversion, derived from the offers on file. */
+  conversion: {
+    converted: number;
+    interns: number;
+    rate: number;
+    ppoWithoutInternship: number;
+  };
   placementsByDegree: Distribution[];
   internshipsByDegree: Distribution[];
   placementsByBranch: Distribution[];
