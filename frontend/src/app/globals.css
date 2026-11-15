@@ -424,7 +424,7 @@
   .student span { font-size: 10px; color: var(--muted); margin-top: 1px; }
 
   /* Student Dashboard */
-  .dashboard { max-width: 1220px; padding: 36px 4vw 60px; margin: auto; }
+  .dashboard { min-width: 0; max-width: 1220px; padding: 36px 4vw 60px; margin: auto; }
   .welcome { display: flex; justify-content: space-between; gap: 24px; align-items: flex-end; }
   .welcome h1 { margin: 6px 0 6px; font: 600 clamp(26px, 3vw, 36px) var(--font-plex-sans); letter-spacing: -0.02em; color: var(--ink); }
   .welcome h1 span { font-size: 0.8em; }
@@ -540,12 +540,13 @@
     box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.1);
   }
 
-  .announcement-list { display: grid; gap: 12px; }
+  .announcement-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
   .announcement-list > article {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
     padding: 18px 20px;
+    min-width: 0;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -579,8 +580,10 @@
     font-weight: 700;
   }
   .announcement-meta i { font-style: normal; }
-  .announcement-copy h3 { margin: 4px 0 3px; font: 600 15px var(--font-plex-sans); color: var(--ink); }
-  .announcement-copy p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 15px; }
+  .announcement-more { flex: none; align-self: center; width: 18px; height: 18px; color: var(--muted); transition: transform 0.2s ease, color 0.2s ease; }
+  .announcement-list > article:hover .announcement-more { color: var(--blue); transform: translateX(2px); }
+  .announcement-copy h3 { margin: 4px 0 5px; overflow-wrap: anywhere; font: 600 15px var(--font-plex-sans); color: var(--ink); }
+  .announcement-copy p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .tag {
     display: inline-block;
     margin-top: 8px;

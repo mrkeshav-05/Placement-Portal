@@ -218,6 +218,7 @@ export function DashboardFeed({ data }: { data: DashboardFeedData }) {
                     : null}
                 </div>
               </div>
+              <ChevronRight className="announcement-more" aria-hidden />
             </article>
           ))
         ) : (
