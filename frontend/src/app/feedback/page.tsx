@@ -1,9 +1,10 @@
-import { FeedbackList, type StudentFeedbackItem } from "@/components/feedback/feedback-list";
+import { FeedbackHub } from "@/components/feedback/feedback-hub";
+import type { StudentFeedbackItem } from "@/components/feedback/feedback-list";
 import { AuthenticatedPortalShell } from "@/components/layout/authenticated-portal-shell";
 import { backendFetch } from "@/lib/api-client";
 import { db } from "@/lib/db";
 import { formatPortalDate } from "@/lib/job-presenters";
-import { requireStudent } from "@/lib/student-session";
+import { requireStudent, studentDisplayName } from "@/lib/student-session";
 
 function readContent(content: string): { subject: string; message: string } {
   try {
@@ -74,7 +75,15 @@ export default async function Page() {
 
   return (
     <AuthenticatedPortalShell>
-      <FeedbackList items={items} />
+      <FeedbackHub
+        items={items}
+        student={{
+          name: studentDisplayName(student),
+          rollNumber: student.user?.rollNumber ?? "Not provided",
+          email: student.user?.email ?? student.session.user.email ?? "",
+          canSubmit: Boolean(student.user),
+        }}
+      />
     </AuthenticatedPortalShell>
   );
 }

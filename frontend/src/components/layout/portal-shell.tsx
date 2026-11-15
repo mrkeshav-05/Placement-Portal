@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
-  BriefcaseBusiness,
   Building2,
   CalendarDays,
   CircleUserRound,
@@ -41,8 +40,7 @@ const navigation = [
   ["Applications", "/applications", ClipboardList],
   ["Calendar", "/calendar", CalendarDays],
   ["Interview experiences", "/interview-experiences", MessageSquareText],
-  ["Feedback or query", "/feedback/new", FileQuestion],
-  ["My feedbacks", "/feedback", BriefcaseBusiness],
+  ["Feedback or query", "/feedback", FileQuestion],
   ["Profile", "/profile", CircleUserRound],
   ["Documents (Forms & NOC)", "/forms", FileText],
   ["Contact & team", "/contact", Users],

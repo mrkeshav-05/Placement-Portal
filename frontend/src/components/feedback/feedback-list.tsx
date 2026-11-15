@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   AlertCircle,
   CheckCircle2,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +35,13 @@ export type StudentFeedbackItem = {
 
 type StatusFilter = "ALL" | "PENDING" | "RESOLVED";
 
-export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
+export function FeedbackList({
+  items,
+  onNew,
+}: {
+  items: StudentFeedbackItem[];
+  onNew?: () => void;
+}) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
@@ -81,21 +87,9 @@ export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
   }
 
   return (
-    <div className="module-page">
-      <section className="page-heading">
-        <div>
-          <span className="eyebrow">Support history</span>
-          <h1>My feedbacks & queries</h1>
-          <p>Track your messages and responses from the Training & Placement Cell.</p>
-        </div>
-        <Link className="primary-link" href="/feedback/new">
-          <MessageSquarePlus />
-          New message
-        </Link>
-      </section>
-
+    <div>
       {/* Filter toolbar */}
-      <div className="mt-6 mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="relative min-w-0 flex-[1_1_260px]">
           <Label htmlFor="feedback-search" className="sr-only">
             Search your messages or replies
@@ -204,6 +198,12 @@ export function FeedbackList({ items }: { items: StudentFeedbackItem[] }) {
                 ? "No messages match your selected filters."
                 : "Submit a feedback, query, or complaint to reach out to the placement team."}
             </p>
+            {!items.length && onNew ? (
+              <Button className="mt-4" onClick={onNew}>
+                <MessageSquarePlus />
+                New message
+              </Button>
+            ) : null}
           </div>
         )}
       </section>
