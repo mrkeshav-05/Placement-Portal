@@ -1,4 +1,4 @@
-import { Building2, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowUpRight, Building2, Clock3, Mail, MapPin, Phone } from "lucide-react";
 
 export type PublicTeamMember = {
   id?: string;
@@ -27,7 +27,7 @@ export function TeamView({
   const displayTeam = (members && members.length > 0) ? members : defaultFallbackTeam;
 
   return (
-    <div className="module-page">
+    <div className="module-page !max-w-[1040px]">
       <section className="page-heading">
         <div>
           <span className="eyebrow">
@@ -47,25 +47,41 @@ export function TeamView({
           <article>
             <Mail />
             <h2>Email</h2>
-            <a href="mailto:placements@iiitl.ac.in">placements@iiitl.ac.in</a>
-            <p>For placement drives and general queries</p>
+            <p className="contact-value">placements@iiitl.ac.in</p>
+            <p>For placement drives, eligibility and general queries. We reply within one working day.</p>
+            <a className="contact-action" href="mailto:placements@iiitl.ac.in">
+              Send an email <ArrowUpRight />
+            </a>
           </article>
           <article>
             <Phone />
             <h2>Phone</h2>
-            <a href="tel:+915224154201">+91 522 415 4201</a>
-            <p>Monday–Friday, 9:30 AM–5:30 PM</p>
+            <p className="contact-value">+91 522 415 4201</p>
+            <p className="contact-hours">
+              <Clock3 /> Monday–Friday, 9:30 AM–5:30 PM
+            </p>
+            <a className="contact-action" href="tel:+915224154201">
+              Call now <ArrowUpRight />
+            </a>
           </article>
           <article>
             <MapPin />
             <h2>Office</h2>
-            <address>
+            <address className="contact-value">
               Training &amp; Placement Cell
               <br />
               IIIT Lucknow, Chak Ganjaria
               <br />
               Lucknow, Uttar Pradesh 226002
             </address>
+            <a
+              className="contact-action"
+              href="https://www.google.com/maps/search/?api=1&query=IIIT+Lucknow+Chak+Ganjaria"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open in Maps <ArrowUpRight />
+            </a>
           </article>
         </section>
       ) : (

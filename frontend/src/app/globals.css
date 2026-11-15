@@ -990,12 +990,28 @@
   .downloads span { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
   /* Contact & Team */
-  .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+  .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+  .contact-grid article { display: flex; flex-direction: column; align-items: flex-start; }
   .contact-grid article, .team-grid article { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: var(--card-shadow); transition: transform 0.2s ease, box-shadow 0.2s ease; }
   .contact-grid article:hover, .team-grid article:hover { transform: translateY(-2px); box-shadow: var(--card-hover-shadow); }
   .contact-grid article > svg { box-sizing: content-box; padding: 10px; border-radius: 12px; background: var(--badge-blue-bg); color: var(--blue); margin-bottom: 12px; }
   .contact-grid h2 { font: 600 16px var(--font-plex-sans); color: var(--ink); margin: 0 0 6px; }
-  .contact-grid a { color: var(--blue); font-size: 12px; font-weight: 600; }
+  .contact-grid .contact-value { color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.6; margin: 2px 0 6px; overflow-wrap: anywhere; }
+  .contact-grid .contact-hours { display: flex; align-items: center; gap: 6px; }
+  .contact-grid .contact-hours svg { width: 13px; height: 13px; flex: none; }
+  .contact-grid .contact-action { margin-top: auto; padding-top: 16px; display: inline-flex; align-items: center; gap: 4px; color: var(--blue); font-size: 12px; font-weight: 700; text-decoration: none; }
+  .contact-grid .contact-action svg { width: 14px; height: 14px; transition: transform 0.15s ease; }
+  .contact-grid .contact-action:hover svg { transform: translate(2px, -2px); }
+  .contact-grid .contact-action:hover { text-decoration: underline; }
+  .contact-grid article > svg { width: 22px; height: 22px; }
+  .contact-grid p, .contact-grid address { font-size: 12px; }
+  .recruiter-card { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 24px; padding: 22px 26px; border-radius: 16px; background: var(--navy); color: #fff; box-shadow: var(--card-shadow); }
+  .recruiter-card > svg { width: 44px; height: 44px; padding: 11px; flex: none; border-radius: 12px; background: rgba(255,255,255,0.12); }
+  .recruiter-card > div { flex: 1 1 280px; min-width: 0; }
+  .recruiter-card h2 { margin: 0 0 4px; font: 600 17px var(--font-plex-sans); color: #fff; }
+  .recruiter-card p { margin: 0; font-size: 12.5px; line-height: 1.6; color: rgba(255,255,255,0.78); }
+  .recruiter-card > a { flex: none; padding: 11px 18px; border-radius: 12px; background: #fff; color: var(--navy); font-size: 12px; font-weight: 700; text-decoration: none; transition: transform 0.2s ease; }
+  .recruiter-card > a:hover { transform: translateY(-1px); }
   .contact-grid p, .contact-grid address { color: var(--muted); font-size: 11px; line-height: 1.7; font-style: normal; margin-top: 4px; }
 
   .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
