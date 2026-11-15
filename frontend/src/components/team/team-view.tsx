@@ -19,10 +19,8 @@ const defaultFallbackTeam: PublicTeamMember[] = [
 
 export function TeamView({
   members,
-  contact = false,
 }: {
   members?: PublicTeamMember[];
-  contact?: boolean;
 }) {
   const displayTeam = (members && members.length > 0) ? members : defaultFallbackTeam;
 
@@ -30,20 +28,13 @@ export function TeamView({
     <div className="module-page !max-w-[1040px]">
       <section className="page-heading">
         <div>
-          <span className="eyebrow">
-            {contact ? "Get in touch" : "People behind placements"}
-          </span>
-          <h1>{contact ? "Contact the placement cell" : "Our team"}</h1>
-          <p>
-            {contact
-              ? "We are here to help students and recruiting partners."
-              : "Meet the faculty and student coordinators supporting your career journey."}
-          </p>
+          <span className="eyebrow">Get in touch</span>
+          <h1>Contact &amp; team</h1>
+          <p>Reach the placement cell directly, or contact the faculty and student coordinators who support your placements.</p>
         </div>
       </section>
 
-      {contact ? (
-        <section className="contact-grid">
+      <section className="contact-grid">
           <article>
             <Mail />
             <h2>Email</h2>
@@ -83,9 +74,14 @@ export function TeamView({
               Open in Maps <ArrowUpRight />
             </a>
           </article>
-        </section>
-      ) : (
-        <section className="team-grid">
+      </section>
+
+      <div className="directory-heading">
+        <h2>Meet the team</h2>
+        <p>Faculty and student coordinators for campus placements</p>
+      </div>
+
+      <section className="team-grid">
           {displayTeam.map((member, index) => {
             const initials = member.name
               .split(" ")
@@ -125,8 +121,7 @@ export function TeamView({
               </article>
             );
           })}
-        </section>
-      )}
+      </section>
 
       <section className="recruiter-card">
         <Building2 />

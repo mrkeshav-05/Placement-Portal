@@ -1014,7 +1014,14 @@
   .recruiter-card > a:hover { transform: translateY(-1px); }
   .contact-grid p, .contact-grid address { color: var(--muted); font-size: 11px; line-height: 1.7; font-style: normal; margin-top: 4px; }
 
-  .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
+  .directory-heading { margin: 36px 0 0; }
+  .directory-heading h2 { margin: 0 0 4px; font: 600 20px var(--font-plex-sans); letter-spacing: -0.01em; color: var(--ink); }
+  .directory-heading p { margin: 0; font-size: 13px; color: var(--muted); }
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 18px; }
+  .team-grid article { display: flex; flex-direction: column; align-items: center; padding: 28px 20px 20px !important; }
+  .team-grid article > h2 + span { text-align: center; line-height: 1.4; }
+  .team-grid article > div:last-child { width: 100%; margin-top: auto !important; padding-top: 18px; }
+  .team-grid article > div:last-child a { flex: 1; justify-content: center; padding: 8px 10px; }
   .team-grid article { text-align: center; }
   .member-avatar { width: 76px; height: 76px; display: grid; place-items: center; margin: auto; border-radius: 20px; color: #fff; font: 600 20px var(--font-plex-sans); background: var(--navy); box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
   .member-avatar.tone-1 { background: var(--blue); }

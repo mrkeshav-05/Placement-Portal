@@ -16,7 +16,6 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquareText,
-  Phone,
   Users,
 } from "lucide-react";
 import { useState } from "react";
@@ -46,8 +45,7 @@ const navigation = [
   ["My feedbacks", "/feedback", BriefcaseBusiness],
   ["Profile", "/profile", CircleUserRound],
   ["Documents (Forms & NOC)", "/forms", FileText],
-  ["Contact us", "/contact", Phone],
-  ["Our team", "/team", Users],
+  ["Contact & team", "/contact", Users],
 ] as const;
 
 export function PortalShell({
