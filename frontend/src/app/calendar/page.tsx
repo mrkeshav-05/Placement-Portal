@@ -30,7 +30,7 @@ export default async function Page({
 
   return (
     <AuthenticatedPortalShell>
-      <div className="module-page lg:flex lg:h-[calc(100svh-76px)] lg:flex-col lg:!py-5">
+      <div className="module-page !max-w-[1280px] lg:flex lg:h-[calc(100svh-76px)] lg:flex-col lg:!py-5">
         <section className="page-heading mb-4 lg:mb-3 lg:[&_h1]:my-1 lg:[&_h1]:text-[26px]">
           <div>
             <span className="eyebrow">Placement calendar</span>
