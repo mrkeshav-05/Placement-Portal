@@ -6,6 +6,13 @@ import { useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { saveJobProfile, type JobProfileActionResult } from "@/app/admin/events/actions";
 import { EventAttachmentUploader } from "@/components/admin/event-attachment-uploader";
+import {
+  EventJafFields,
+  jafPayload,
+  jafStateFromStored,
+  type JafFormState,
+  type JafStoredValues,
+} from "@/components/admin/event-jaf-fields";
 import { EventQuestionBuilder } from "@/components/admin/event-question-builder";
 import { PickerModal } from "@/components/common/picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -40,6 +47,7 @@ import {
   JOB_CATEGORIES,
   type EventAttachment,
   type JobQuestion,
+  employmentFlags,
 } from "@/lib/job-profile-schema";
 import { GENDERS } from "@/lib/profile-schema";
 import { stripHtmlToText } from "@/lib/rich-text";
@@ -71,12 +79,12 @@ export type EventFormValues = {
   ctcStipendInfo: string | null;
   description: string | null;
   openingOverview: string | null;
-  cap: string | null;
   companyBond: string | null;
   duration: string | null;
   redirectUrl: string | null;
   questions: JobQuestion[];
   attachments: EventAttachment[];
+  jaf: JafStoredValues;
 };
 
 const STATUS_LABELS: Record<EventFormValues["status"], string> = {
@@ -184,14 +192,12 @@ export function EventForm({
       event &&
         (event.allowedGenders.length > 0 ||
           event.maxBans > 0 ||
-          event.minCGPA > 0 ||
           event.min10Percent != null ||
           event.min12Percent != null),
     ),
   );
   const [allowedGenders, setAllowedGenders] = useState<string[]>(event?.allowedGenders ?? []);
   const [maxBans, setMaxBans] = useState(event ? String(event.maxBans) : "0");
-  const [cap, setCap] = useState(event?.cap ?? "");
   const [companyBond, setCompanyBond] = useState(event?.companyBond ?? "");
   const [locations, setLocations] = useState(event?.locations.join(", ") ?? "");
   const [duration, setDuration] = useState(event?.duration ?? "");
@@ -202,6 +208,7 @@ export function EventForm({
   const [status, setStatus] = useState<EventFormValues["status"]>(event?.status ?? "DRAFT");
   const [questions, setQuestions] = useState<JobQuestion[]>(event?.questions ?? []);
   const [attachments, setAttachments] = useState<EventAttachment[]>(event?.attachments ?? []);
+  const [jaf, setJaf] = useState<JafFormState>(() => jafStateFromStored(event?.jaf ?? null, event?.companyBond));
 
   const [deadlineOpen, setDeadlineOpen] = useState(false);
   const [companyPickerOpen, setCompanyPickerOpen] = useState(false);
@@ -240,6 +247,8 @@ export function EventForm({
     setAllowedBranches((previous) => previous.filter((branch) => reachable.has(branch)));
   }
 
+  const flags = employmentFlags(type);
+
   async function submit() {
     const formData = new FormData();
     formData.set("id", event?.id ?? "");
@@ -253,7 +262,7 @@ export function EventForm({
     formData.set("status", status);
     formData.set("description", description);
     formData.set("openingOverview", openingOverview);
-    formData.set("minCGPA", optionalOpen ? minCGPA || "0" : "0");
+    formData.set("minCGPA", minCGPA || "0");
     formData.set("min10Percent", optionalOpen ? min10Percent : "");
     formData.set("min12Percent", optionalOpen ? min12Percent : "");
     formData.set("maxBacklogs", maxBacklogs || "0");
@@ -264,12 +273,12 @@ export function EventForm({
     formData.set("locations", locations);
     formData.set("ctcStipend", ctcStipend);
     formData.set("ctcStipendInfo", ctcStipendInfo);
-    formData.set("cap", cap);
-    formData.set("companyBond", companyBond);
-    formData.set("duration", duration);
+    formData.set("companyBond", jaf.hasBond === "yes" ? companyBond : "");
+    formData.set("duration", flags.duration ? duration : "");
     formData.set("redirectUrl", redirectUrl);
     formData.set("questions", JSON.stringify(questions));
     formData.set("attachments", JSON.stringify(attachments));
+    formData.set("jaf", JSON.stringify(jafPayload(jaf)));
 
     setSaving(true);
     const next = await saveJobProfile(formData);
@@ -294,6 +303,7 @@ export function EventForm({
     stripHtmlToText(description) ? null : "description",
     category ? null : "category",
     type ? null : "employment type",
+    minCGPA.trim() ? null : "minimum CGPA",
     batch ? null : "batch",
     deadline ? null : "last date to apply",
     allowedDegrees.length ? null : "allowed degrees",
@@ -562,17 +572,34 @@ export function EventForm({
         </Button>
       </div>
 
-      <div className="grid gap-2">
-        <FieldLabel htmlFor="event-backlogs">Backlogs</FieldLabel>
-        <Input
-          id="event-backlogs"
-          value={maxBacklogs}
-          type="number"
-          min={0}
-          step="1"
-          onChange={(input) => setMaxBacklogs(input.target.value)}
-          placeholder="Maximum Backlogs"
-        />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <FieldLabel htmlFor="event-cgpa" required>
+            Minimum CGPA
+          </FieldLabel>
+          <Input
+            id="event-cgpa"
+            value={minCGPA}
+            type="number"
+            min={0}
+            max={10}
+            step="0.01"
+            onChange={(input) => setMinCGPA(input.target.value)}
+            placeholder="e.g. 7.5, or 0 for no minimum"
+          />
+        </div>
+        <div className="grid gap-2">
+          <FieldLabel htmlFor="event-backlogs">Backlogs</FieldLabel>
+          <Input
+            id="event-backlogs"
+            value={maxBacklogs}
+            type="number"
+            min={0}
+            step="1"
+            onChange={(input) => setMaxBacklogs(input.target.value)}
+            placeholder="Maximum backlogs"
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -581,13 +608,13 @@ export function EventForm({
           checked={optionalOpen}
           onCheckedChange={setOptionalOpen}
         />
-        <Label htmlFor="optional-eligibility">Enable Optional Eligibility Criteria</Label>
+        <Label htmlFor="optional-eligibility">Add 10th / 12th percentage, gender or placement-ban limits</Label>
       </div>
 
       {optionalOpen ? (
         <div className="grid gap-3 rounded-lg border border-dashed p-4">
           <FieldLabel>Optional Eligibility Criteria</FieldLabel>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div className="grid gap-2">
               <FieldLabel htmlFor="event-10th">10th Percentage</FieldLabel>
               <Input
@@ -615,19 +642,6 @@ export function EventForm({
               />
             </div>
             <div className="grid gap-2">
-              <FieldLabel htmlFor="event-cgpa">Graduation GPA</FieldLabel>
-              <Input
-                id="event-cgpa"
-                value={minCGPA}
-                type="number"
-                min={0}
-                max={10}
-                step="0.01"
-                onChange={(input) => setMinCGPA(input.target.value)}
-                placeholder="e.g. 8.0"
-              />
-            </div>
-            <div className="grid gap-2">
               <FieldLabel>Allowed Gender</FieldLabel>
               <ToggleGroup
                 type="multiple"
@@ -645,7 +659,7 @@ export function EventForm({
             </div>
           </div>
           <p className="text-muted-foreground text-xs">
-            Leave a field blank for no minimum, and gender unpicked to open the drive to everyone.
+            Leave a field blank for no limit, and gender unpicked to open the drive to everyone.
           </p>
           <div className="grid gap-2 sm:w-1/4">
             <FieldLabel htmlFor="event-bans">Maximum Placement Bans</FieldLabel>
@@ -663,29 +677,6 @@ export function EventForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-2">
-          <FieldLabel htmlFor="event-cap">Cap</FieldLabel>
-          <Input
-            id="event-cap"
-            value={cap}
-            maxLength={100}
-            onChange={(input) => setCap(input.target.value)}
-            placeholder="Enter CAP"
-          />
-        </div>
-        <div className="grid gap-2">
-          <FieldLabel htmlFor="event-bond">Company Bond</FieldLabel>
-          <Input
-            id="event-bond"
-            value={companyBond}
-            maxLength={200}
-            onChange={(input) => setCompanyBond(input.target.value)}
-            placeholder="e.g. 2 years bond"
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="grid gap-2">
           <FieldLabel htmlFor="event-locations" required>
             Place of Posting
           </FieldLabel>
@@ -696,39 +687,45 @@ export function EventForm({
             placeholder="e.g. Bengaluru, Remote"
           />
         </div>
+        {flags.duration ? (
+          <div className="grid gap-2">
+            <FieldLabel htmlFor="event-duration">Internship duration</FieldLabel>
+            <Input
+              id="event-duration"
+              value={duration}
+              maxLength={100}
+              onChange={(input) => setDuration(input.target.value)}
+              placeholder="e.g. 6 months, or 2 months (summer)"
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-2">
-          <FieldLabel htmlFor="event-duration">Duration</FieldLabel>
+          <FieldLabel htmlFor="event-ctc">
+            {flags.stipend ? "Stipend (INR per month)" : type ? "CTC (INR per year)" : "CTC / Stipend"}
+          </FieldLabel>
           <Input
-            id="event-duration"
-            value={duration}
-            maxLength={100}
-            onChange={(input) => setDuration(input.target.value)}
-            placeholder="e.g. 6 months, leave blank for placement"
+            id="event-ctc"
+            value={ctcStipend}
+            type="number"
+            min={0}
+            step="any"
+            onChange={(input) => setCtcStipend(input.target.value)}
+            placeholder={flags.stipend ? "e.g. 90000" : "e.g. 1200000"}
           />
         </div>
-      </div>
-
-      <div className="grid gap-2">
-        <FieldLabel htmlFor="event-ctc">CTC / Stipend</FieldLabel>
-        <Input
-          id="event-ctc"
-          value={ctcStipend}
-          type="number"
-          min={0}
-          step="any"
-          onChange={(input) => setCtcStipend(input.target.value)}
-          placeholder="e.g. 1200000"
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <FieldLabel htmlFor="event-ctc-info">Additional CTC / Stipend Info</FieldLabel>
-        <Input
-          id="event-ctc-info"
-          value={ctcStipendInfo}
-          maxLength={500}
-          onChange={(input) => setCtcStipendInfo(input.target.value)}
-        />
+        <div className="grid gap-2">
+          <FieldLabel htmlFor="event-ctc-info">Additional compensation info / benefits</FieldLabel>
+          <Input
+            id="event-ctc-info"
+            value={ctcStipendInfo}
+            maxLength={500}
+            onChange={(input) => setCtcStipendInfo(input.target.value)}
+            placeholder="e.g. includes joining bonus and RSUs"
+          />
+        </div>
       </div>
 
       <div className="grid gap-2">
@@ -756,7 +753,19 @@ export function EventForm({
 
       <EventQuestionBuilder questions={questions} onChange={setQuestions} />
 
-      <EventAttachmentUploader attachments={attachments} onChange={setAttachments} />
+      <EventJafFields
+        state={jaf}
+        onChange={setJaf}
+        type={type}
+        companyBond={companyBond}
+        onCompanyBondChange={setCompanyBond}
+      />
+
+      <EventAttachmentUploader
+        attachments={attachments}
+        onChange={setAttachments}
+        label="Additional documents"
+      />
 
       <div className="grid gap-2">
         <FieldLabel>Visibility</FieldLabel>

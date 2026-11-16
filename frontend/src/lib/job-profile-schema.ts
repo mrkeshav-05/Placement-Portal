@@ -64,6 +64,169 @@ const eventAttachmentsList = z.string().optional().transform((value, context) =>
   return parsed.data;
 });
 
+/* ------------------------------------------------------------------ */
+/* JAF 2026-27 fields                                                  */
+/* ------------------------------------------------------------------ */
+// Every field is optional and a blank becomes null: null means "not
+// provided", never "No", so the student page can show only what the
+// placement cell has actually entered.
+
+export const WORK_MODES = ["ON_SITE", "HYBRID", "REMOTE"] as const;
+export const WORK_MODE_LABELS: Record<(typeof WORK_MODES)[number], string> = {
+  ON_SITE: "On-site",
+  HYBRID: "Hybrid",
+  REMOTE: "Remote",
+};
+
+/**
+ * What each employment type asks for, so the admin form, the save action and
+ * the student page agree: an FTE has no stipend, duration or PPO, a plain
+ * internship has no PPO CTC, compensation breakup or bond. `ctcStipend` is the
+ * one headline amount: a monthly stipend for the internship types, a yearly
+ * CTC for FTE.
+ */
+export function employmentFlags(type: string | null | undefined) {
+  const internship = type === "INTERNSHIP" || type === "INTERNSHIP_PPO" || type === "INTERNSHIP_FTE";
+  const known = Boolean(type);
+  return {
+    /** `ctcStipend` is a monthly stipend rather than a yearly CTC. */
+    stipend: internship,
+    duration: internship,
+    /** Expected CTC (LPA) of the PPO or of the full-time conversion. */
+    expectedCtc: type === "INTERNSHIP_PPO" || type === "INTERNSHIP_FTE",
+    /** Fixed / variable / CTC breakup, and the service bond. */
+    fullTime: known && type !== "INTERNSHIP",
+  };
+}
+
+/** Degree categories the JAF asks yearly compensation for. */
+export const COMPENSATION_DEGREES = ["B.Tech.", "M.Tech.", "M.Sc.", "MBA", "Ph.D."] as const;
+
+export const SELECTION_ROUND_KEYS = [
+  "aptitudeTest",
+  "technicalTest",
+  "technicalInterview",
+  "hrInterview",
+] as const;
+export const SELECTION_ROUND_LABELS: Record<(typeof SELECTION_ROUND_KEYS)[number], string> = {
+  aptitudeTest: "Aptitude test",
+  technicalTest: "Technical test",
+  technicalInterview: "Technical interview",
+  hrInterview: "HR interview",
+};
+
+export type CompensationEntry = { fixed?: number; variable?: number; ctc?: number };
+export type SelectionRound = {
+  conducted?: boolean;
+  duration?: string;
+  rounds?: number;
+  sequence?: string;
+};
+
+const nullableNumber = (max: number) =>
+  z.preprocess(
+    (value) => (value === "" || value === undefined ? null : value),
+    z.union([z.null(), z.coerce.number().nonnegative().max(max)]),
+  );
+
+const nullableText = (max: number) =>
+  z
+    .string()
+    .nullish()
+    .transform((value) => (value ?? "").trim())
+    .pipe(z.string().max(max))
+    .transform((value) => value || null);
+
+const nullableBoolean = z.boolean().nullish().transform((value) => value ?? null);
+
+const compensationSchema = z
+  .record(
+    z.string(),
+    z.object({
+      fixed: nullableNumber(10_000_000_000),
+      variable: nullableNumber(10_000_000_000),
+      ctc: nullableNumber(10_000_000_000),
+    }),
+  )
+  .nullish()
+  .transform((value) => {
+    const cleaned: Record<string, CompensationEntry> = {};
+    for (const degree of COMPENSATION_DEGREES) {
+      const entry = value?.[degree];
+      if (!entry) continue;
+      const out: CompensationEntry = {};
+      if (entry.fixed !== null) out.fixed = entry.fixed;
+      if (entry.variable !== null) out.variable = entry.variable;
+      if (entry.ctc !== null) out.ctc = entry.ctc;
+      if (Object.keys(out).length) cleaned[degree] = out;
+    }
+    return Object.keys(cleaned).length ? cleaned : null;
+  });
+
+const selectionRoundsSchema = z
+  .record(
+    z.string(),
+    z.object({
+      conducted: nullableBoolean,
+      duration: nullableText(100),
+      rounds: nullableNumber(50),
+      sequence: nullableText(200),
+    }),
+  )
+  .nullish()
+  .transform((value) => {
+    const cleaned: Record<string, SelectionRound> = {};
+    for (const key of SELECTION_ROUND_KEYS) {
+      const entry = value?.[key];
+      if (!entry) continue;
+      const out: SelectionRound = {};
+      if (entry.conducted !== null) out.conducted = entry.conducted;
+      if (entry.duration) out.duration = entry.duration;
+      if (entry.rounds !== null) out.rounds = Math.trunc(entry.rounds);
+      if (entry.sequence) out.sequence = entry.sequence;
+      if (Object.keys(out).length) cleaned[key] = out;
+    }
+    return Object.keys(cleaned).length ? cleaned : null;
+  });
+
+export const jafDetailsSchema = z.object({
+  workMode: z.enum(WORK_MODES).nullish().transform((value) => value ?? null),
+  joiningDate: nullableText(100),
+  ppoCtcLpa: nullableNumber(1000),
+  compensation: compensationSchema,
+  hasBond: nullableBoolean,
+  ppt: nullableBoolean,
+  resumeShortlisting: nullableBoolean,
+  shortlistCriteria: nullableText(1000),
+  selectionRounds: selectionRoundsSchema,
+  selectionNotes: nullableText(3000),
+  jdFile: eventAttachmentSchema.nullish().transform((value) => value ?? null),
+});
+
+export type JafDetails = z.infer<typeof jafDetailsSchema>;
+
+/** The form posts these as one JSON string; blank or missing means none. */
+const jafDetailsField = z.string().optional().transform((value, context) => {
+  const raw = (value ?? "").trim();
+  if (!raw) return jafDetailsSchema.parse({});
+  let items: unknown;
+  try {
+    items = JSON.parse(raw);
+  } catch {
+    context.addIssue({ code: "custom", message: "Could not read the additional details." });
+    return z.NEVER;
+  }
+  const parsed = jafDetailsSchema.safeParse(items);
+  if (!parsed.success) {
+    context.addIssue({
+      code: "custom",
+      message: parsed.error.issues[0]?.message ?? "Check the additional details.",
+    });
+    return z.NEVER;
+  }
+  return parsed.data;
+});
+
 const optionalNumber = (schema: z.ZodNumber) =>
   z.preprocess(
     (value) => (value === "" || value === null || value === undefined ? null : value),
@@ -212,6 +375,7 @@ export const jobProfileFormSchema = z
     allowedGenders: jsonList("gender"),
     questions: jobQuestionsList,
     attachments: eventAttachmentsList,
+    jaf: jafDetailsField,
     jobCategory: z.enum(JOB_CATEGORIES, { message: "Choose a category." }),
     batch: requiredNumber(z.number().int().min(2020).max(2100)),
     placementYear: requiredNumber(z.number().int().min(2020).max(2100)),
@@ -226,7 +390,6 @@ export const jobProfileFormSchema = z
       .refine((html) => stripHtmlToText(html).length >= 1, "Write a description.")
       .refine((html) => stripHtmlToText(html).length <= 5000, "Description cannot exceed 5,000 characters."),
     openingOverview: optionalText(10_000),
-    cap: optionalText(100),
     companyBond: optionalText(200),
     duration: optionalText(100),
     redirectUrl: z

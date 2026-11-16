@@ -8,6 +8,8 @@ import { db } from "@/lib/db";
 import {
   EVENT_ATTACHMENT_EXTENSIONS,
   MAX_EVENT_ATTACHMENT_MB,
+  employmentFlags,
+  type JafDetails,
   jobProfileDeleteSchema,
   jobProfileFormSchema,
 } from "@/lib/job-profile-schema";
@@ -102,6 +104,31 @@ async function revalidateEventPages() {
   revalidatePath("/dashboard");
 }
 
+/** Json? columns need the explicit sentinel to write SQL NULL. */
+function jsonOrNull(value: unknown): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  return value === null || value === undefined
+    ? Prisma.JsonNull
+    : (value as Prisma.InputJsonValue);
+}
+
+/** Drops what the employment type does not ask for, so a stale value cannot be saved. */
+function jafColumns(jaf: JafDetails, type: string) {
+  const flags = employmentFlags(type);
+  return {
+    jdFile: jsonOrNull(jaf.jdFile),
+    workMode: jaf.workMode,
+    joiningDate: jaf.joiningDate,
+    ppoCtcLpa: flags.expectedCtc ? jaf.ppoCtcLpa : null,
+    compensation: jsonOrNull(flags.fullTime ? jaf.compensation : null),
+    hasBond: flags.fullTime ? jaf.hasBond : null,
+    ppt: jaf.ppt,
+    resumeShortlisting: jaf.resumeShortlisting,
+    shortlistCriteria: jaf.shortlistCriteria,
+    selectionRounds: jsonOrNull(jaf.selectionRounds),
+    selectionNotes: jaf.selectionNotes,
+  };
+}
+
 export async function saveJobProfile(formData: FormData): Promise<JobProfileActionResult> {
   const isEdit = Boolean(formData.get("id"));
   const { user } = await requirePermission(isEdit ? PERM_JOBS_UPDATE : PERM_JOBS_CREATE);
@@ -129,6 +156,7 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     allowedGenders: formData.get("allowedGenders"),
     questions: formData.get("questions") ?? "[]",
     attachments: formData.get("attachments") ?? "[]",
+    jaf: formData.get("jaf") ?? "",
     jobCategory: formData.get("jobCategory"),
     batch: formData.get("batch"),
     placementYear: formData.get("placementYear"),
@@ -136,7 +164,6 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     status: formData.get("status"),
     description: formData.get("description"),
     openingOverview: formData.get("openingOverview"),
-    cap: formData.get("cap"),
     companyBond: formData.get("companyBond"),
     duration: formData.get("duration"),
     redirectUrl: formData.get("redirectUrl"),
@@ -176,6 +203,7 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     attachments: parsed.data.attachments.length
       ? (parsed.data.attachments as unknown as Prisma.InputJsonValue)
       : Prisma.JsonNull,
+    ...jafColumns(parsed.data.jaf, parsed.data.type),
     jobCategory: parsed.data.jobCategory,
     batch: parsed.data.batch,
     placementYear: parsed.data.placementYear,
@@ -183,9 +211,8 @@ export async function saveJobProfile(formData: FormData): Promise<JobProfileActi
     status: parsed.data.status,
     description: parsed.data.description,
     openingOverview: parsed.data.openingOverview,
-    cap: parsed.data.cap,
-    companyBond: parsed.data.companyBond,
-    duration: parsed.data.duration,
+    companyBond: employmentFlags(parsed.data.type).fullTime && parsed.data.jaf.hasBond !== false ? parsed.data.companyBond : null,
+    duration: employmentFlags(parsed.data.type).duration ? parsed.data.duration : null,
     redirectUrl: parsed.data.redirectUrl,
   };
 

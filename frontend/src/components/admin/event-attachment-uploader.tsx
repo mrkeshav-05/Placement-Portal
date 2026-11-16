@@ -26,9 +26,16 @@ function formatFileSize(bytes: number): string {
 export function EventAttachmentUploader({
   attachments,
   onChange,
+  label = "Attachments",
+  hint,
+  max = MAX_EVENT_ATTACHMENTS,
 }: {
   attachments: EventAttachment[];
   onChange: (next: EventAttachment[]) => void;
+  label?: string;
+  hint?: string;
+  /** With `1` the slot holds a single file and a new upload replaces it. */
+  max?: number;
 }) {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -38,9 +45,9 @@ export function EventAttachmentUploader({
   async function uploadFiles(fileList: FileList | null) {
     if (!fileList?.length) return;
 
-    const room = MAX_EVENT_ATTACHMENTS - attachments.length;
+    const room = max === 1 ? 1 : max - attachments.length;
     if (room <= 0) {
-      setError(`An event can carry at most ${MAX_EVENT_ATTACHMENTS} files.`);
+      setError(`You can add at most ${max} files here.`);
       return;
     }
 
@@ -59,9 +66,11 @@ export function EventAttachmentUploader({
       if (outcome.attachment) {
         const uploaded = outcome.attachment;
         onChange(
-          attachments.some((item) => item.fileUrl === uploaded.fileUrl)
-            ? attachments
-            : [...attachments, uploaded],
+          max === 1
+            ? [uploaded]
+            : attachments.some((item) => item.fileUrl === uploaded.fileUrl)
+              ? attachments
+              : [...attachments, uploaded],
         );
       }
     }
@@ -70,7 +79,8 @@ export function EventAttachmentUploader({
 
   return (
     <div className="grid gap-2">
-      <Label>Attachments</Label>
+      <Label>{label}</Label>
+      {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
 
       <div
         role="button"
@@ -97,7 +107,7 @@ export function EventAttachmentUploader({
         <input
           ref={fileInputRef}
           type="file"
-          multiple
+          multiple={max !== 1}
           accept={EVENT_ATTACHMENT_EXTENSIONS.map((extension) => `.${extension}`).join(",")}
           className="hidden"
           onChange={(event) => {

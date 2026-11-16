@@ -4,7 +4,7 @@ import { EventForm, type EventFormValues } from "@/components/admin/event-form";
 import { requirePermission } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import { loadEventFormOptions } from "@/lib/event-options";
-import type { EventAttachment, JobQuestion } from "@/lib/job-profile-schema";
+import type { CompensationEntry, EventAttachment, JobQuestion, SelectionRound } from "@/lib/job-profile-schema";
 import { PERM_JOBS_UPDATE } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
@@ -44,12 +44,24 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     ctcStipendInfo: event.ctcStipendInfo,
     description: event.description,
     openingOverview: event.openingOverview,
-    cap: event.cap,
     companyBond: event.companyBond,
     duration: event.duration,
     redirectUrl: event.redirectUrl,
     questions: (event.questions as JobQuestion[] | null) ?? [],
     attachments: (event.attachments as EventAttachment[] | null) ?? [],
+    jaf: {
+      workMode: event.workMode,
+      joiningDate: event.joiningDate,
+      ppoCtcLpa: event.ppoCtcLpa,
+      compensation: event.compensation as Record<string, CompensationEntry> | null,
+      hasBond: event.hasBond,
+      ppt: event.ppt,
+      resumeShortlisting: event.resumeShortlisting,
+      shortlistCriteria: event.shortlistCriteria,
+      selectionRounds: event.selectionRounds as Record<string, SelectionRound> | null,
+      selectionNotes: event.selectionNotes,
+      jdFile: event.jdFile as EventAttachment | null,
+    },
   };
 
   return (

@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   typedRoutes: false,
+  // Event attachments (a JD PDF) go through a server action at up to 4 MB;
+  // the 1 MB default would reject them before the action runs.
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   // The dev server runs in a container published on 0.0.0.0, so it is reached
   // by whichever host name the developer types. Next refuses to serve its dev
   // chunks to an origin it was not told about, and the refusal is silent in

@@ -100,7 +100,6 @@ export type BackendJob = {
   registrationDeadline: string;
   description: string | null;
   openingOverview: string | null;
-  cap: string | null;
   companyBond: string | null;
   duration: string | null;
   redirectUrl: string | null;

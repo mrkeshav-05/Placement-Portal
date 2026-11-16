@@ -227,6 +227,8 @@ class Company(Base):
     category: Mapped[str | None] = mapped_column(String, nullable=True)
     placementSession: Mapped[int | None] = mapped_column(Integer, nullable=True)
     turnover: Mapped[str | None] = mapped_column(String, nullable=True)
+    orgType: Mapped[str | None] = mapped_column(String, nullable=True)
+    industry: Mapped[str | None] = mapped_column(String, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     jobs: Mapped[list["JobProfile"]] = relationship(back_populates="company", cascade="all, delete-orphan")
@@ -261,7 +263,6 @@ class JobProfile(Base):
     status: Mapped[JobStatus] = mapped_column(Enum(JobStatus, name="JobStatus"), default=JobStatus.DRAFT, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     openingOverview: Mapped[str | None] = mapped_column(Text, nullable=True)
-    cap: Mapped[str | None] = mapped_column(String, nullable=True)
     companyBond: Mapped[str | None] = mapped_column(String, nullable=True)
     duration: Mapped[str | None] = mapped_column(String, nullable=True)
     redirectUrl: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -270,6 +271,18 @@ class JobProfile(Base):
     # `{ id, type: "TEXT" | "MCQ" | "CHECKBOX" | "FILE", question, options? }[]`.
     # No student answer is stored anywhere yet — see the schema.prisma comment.
     questions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    # JAF 2026-27 fields; null means "not provided" (see schema.prisma).
+    jdFile: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    workMode: Mapped[str | None] = mapped_column(String, nullable=True)
+    joiningDate: Mapped[str | None] = mapped_column(String, nullable=True)
+    ppoCtcLpa: Mapped[float | None] = mapped_column(Float, nullable=True)
+    compensation: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    hasBond: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    ppt: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    resumeShortlisting: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    shortlistCriteria: Mapped[str | None] = mapped_column(Text, nullable=True)
+    selectionRounds: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    selectionNotes: Mapped[str | None] = mapped_column(Text, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     createdById: Mapped[str] = mapped_column(String, ForeignKey("User.id"))
 

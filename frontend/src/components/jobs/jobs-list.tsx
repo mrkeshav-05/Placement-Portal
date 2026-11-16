@@ -20,6 +20,8 @@ export type StudentJobListItem = {
   initials: string;
   color: string;
   title: string;
+  /** Graduating batch the drive recruits. */
+  batch: number;
   type: string;
   location: string;
   deadline: string;
@@ -28,15 +30,31 @@ export type StudentJobListItem = {
   status: "Active" | "Closed";
 };
 
-export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
+export function JobsList({
+  jobs: allJobs,
+  studentBatch,
+}: {
+  jobs: StudentJobListItem[];
+  /** The batch on the student's profile; the list opens filtered to it. */
+  studentBatch?: number | null;
+}) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState("All");
   const [status, setStatus] = useState("All");
+  const [batch, setBatch] = useState(studentBatch ? String(studentBatch) : "All");
+  // Every batch a drive recruits, plus the student's own so it is always selectable.
+  const batches = Array.from(
+    new Set([...allJobs.map((job) => job.batch), ...(studentBatch ? [studentBatch] : [])]),
+  ).sort((a, b) => b - a);
+  const inBatch = useMemo(
+    () => allJobs.filter((job) => batch === "All" || job.batch === Number(batch)),
+    [allJobs, batch],
+  );
   const jobTypes = ["All", ...Array.from(new Set(allJobs.map((job) => job.type)))];
   const [now] = useState(() => Date.now());
   const summary = useMemo(() => {
     const week = 7 * 24 * 60 * 60 * 1000;
-    const open = allJobs
+    const open = inBatch
       .filter((job) => job.status === "Active")
       .map((job) => ({ job, at: new Date(job.deadlineAt).getTime() }))
       .filter((entry) => !Number.isNaN(entry.at) && entry.at >= now)
@@ -44,15 +62,15 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
     const next = open[0];
     const days = next ? Math.max(0, Math.ceil((next.at - now) / (24 * 60 * 60 * 1000))) : null;
     return {
-      open: allJobs.filter((job) => job.status === "Active").length,
+      open: inBatch.filter((job) => job.status === "Active").length,
       closingSoon: open.filter((entry) => entry.at - now <= week).length,
       next: next?.job,
       nextIn: days === null ? "" : days === 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`,
     };
-  }, [allJobs, now]);
+  }, [inBatch, now]);
   const jobs = useMemo(
     () =>
-      allJobs.filter(
+      inBatch.filter(
         (job) =>
           (type === "All" || job.type === type) &&
           (status === "All" || job.status === status) &&
@@ -60,7 +78,7 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
             .toLowerCase()
             .includes(query.toLowerCase()),
       ),
-    [allJobs, query, type, status],
+    [inBatch, query, type, status],
   );
 
   return (
@@ -90,7 +108,7 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
         </div>
       </section>
 
-      <section className="mt-6 mb-4 grid items-center gap-3 md:grid-cols-[1fr_auto_auto]">
+      <section className="mt-6 mb-4 grid items-center gap-3 md:grid-cols-[1fr_auto_auto_auto]">
         <div className="relative min-w-0">
           <Label htmlFor="jobs-search" className="sr-only">
             Search company events
@@ -126,6 +144,25 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
             ))}
           </ToggleGroup>
         </div>
+
+        <Select value={batch} onValueChange={setBatch}>
+          <SelectTrigger
+            id="jobs-batch-filter"
+            aria-label="Filter by batch"
+            className="h-12 rounded-xl bg-[var(--card-bg)] text-xs font-semibold"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All batches</SelectItem>
+            {batches.map((item) => (
+              <SelectItem key={item} value={String(item)}>
+                Batch {item}
+                {item === studentBatch ? " (yours)" : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger
@@ -181,7 +218,9 @@ export function JobsList({ jobs: allJobs }: { jobs: StudentJobListItem[] }) {
             <h3>No matching opportunities found</h3>
             <p>
               {allJobs.length
-                ? "Try clearing your filters or using a broader search term."
+                ? batch !== "All"
+                  ? `No drives match batch ${batch} with these filters. Choose "All batches" to see every drive.`
+                  : "Try clearing your filters or using a broader search term."
                 : "No campus placement drives have been published yet."}
             </p>
           </div>

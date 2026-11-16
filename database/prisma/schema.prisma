@@ -264,6 +264,10 @@ model Company {
   // Quoted from the company as stated, so it stays free text rather than a
   // parsed figure with an invented currency and unit.
   turnover      String?
+  // JAF "Type of Organization" and "Nature of Business / Industry Sector",
+  // shown to students as the company states them.
+  orgType       String?
+  industry      String?
   createdAt     DateTime       @default(now())
   jobs          JobProfile[]
   announcements Announcement[]
@@ -302,7 +306,6 @@ model JobProfile {
   openingOverview      String?
   // Policy and offer terms the placement cell writes as the company states
   // them, so they stay free text rather than a parsed figure.
-  cap                  String?
   companyBond          String?
   duration             String?
   redirectUrl          String?
@@ -319,6 +322,30 @@ model JobProfile {
   // student's answer yet — that needs its own column on `Application` and is
   // the deliberately separate next step.
   questions            Json?
+  // JAF 2026-27 fields. Every one is nullable and null means "not provided",
+  // never "No": recruiters often send these after the drive is published, and
+  // the student page shows only what the placement cell has entered.
+  // `{ fileName, fileUrl, mimeType, sizeBytes }` for the Job Description.
+  jdFile               Json?
+  // ON_SITE | HYBRID | REMOTE
+  workMode             String?
+  joiningDate          String?
+  // Expected CTC in LPA for a PPO (INTERNSHIP_PPO) or the full-time offer an
+  // INTERNSHIP_FTE converts to. `ctcStipend` stays the single headline amount:
+  // a monthly stipend for the internship types, a yearly CTC for FTE. What a
+  // drive's `type` allows is enforced in `employmentFlags`.
+  ppoCtcLpa            Float?
+  // `{ [degree]: { fixed?, variable?, ctc? } }`, yearly INR; an optional
+  // breakup of the PPO / full-time compensation.
+  compensation         Json?
+  // Yes / No; the terms live in `companyBond`.
+  hasBond              Boolean?
+  ppt                  Boolean?
+  resumeShortlisting   Boolean?
+  shortlistCriteria    String?
+  // `{ [aptitude|technicalTest|technicalInterview|hrInterview]: { conducted?, duration?, rounds?, sequence? } }`
+  selectionRounds      Json?
+  selectionNotes       String?
   createdAt            DateTime       @default(now())
   createdById          String
   company              Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)

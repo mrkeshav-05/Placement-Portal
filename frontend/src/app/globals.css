@@ -727,7 +727,8 @@
   .coming-soon p { color: var(--muted); line-height: 1.7; font-size: 14px; }
 
   /* Company Events & Job Profiles */
-  .jobs-page, .job-detail { max-width: 1220px; margin: auto; padding: 36px 4vw 60px; }
+  .job-detail { max-width: 1400px; margin: auto; padding: 32px 4vw 60px; }
+  .jobs-page { max-width: 1220px; margin: auto; padding: 36px 4vw 60px; }
   .page-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; }
   .page-heading > div:first-child { flex: 1 1 320px; min-width: 0; }
   .page-heading > .primary-link { flex: 0 0 auto; }
@@ -788,33 +789,104 @@
   .back-link:hover { color: var(--ink); }
   .back-link svg { width: 16px; }
 
-  .job-detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
-  .job-main, .eligibility-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--card-shadow); }
-  .job-main { overflow: hidden; }
-  .job-hero { display: flex; align-items: center; gap: 18px; padding: 26px; border-bottom: 1px solid var(--border); }
-  .detail-logo { width: 64px; height: 64px; display: grid; place-items: center; color: #fff; border-radius: 16px; font-weight: 600; font-size: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-  .job-hero span { color: var(--muted); font-size: 12px; font-weight: 600; }
-  .job-hero h1 { font: 600 28px var(--font-plex-sans); letter-spacing: -0.01em; margin: 4px 0 6px; color: var(--ink); }
-  .job-hero b { color: var(--badge-blue-text); background: var(--badge-blue-bg); border-radius: 9999px; padding: 4px 10px; font-size: 10px; font-weight: 700; }
-  .job-facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
-  .job-facts > div { display: flex; gap: 12px; align-items: center; background: var(--card-bg); padding: 18px 24px; }
-  .job-facts svg { color: var(--blue); width: 20px; }
-  .job-facts span, .job-facts strong { display: block; }
-  .job-facts span { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-  .job-facts strong { font-size: 13px; color: var(--ink); margin-top: 3px; font-weight: 700; }
-  .job-main section { padding: 24px 26px; border-bottom: 1px solid var(--border); }
-  .job-main section h2, .eligibility-card h2 { font: 600 18px var(--font-plex-sans); margin: 0 0 10px; color: var(--ink); }
-  .job-main section p { color: var(--muted); font-size: 13px; line-height: 1.7; }
-  .job-main dl { margin: 0; }
-  .job-main dl div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding: 11px 0; font-size: 12px; }
-  .job-main dd { font-weight: 700; color: var(--ink); margin: 0; }
-  .eligibility-card { padding: 24px; position: sticky; top: 20px; }
-  .eligibility-card > p { color: var(--muted); font-size: 12px; }
-  .eligibility-card > div { display: grid; gap: 10px; margin: 20px 0; }
-  .eligibility-card > div span { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
-  .eligibility-card > div svg { width: 16px; }
+  .job-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+  .job-main { display: grid; gap: 16px; min-width: 0; }
+  .jd-card, .jd-section, .eligibility-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; }
+
+  .jd-header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 20px; align-items: center; padding: 24px 28px; }
+  .detail-logo { width: 60px; height: 60px; display: grid; place-items: center; color: #fff; border-radius: 10px; font-weight: 600; font-size: 22px; }
+  .jd-company { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .jd-company span { font-weight: 400; color: var(--muted); }
+  .jd-company a { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; font-size: 12px; color: var(--blue); text-decoration: none; }
+  .jd-company a:hover { text-decoration: underline; }
+  .jd-company svg { width: 12px; height: 12px; }
+  .jd-title h1 { font: 600 26px/1.25 var(--font-plex-sans); letter-spacing: -0.01em; margin: 4px 0 10px; color: var(--ink); }
+  .jd-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+  .jd-tags span { border: 1px solid var(--border); border-radius: 6px; padding: 2px 9px; font-size: 12px; font-weight: 500; color: var(--ink); background: var(--surface-alt); }
+  .jd-deadline { display: grid; gap: 2px; text-align: right; padding-left: 24px; border-left: 1px solid var(--border); align-self: stretch; align-content: center; }
+  .jd-deadline span { font-size: 12px; color: var(--muted); }
+  .jd-deadline strong { font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .jd-deadline em { font-style: normal; font-size: 12px; color: var(--green); font-weight: 500; }
+  .jd-deadline[data-closed] em { color: var(--muted); }
+
+  .jd-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 24px; margin: 0; padding: 18px 28px 22px; border-top: 1px solid var(--border); }
+  .jd-facts dt { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .jd-facts dd { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+
+  .jd-section { padding: 22px 28px 24px; }
+  .jd-section > header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .jd-section h2 { font: 600 16px var(--font-plex-sans); margin: 0; color: var(--ink); }
+  .jd-section > header span { font-size: 12px; color: var(--muted); }
+  .jd-prose { font-size: 14px; line-height: 1.7; color: var(--ink); margin: 0 0 12px; overflow-wrap: anywhere; }
+  .jd-prose:last-child { margin-bottom: 0; }
+  .jd-prose.rte-content { padding: 0; min-height: 0; }
+  .jd-pre { white-space: pre-line; }
+
+  .jd-rows { margin: 0; }
+  .jd-rows > div { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 14px; }
+  .jd-rows > div:last-child { border-bottom: 0; }
+  .jd-rows dt { color: var(--muted); }
+  .jd-rows dd { margin: 0; color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+  .jd-section > * + .jd-rows { margin-top: 12px; }
+
+  .jd-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .jd-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .jd-table th, .jd-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+  .jd-table thead th { background: var(--surface-alt); color: var(--muted); font-size: 12px; font-weight: 600; }
+  .jd-table tbody th { font-weight: 600; color: var(--ink); }
+  .jd-table tbody tr:last-child > * { border-bottom: 0; }
+  .jd-table td { font-variant-numeric: tabular-nums; color: var(--ink); }
+
+  .jd-rounds { list-style: none; margin: 0; padding: 0; counter-reset: round; }
+  .jd-rounds + p { margin-top: 12px; }
+  .jd-rows + .jd-rounds { margin-top: 12px; }
+  .jd-rounds li { counter-increment: round; display: grid; grid-template-columns: 28px minmax(150px, 220px) minmax(0, 1fr); gap: 0 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 14px; }
+  .jd-rounds li:last-child { border-bottom: 0; }
+  .jd-rounds li::before { content: counter(round); display: grid; place-items: center; width: 24px; height: 24px; border-radius: 9999px; background: var(--surface-alt); border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--muted); align-self: center; }
+  .jd-rounds strong { font-weight: 600; color: var(--ink); }
+  .jd-rounds span { color: var(--muted); }
+  .jd-rounds li[data-skipped] strong { color: var(--muted); font-weight: 500; }
+
+  .jd-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .jd-file { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; }
+  .jd-file > svg { width: 20px; height: 20px; color: var(--blue); }
+  .jd-file strong { display: block; font-size: 14px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+  .jd-file span { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .jd-file a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none; background: var(--card-bg); }
+  .jd-file a:hover { background: var(--surface-alt); }
+  .jd-file a svg { width: 14px; height: 14px; }
+
+  .eligibility-card { padding: 24px; position: sticky; top: 92px; max-height: calc(100vh - 112px); overflow-y: auto; }
+  .eligibility-card h2 { font: 600 18px var(--font-plex-sans); margin: 4px 0 6px; color: var(--ink); }
+  .eligibility-card > p { color: var(--muted); font-size: 13px; margin: 0; }
+  .eligibility-card > div { display: grid; gap: 10px; margin: 18px 0; padding: 16px 0; border-block: 1px solid var(--border); }
+  .eligibility-card > div span { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+  .eligibility-card > div svg { width: 16px; flex: none; }
   .pass { color: var(--green); }
   .fail { color: var(--badge-red-text); }
+  .jd-external { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px; font-weight: 500; color: var(--blue); text-decoration: none; }
+  .jd-external:hover { text-decoration: underline; }
+  .jd-external svg { width: 13px; height: 13px; }
+  .jd-mobile-bar { display: none; }
+  .eligibility-card > small { display: block; color: var(--muted); line-height: 1.5; margin-top: 12px; font-size: 12px; }
+
+  @media (max-width: 960px) {
+    .job-detail-grid { grid-template-columns: minmax(0, 1fr); }
+    .eligibility-card { position: static; max-height: none; overflow: visible; }
+    .jd-header { grid-template-columns: auto minmax(0, 1fr); padding: 20px; }
+    .jd-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px 20px 20px; }
+    .jd-section { padding: 20px; }
+    .jd-deadline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; text-align: left; padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+    .jd-rows > div { grid-template-columns: 1fr; gap: 2px; }
+    .jd-rounds li { grid-template-columns: 28px minmax(0, 1fr); }
+    .jd-rounds li span { grid-column: 2; }
+    .jd-file { grid-template-columns: auto minmax(0, 1fr); }
+    .jd-file a { grid-column: 2; justify-self: start; }
+    .jd-mobile-bar { position: fixed; inset: auto 0 0 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 4vw; background: var(--card-bg); border-top: 1px solid var(--border); text-decoration: none; }
+    .jd-mobile-bar span { font-size: 12px; color: var(--muted); }
+    .jd-mobile-bar strong { font-size: 14px; font-weight: 600; color: var(--blue); }
+    .job-detail { padding-bottom: 90px; }
+  }
   .apply-button {
     width: 100%;
     border: 0;

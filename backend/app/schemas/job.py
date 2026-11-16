@@ -46,11 +46,22 @@ class JobBase(BaseModel):
     registrationDeadline: datetime
     description: Optional[str] = None
     openingOverview: Optional[str] = None
-    cap: Optional[str] = None
     companyBond: Optional[str] = None
     duration: Optional[str] = None
     redirectUrl: Optional[str] = None
     attachments: list[JobAttachment] = []
+    # JAF 2026-27 fields; None means "not provided", never "No".
+    jdFile: Optional[JobAttachment] = None
+    workMode: Optional[str] = None
+    joiningDate: Optional[str] = None
+    ppoCtcLpa: Optional[float] = None
+    compensation: Optional[dict[str, Any]] = None
+    hasBond: Optional[bool] = None
+    ppt: Optional[bool] = None
+    resumeShortlisting: Optional[bool] = None
+    shortlistCriteria: Optional[str] = None
+    selectionRounds: Optional[dict[str, Any]] = None
+    selectionNotes: Optional[str] = None
 
     @field_validator(*_LIST_COLUMNS, "attachments", mode="before")
     @classmethod
@@ -80,11 +91,21 @@ class JobUpdate(BaseModel):
     registrationDeadline: Optional[datetime] = None
     description: Optional[str] = None
     openingOverview: Optional[str] = None
-    cap: Optional[str] = None
     companyBond: Optional[str] = None
     duration: Optional[str] = None
     redirectUrl: Optional[str] = None
     attachments: Optional[list[JobAttachment]] = None
+    jdFile: Optional[JobAttachment] = None
+    workMode: Optional[str] = None
+    joiningDate: Optional[str] = None
+    ppoCtcLpa: Optional[float] = None
+    compensation: Optional[dict[str, Any]] = None
+    hasBond: Optional[bool] = None
+    ppt: Optional[bool] = None
+    resumeShortlisting: Optional[bool] = None
+    shortlistCriteria: Optional[str] = None
+    selectionRounds: Optional[dict[str, Any]] = None
+    selectionNotes: Optional[str] = None
 
 class JobStatusUpdate(BaseModel):
     status: str
@@ -103,6 +124,9 @@ class JobCompanySummary(BaseModel):
     # "Dream" / "First Round": read by the placement policy to classify a
     # drive that carries no package figure of its own.
     category: Optional[str] = None
+    website: Optional[str] = None
+    orgType: Optional[str] = None
+    industry: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1782,3 +1782,21 @@ The first version of the one-offer policy released a student when an internship'
 - Recorded by `PATCH /api/v1/offers/{id}/ppo` (`placement_records.update`), from the placement records table and from the student's detail page. The dashboard's internship row shows pending / received / no-PPO counts.
 - Migration `20261115170000_internship_ppo_status` adds the column rather than editing `20261115160000_placement_policy`, which had already been applied.
 
+
+## 2026-11-16 — JAF 2026-27 fields, a Job Description upload, and a page that shows only what is entered
+
+Recruiters often send details after a drive is published, so the student page is now built from what the cell has entered rather than a fixed template. Reference: `docs/JAF_2026-27.md`.
+
+- **`JobProfile` gained nullable JAF columns** (`jdFile`, `workMode`, `joiningDate`, `internshipKind`, `stipendPerMonth`, `ppoOffered`, `ppoCtcLpa`, `compensation`, `hasBond`, `additionalBenefits`, `ppt`, `resumeShortlisting`, `shortlistCriteria`, `selectionRounds`, `selectionNotes`) and `Company` gained `orgType` and `industry` (migration `20261116100000_jaf_fields`). Null means "not provided", never "No"; the form's Yes/No controls can be switched back off. Enumerations are plain text, validated in Zod, to avoid a Postgres enum migration per change. Recruiter contacts, postal address, number of hires and medical requirements are deliberately not modelled.
+- **The student page omits empty sections and rows** instead of printing "Not specified". Stipend (INR per month), compensation (yearly INR, by degree) and PPO CTC (LPA) stay separate fields. Legacy `ctcStipend`/`ctcStipendInfo` still render as "Compensation".
+- **The Job Description is `JobProfile.jdFile`**, uploaded through the existing event-attachment pipeline (PDF/PNG, 4 MB). Students open it through `/api/company-events/[id]/files/[key]`, which requires a session, hides drafts, redirects Cloudinary URLs, and proxies local files from the backend; a bare link to a local-storage URL would 404 from the browser. `serverActions.bodySizeLimit` is raised to 6 MB so a 4 MB file is not cut off by Next's 1 MB default.
+
+## 2026-11-16 — One home per compensation figure, driven by the employment type
+
+The first JAF pass asked for the same figure in several places (`ctcStipend`, `stipendPerMonth`, `ppoOffered`, `internshipKind` against `duration`, `additionalBenefits` against `ctcStipendInfo`, a bond text and a bond flag). It is consolidated:
+
+- **`ctcStipend` is the one headline amount**: a monthly stipend for Internship, Internship+PPO and Internship+FTE, a yearly CTC for FTE. The placement policy keeps reading it. `stipendPerMonth`, `ppoOffered` (it is the drive type), `internshipKind` (it is `duration`) and `additionalBenefits` (it is `ctcStipendInfo`) are dropped (migration `20261116120000_consolidate_jaf_fields`).
+- **What a type asks for lives in `employmentFlags`** (`frontend/src/lib/job-profile-schema.ts`), read by the admin form, the save action (which nulls what a type does not use, so a type change cannot leave stale values) and the student page. FTE: no stipend, duration or PPO. Internship: no expected CTC, breakup or bond. Internship+PPO: expected PPO CTC (LPA) and an optional breakup. Internship+FTE: expected full-time CTC and breakup. The expected-CTC column is still `ppoCtcLpa`.
+- **`cap` is removed** (column dropped): it was free text that nothing read and that overlapped Minimum CGPA. Existing values are discarded.
+- **Minimum CGPA is a required field beside Backlogs**, not part of the optional-eligibility toggle, since every company asks for it. The toggle keeps 10th/12th percentage, gender and placement bans.
+- Service bond is a Yes/No with the terms shown in `companyBond` only when Yes.
