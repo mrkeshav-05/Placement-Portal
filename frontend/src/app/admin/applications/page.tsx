@@ -1,52 +1,36 @@
 import { AuthenticatedAdminShell } from "@/components/admin/authenticated-admin-shell";
-import {
-  ApplicationsManager,
-  type AdminApplicationRow,
-  type JobOption,
-} from "@/components/admin/applications-manager";
+import { RegistrationsPage, type RegistrationsTab } from "@/components/admin/registrations/registrations-page";
+import type { AdminApplicationRow, JobOption } from "@/components/admin/registrations/types";
+import { adminHasPermission, requireAdmin } from "@/lib/admin-session";
 import { backendFetch } from "@/lib/api-client";
-import { requireAdmin } from "@/lib/admin-session";
 import { db } from "@/lib/db";
 import { formatPortalDate } from "@/lib/job-presenters";
+import { PERM_APPLICATIONS_UPDATE } from "@/lib/permissions";
 import type { ApplicationStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
-type BackendAdminAppItem = {
-  id: string;
-  userId: string;
-  studentName: string;
-  studentEmail: string;
-  rollNumber: string | null;
-  branch: string | null;
-  batch: number | null;
-  degree: string | null;
-  cgpa: number | null;
-  class10Percent: number | null;
-  class12Percent: number | null;
-  personalEmail: string | null;
-  contactNumber: string | null;
-  jobProfileId: string;
-  jobTitle: string;
-  companyId: string;
-  companyName: string;
-  resumeId: string | null;
-  resumeUrl: string | null;
-  resumeLabel: string | null;
+/** The API's own ceiling for one page of applications. */
+const APPLICATION_LIMIT = 1000;
+
+type BackendAdminAppItem = Omit<AdminApplicationRow, "appliedAt" | "appliedAtIso" | "updatedAt" | "status"> & {
   status: ApplicationStatus;
-  offerId: string | null;
   appliedAt: string;
   updatedAt: string;
 };
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ event?: string; tab?: string }>;
+}) {
   await requireAdmin();
+  const { event, tab } = await searchParams;
 
-  // Load jobs for filtering
-  const jobs = await db.jobProfile.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { company: true },
-  });
+  const [jobs, canUpdate] = await Promise.all([
+    db.jobProfile.findMany({ orderBy: { createdAt: "desc" }, include: { company: true } }),
+    adminHasPermission(PERM_APPLICATIONS_UPDATE),
+  ]);
 
   const jobOptions: JobOption[] = jobs.map((j) => ({
     id: j.id,
@@ -56,48 +40,33 @@ export default async function Page() {
     batch: j.batch,
   }));
 
-  let rows: AdminApplicationRow[] = [];
+  // An unknown id in the address falls back to "all events" rather than an empty page.
+  const eventId = event && jobOptions.some((job) => job.id === event) ? event : null;
 
+  // Loaded for the chosen event rather than as one global list capped at the
+  // most recent applications, so an older event is never shown half empty.
+  const query = new URLSearchParams({ limit: String(APPLICATION_LIMIT) });
+  if (eventId) query.set("job_id", eventId);
+
+  let rows: AdminApplicationRow[];
   try {
-    const backendApps = await backendFetch<BackendAdminAppItem[]>("/api/v1/applications/admin");
+    const backendApps = await backendFetch<BackendAdminAppItem[]>(`/api/v1/applications/admin?${query}`);
     rows = backendApps.map((a) => ({
-      id: a.id,
-      userId: a.userId,
-      studentName: a.studentName,
-      studentEmail: a.studentEmail,
-      rollNumber: a.rollNumber,
-      branch: a.branch,
-      batch: a.batch,
-      degree: a.degree,
-      cgpa: a.cgpa,
-      class10Percent: a.class10Percent,
-      class12Percent: a.class12Percent,
-      personalEmail: a.personalEmail,
-      contactNumber: a.contactNumber,
-      jobProfileId: a.jobProfileId,
-      jobTitle: a.jobTitle,
-      companyId: a.companyId,
-      companyName: a.companyName,
-      resumeId: a.resumeId,
-      resumeUrl: a.resumeUrl,
-      resumeLabel: a.resumeLabel,
-      status: a.status,
-      offerId: a.offerId,
+      ...a,
+      appliedAtIso: String(a.appliedAt),
       appliedAt: formatPortalDate(a.appliedAt),
       updatedAt: formatPortalDate(a.updatedAt),
     }));
-  } catch {
-    // Prisma fallback
+  } catch (error) {
+    // Only an unreachable API falls back to the database. An HTTP error (a
+    // missing permission, say) must show, not be answered with unchecked data.
+    if (!(error instanceof TypeError)) throw error;
     const prismaApps = await db.application.findMany({
+      where: eventId ? { jobProfileId: eventId } : undefined,
       orderBy: { updatedAt: "desc" },
-      include: {
-        user: true,
-        jobProfile: { include: { company: true } },
-        resume: true,
-        offer: true,
-      },
+      take: APPLICATION_LIMIT,
+      include: { user: true, jobProfile: { include: { company: true } }, resume: true, offer: true },
     });
-
     rows = prismaApps.map((a) => ({
       id: a.id,
       userId: a.userId,
@@ -121,15 +90,24 @@ export default async function Page() {
       resumeLabel: a.resume?.label || null,
       status: a.status,
       offerId: a.offer?.id ?? null,
+      appliedAtIso: a.appliedAt.toISOString(),
       appliedAt: formatPortalDate(a.appliedAt),
       updatedAt: formatPortalDate(a.updatedAt),
     }));
   }
 
+  const initialTab: RegistrationsTab = tab === "manage" ? "manage" : "registrations";
+
   return (
     <AuthenticatedAdminShell>
-      <ApplicationsManager applications={rows} jobs={jobOptions} />
+      <RegistrationsPage
+        applications={rows}
+        jobs={jobOptions}
+        eventId={eventId}
+        initialTab={initialTab}
+        canUpdate={canUpdate}
+        truncatedAt={rows.length >= APPLICATION_LIMIT ? APPLICATION_LIMIT : null}
+      />
     </AuthenticatedAdminShell>
   );
 }
-

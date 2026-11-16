@@ -118,6 +118,8 @@ export type PipelineResult<T> = {
 
 /** What the table reports to a caller watching the view. */
 export type TableViewSnapshot<T> = PipelineResult<T> & {
+  /** Every row left after search, filters and sort, across all pages. */
+  allRows?: T[];
   query: string;
   filters: TableFilterState;
   sort: TableSort | null;
@@ -151,6 +153,13 @@ export function sameTableView<T>(
     before.pageCount !== after.pageCount ||
     before.rows.length !== after.rows.length
   ) {
+    return false;
+  }
+  if (before.allRows && after.allRows) {
+    const next = after.allRows;
+    if (before.allRows.length !== next.length) return false;
+    if (!before.allRows.every((row, index) => row === next[index])) return false;
+  } else if (before.allRows !== after.allRows) {
     return false;
   }
   return before.rows.every((row, index) => row === after.rows[index]);

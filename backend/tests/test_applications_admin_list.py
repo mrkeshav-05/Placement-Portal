@@ -123,3 +123,28 @@ def test_limit_is_capped_at_one_thousand(client):
     response = client.get("/api/v1/applications/admin", params={"limit": 5000})
 
     assert response.status_code == 422
+
+
+def test_job_id_scopes_the_query_to_one_event(client):
+    """
+    The registrations page loads one event at a time, so an older event is not
+    cut off by the global "latest N" limit. The event has to reach SQL as a
+    predicate on the application's job profile.
+    """
+    captured = _install_capturing_db(client)
+
+    response = client.get("/api/v1/applications/admin", params={"job_id": "job_abc", "limit": 1000})
+
+    assert response.status_code == 200
+    sql = _compiled(captured["stmt"])
+    assert '"Application"."jobProfileId" = \'job_abc\'' in sql
+    assert "LIMIT 1000" in sql
+
+
+def test_without_job_id_no_event_predicate(client):
+    captured = _install_capturing_db(client)
+
+    response = client.get("/api/v1/applications/admin")
+
+    assert response.status_code == 200
+    assert "jobProfileId\" =" not in _compiled(captured["stmt"])

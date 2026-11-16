@@ -1800,3 +1800,12 @@ The first JAF pass asked for the same figure in several places (`ctcStipend`, `s
 - **`cap` is removed** (column dropped): it was free text that nothing read and that overlapped Minimum CGPA. Existing values are discarded.
 - **Minimum CGPA is a required field beside Backlogs**, not part of the optional-eligibility toggle, since every company asks for it. The toggle keeps 10th/12th percentage, gender and placement bans.
 - Service bond is a Yes/No with the terms shown in `companyBond` only when Yes.
+
+## 2026-11-16 — One Event registrations page: a shared event scope, two tabs
+
+`/admin/applications` stacked "View Registrations" (one event, contact details, export) over "Candidate Management" (every application, stage changes) — the same `Application` rows twice, with two headings, two scrolling tables and an alert far from the buttons that raised it.
+
+- **One scope, two views.** Season → company → event is chosen once (the event lives in `?event=`) and both tabs work on it. Registrations is the read-and-export view; Manage applications is where stages change. Tab state is kept in the address without a server round trip (`?tab=manage`), and both tabs stay mounted so a search or filter survives a switch.
+- **Load per event, not one global list.** The page asks the API for the chosen event's applications (the endpoint already took `job_id`), instead of the latest 500 of everything, which silently dropped older events' registrants from the Registrations table. With no event chosen the latest 1000 are shown with a note.
+- **Exports honour the screen.** The old Excel export ignored the search box and the CSV honoured a filter only when exactly one option was picked. Both now use the table's filtered, sorted rows (`DataTableView.allRows`) through one builder; the CSV proxy route was removed. CSV fields that start with `=`, `+`, `-` or `@` are prefixed so a spreadsheet does not run them as formulas.
+- **Permission and fallback fixes.** The stage actions now require `applications.update` and the controls are hidden without it. A Prisma fallback runs only when the API is unreachable (a failed `fetch`), not on a 403 or any HTTP error, and never notifies a student of `OFFER_ACCEPTED` / `OFFER_DECLINED`. Row edits are applied as patches over the server rows, so a placement record or status change shows without a reload.

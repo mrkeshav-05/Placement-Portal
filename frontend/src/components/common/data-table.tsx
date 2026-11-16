@@ -170,6 +170,8 @@ export type DataTableView<T> = {
   sort: TableSort | null;
   /** Rows on the current page, in display order. */
   rows: T[];
+  /** Every row left after search, filters and sort, across all pages: what an export should contain. */
+  allRows: T[];
   /** Rows left after search and filters, across all pages. */
   filteredCount: number;
   page: number;
@@ -598,6 +600,24 @@ export function DataTable<T>({
     [data, query, searchText, filterState, sort, sortValue, page, pageSize, pagination],
   );
 
+  const allRows = useMemo(
+    () =>
+      applyTablePipeline({
+        rows: data,
+        query,
+        searchText,
+        filters,
+        filterState,
+        sort,
+        sortValue,
+        page: 1,
+        pageSize: 0,
+      }).rows,
+    // Same reasoning as `result` above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, query, searchText, filterState, sort, sortValue],
+  );
+
   // Held in a ref so a caller passing an inline arrow cannot turn this into a
   // render loop.
   const viewListener = useRef(onViewChange);
@@ -618,6 +638,7 @@ export function DataTable<T>({
       filters: filterState,
       sort,
       rows: result.rows,
+      allRows,
       filteredCount: result.filteredCount,
       page: result.page,
       pageCount: result.pageCount,
@@ -625,7 +646,7 @@ export function DataTable<T>({
     if (sameTableView(notifiedView.current, view)) return;
     notifiedView.current = view;
     viewListener.current?.(view);
-  }, [query, filterState, sort, result]);
+  }, [query, filterState, sort, result, allRows]);
 
   const columnCount = visibleColumns.length + (leadingColumn ? 1 : 0);
   const showToolbar = Boolean(searchText || filters.length || toolbarExtras ||

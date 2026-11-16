@@ -77,7 +77,6 @@ const nav: NavItem[] = [
     children: [
       { label: "All companies", href: "/admin/companies" },
       { label: "Add company", href: "/admin/companies/add" },
-      { label: "View registrations", href: "/admin/applications" },
     ],
   },
   {
@@ -87,6 +86,7 @@ const nav: NavItem[] = [
     children: [
       { label: "All events", href: "/admin/events" },
       { label: "Add event", href: "/admin/events/add" },
+      { label: "View Event Registrations", href: "/admin/applications" },
     ],
   },
   { section: "Recruitment", label: "Calendar", href: "/admin/calendar", icon: CalendarDays },

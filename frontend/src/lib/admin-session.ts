@@ -51,3 +51,10 @@ export const requireAnyPermission = cache(async (...permissions: PermissionKey[]
 
   return { session, user };
 });
+
+/** Whether the signed-in admin holds a permission, for hiding controls the server would refuse. */
+export async function adminHasPermission(permission: PermissionKey): Promise<boolean> {
+  const { session, user } = await requireAdmin();
+  if (isAdminEmail(user.email) || user.role === "SUPER_ADMIN") return true;
+  return hasPermission({ ...user, email: user.email }, permission) || hasPermission(session.user, permission);
+}

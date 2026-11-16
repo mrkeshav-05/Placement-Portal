@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { saveOfferAction } from "@/app/admin/placement-records/actions";
-import type { AdminApplicationRow } from "@/components/admin/applications-manager";
+import type { AdminApplicationRow } from "@/components/admin/registrations/types";
 import { PortalDialog } from "@/components/common/portal-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

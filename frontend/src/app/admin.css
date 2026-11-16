@@ -1574,3 +1574,54 @@
   .dash-donut { grid-template-columns: 1fr; justify-items: center; }
   .dash-donut .dash-legend { width: 100%; }
 }
+
+/* Event registrations: stage summary, tabs, notes and the sticky bulk bar */
+.reg-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 0 0 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.reg-summary > div { padding: 14px 20px; border-right: 1px solid var(--border); }
+.reg-summary > div:last-child { border-right: 0; }
+.reg-summary dt { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.reg-summary dd { margin: 0; font: 600 22px var(--font-plex-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+.reg-tabs { gap: 14px; }
+.reg-tabs [data-slot="tabs-trigger"] { padding-inline: 14px; }
+.reg-empty {
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  padding: 56px 20px;
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+}
+.reg-empty svg { width: 28px; height: 28px; color: var(--blue); }
+.reg-empty h3 { margin: 4px 0 0; font: 600 16px var(--font-plex-sans); color: var(--ink); }
+.reg-empty p { margin: 0; font-size: 13px; max-width: 42ch; }
+.reg-note { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.bulk-action-bar--sticky { position: sticky; bottom: 16px; z-index: 20; box-shadow: var(--card-shadow); }
+.bulk-action-bar .bulk-link {
+  margin-left: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .reg-summary > div { border-right: 0; border-bottom: 1px solid var(--border); }
+  .reg-summary > div:last-child { border-bottom: 0; }
+}
+
+/* The stage dropdown in Manage applications shows its full label, not a clipped word. */
+.reg-tabs .dt-inline-select { width: auto; max-width: 100%; white-space: nowrap; }
